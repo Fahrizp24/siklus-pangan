@@ -11,10 +11,10 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [===>                      ] 15%
+Progress Rizal: [=========>            ] 38%
 - Foundation & Design Rules: 100% [DONE]
-- Phase 1 (Design System & App Shell): 0% [READY TO START]
-- Phase 2 (Live Surplus Radar UI):    0% [TODO]
+- Phase 1 (Design System & App Shell): 100% [DONE]
+- Phase 2 (Live Surplus Radar UI):    0% [READY TO START]
 - Phase 3 (Biokonversi & QR UI):       0% [TODO]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
@@ -28,14 +28,14 @@ Progress Rizal: [===>                      ] 15%
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** Berkas spesifikasi di [AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md).  
 > - **Dibutuhkan oleh:** **Fahri Phase 4** (Pemindai Kamera VLM Fahri butuh tema & komponen UI Rizal).  
-> - **Status Kerja:** 🟢 **Bisa langsung dikerjakan mandiri** (Paralel dengan Fahri Phase 1).
+> - **Status Kerja:** 🟢 **SELESAI (Phase 1 Closed)**.
 
 - [x] **RZL-00 (Spec):** Meninjau aturan visual, token warna, dan standar UI di [AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md).
-- [ ] **RZL-01:** Konfigurasi Tailwind CSS v3 dengan palet warna HSL khusus, efek Glassmorphism, & font Google Inter (`src/styles/globals.css`).
-- [ ] **RZL-02:** Setup komponen dasar `shadcn/ui` (Button, Card, Badge, Dialog, Tabs, Toast).
-- [ ] **RZL-03:** Membangun *App Shell* responsif (`src/components/layout/app-shell.tsx`):
-  - Header Navbar dengan indikator profil/role.
-  - Sidebar navigasi desktop.
+- [x] **RZL-01:** Konfigurasi Tailwind CSS v3 dengan palet warna HSL khusus (Primary `#00AA13`, Secondary `#0B1B3D`, Tertiary `#005A10`, Neutral `#151C24`), Light Mode Only, efek Glassmorphism, & font Google Plus Jakarta Sans & Inter (`src/app/globals.css`, `tailwind.config.ts`).
+- [x] **RZL-02:** Setup fondasi `shadcn/ui` (Button, Card, Badge, Dialog, Tabs, Toast/Toaster) + hook `use-toast`.
+- [x] **RZL-03:** Membangun *App Shell* responsif (`src/components/layout/app-shell.tsx`):
+  - Header Navbar dengan identitas sirkular, menu terpusat `nav.ts`, status aktif dot/underline, dan profil entitas (`src/components/layout/navbar.tsx`).
+  - Footer enterprise berstandar ISO & GHG Protocol dengan status sistem (`src/components/layout/footer.tsx`).
   - Mobile Bottom Navigation Bar untuk layar ponsel.
 
 ---
