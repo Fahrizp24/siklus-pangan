@@ -11,13 +11,13 @@
 ## 📊 Ringkasan Progress P1 (Fahri)
 
 ```
-Progress Fahri: [===>                      ] 15%
+Progress Fahri: [=========>              ] 45%
 - Foundation & Spec Readiness: 100% [DONE]
-- Phase 1 (Database & Auth Setup): 0% [READY TO START]
-- Phase 2 (AI Gemini SDK & Rules): 0% [TODO]
+- Phase 1 (Database & Auth Setup): 100% [DONE]
+- Phase 2 (AI Gemini SDK & Rules): 75% [IN PROGRESS]
 - Phase 3 (Server Actions Mutasi): 0% [TODO]
-- Phase 4 (Functional UI Camera/QR):0% [TODO]
-- Phase 5 (Harness Verification): 0% [TODO]
+- Phase 4 (Functional UI Camera/QR): 0% [TODO]
+- Phase 5 (Harness Verification): 30% [IN PROGRESS]
 ```
 
 ---
@@ -30,10 +30,10 @@ Progress Fahri: [===>                      ] 15%
 > - **Status Kerja:** 🟢 **Bisa langsung dikerjakan mandiri** (Paralel dengan Rizal Phase 1).
 
 - [x] **FHR-01 (Spec):** Meninjau skema DDL PostgreSQL & aturan RLS pada [PRD.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/PRD.md#5-skema-basis-data-relasional-postgresql-ddl--rls).
-- [ ] **FHR-02:** Menjalankan skema DDL di dashboard Supabase (Tabel: `profiles`, `food_listings`, `food_claims`, `strike_disputes`, `waste_batches`, `financial_transactions`).
-- [ ] **FHR-03:** Mengaktifkan dan menguji Row Level Security (RLS) policies untuk semua tabel.
-- [ ] **FHR-04:** Membuat utilitas Supabase Client (`src/lib/supabase/client.ts` & `src/lib/supabase/server.ts`).
-- [ ] **FHR-05:** Setup Supabase Auth Magic Link (Passwordless login & role dispatcher).
+- [x] **FHR-02:** Menjalankan skema DDL di dashboard Supabase (6 tabel aktif).
+- [x] **FHR-03:** Mengaktifkan dan menguji Row Level Security policies untuk semua tabel.
+- [x] **FHR-04:** Membuat utilitas Supabase Client (`src/lib/supabase/client.ts` & `src/lib/supabase/server.ts`).
+- [x] **FHR-05:** Setup Supabase Auth email/password + role dispatcher.
 
 ---
 
@@ -43,9 +43,9 @@ Progress Fahri: [===>                      ] 15%
 > - **Dibutuhkan oleh:** **Rizal Phase 2** (Antarmuka Radar UI membutuhkan Zod Schema & Expiry function Fahri).  
 > - **Status Kerja:** 🟡 **Menunggu Fahri Phase 1 selesai**.
 
-- [ ] **FHR-06:** Mengonfigurasi `@google/genai` SDK dengan API Key Gemini 2.0 Flash (`src/lib/ai/gemini.ts`).
-- [ ] **FHR-07:** Implementasi Zod Schema Guard (`FoodScanResultSchema` & `WasteInspectionSchema`).
-- [ ] **FHR-08:** Mengembangkan *Deterministic Expiry Rules Engine* (`src/lib/rules/expiry.ts`):
+- [x] **FHR-06:** Mengonfigurasi `@google/genai` SDK dengan structured output (`src/lib/ai/food-scan.ts`).
+- [x] **FHR-07:** Implementasi Zod Schema Guard (`FoodScanResultSchema`).
+- [x] **FHR-08:** Mengembangkan *Deterministic Expiry Rules Engine* (`src/lib/rules/expiry.ts`) dan bridge AI (`src/lib/ai/food-safety.ts`):
   - Kategori Kering: max 4 jam suhu ruang.
   - Kategori Wet/Santan/Susu: max 2 jam suhu ruang.
 - [ ] **FHR-09:** Mengembangkan *Orphanage Threshold Quota Guard* (`src/lib/rules/quota.ts`).

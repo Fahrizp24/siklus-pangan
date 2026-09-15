@@ -16,11 +16,11 @@
 ```
 Progress Master Proyek: [======>                   ] 25%
 - Milestone 1 (Dokumentasi, Arsitektur, & Harness): 100% [DONE]
-- Milestone 2 (Database, BaaS & Security Setup):   30% [IN PROGRESS]
-- Milestone 3 (Modul A - Surplus Food Rescue):     30% [IN PROGRESS]
-- Milestone 4 (Modul B - Biokonversi Limbah):       0% [TODO]
-- Milestone 5 (Modul C - Dashboard, ESG & PDF):     0% [TODO]
-- Milestone 6 (Harness Verification & Pitch Prep): 0% [TODO]
+- Milestone 2 (Database, BaaS & Security Setup):   100% [DONE]
+- Milestone 3 (Modul A - Surplus Food Rescue):     40% [IN PROGRESS]
+- Milestone 4 (Modul B - Biokonversi Limbah):      15% [IN PROGRESS]
+- Milestone 5 (Modul C - Dashboard, ESG & PDF):     5% [IN PROGRESS]
+- Milestone 6 (Harness Verification & Pitch Prep): 20% [IN PROGRESS]
 ```
 
 ---
