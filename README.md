@@ -19,6 +19,8 @@
 
 Seluruh cetak biru teknis dan tata kelola proyek tersimpan secara terstruktur di folder `docs/`:
 
+* **[PAGES.md](docs/PAGES.md)** — Matriks route, fitur setiap halaman, role, status, serta roadmap implementasi.
+
 * **[AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md)** — Berkas Aturan Resmi Antigravity Agent & Protocol Verifikasi Harness *(Root File)*.
 * **[PRD.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/PRD.md)** / **[PRD.pdf](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/PRD.pdf)** — Product Requirement Document & PostgreSQL DDL.
 * **[ARCHITECTURE.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/ARCHITECTURE.md)** — Arsitektur Sistem 5-Layer & Diagram Alur Sequence Mermaid.
