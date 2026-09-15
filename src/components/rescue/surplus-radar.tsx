@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import { ShieldCheck, Clock, AlertTriangle, Utensils, Filter } from "lucide-react";
 import { FoodListing } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 const MOCK_LISTINGS: FoodListing[] = [
   {
@@ -123,27 +126,27 @@ export function SurplusRadar() {
       {/* Header & Filter Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-5 rounded-2xl">
         <div>
-          <h2 className="text-xl font-bold text-slate-50 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-400" />
+          <h2 className="text-xl font-bold font-headline text-foreground flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-primary" />
             <span>Live Surplus Radar</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1 font-body">
             Umpan real-time makanan berlebih aman konsumsi terdekat di Bangkalan &amp; UTM.
           </p>
         </div>
 
         {/* Dietary Filters */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <Filter className="w-4 h-4 text-slate-400 mr-1 hidden sm:block" />
+          <Filter className="w-4 h-4 text-muted-foreground mr-1 hidden sm:block" />
           {tags.map((t) => (
             <button
               key={t.id}
               onClick={() => setSelectedTag(t.id)}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all",
+                "px-3 py-1.5 rounded-lg text-xs font-semibold font-label whitespace-nowrap transition-all",
                 selectedTag === t.id
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                  : "bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground hover:text-foreground border border-border"
               )}
             >
               {t.label}
@@ -159,32 +162,32 @@ export function SurplusRadar() {
           const isUrgent = new Date(item.safe_until).getTime() - Date.now() < 60 * 60 * 1000;
 
           return (
-            <div
+            <Card
               key={item.id}
-              className="glass-panel rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-all flex flex-col group"
+              className="overflow-hidden border-border hover:shadow-md transition-all flex flex-col group"
             >
               {/* Image Preview & Badges */}
-              <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
+              <div className="relative h-44 w-full bg-muted overflow-hidden">
                 <img
                   src={item.image_url}
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
 
                 {/* Remaining Portions Badge */}
-                <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md border border-slate-800 text-slate-200 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5">
-                  <Utensils className="w-3.5 h-3.5 text-blue-400" />
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md border border-border text-foreground text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-label shadow-xs">
+                  <Utensils className="w-3.5 h-3.5 text-primary" />
                   <span>Sisa {item.remaining_portions} Porsi</span>
                 </div>
 
                 {/* Urgent Time Badge */}
                 <div
                   className={cn(
-                    "absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5 border",
+                    "absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5 border font-label shadow-xs",
                     isUrgent
-                      ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
-                      : "bg-slate-950/80 border-slate-800 text-emerald-400"
+                      ? "bg-amber-100 border-amber-300 text-amber-800"
+                      : "bg-emerald-100 border-emerald-300 text-emerald-800"
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -195,13 +198,13 @@ export function SurplusRadar() {
               {/* Card Body */}
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="font-bold text-base text-slate-100 line-clamp-1">{item.title}</h3>
-                  <p className="text-xs text-slate-500 mt-1">Donatur dianonimkan demi privasi.</p>
+                  <h3 className="font-headline font-bold text-base text-foreground line-clamp-1">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 font-body">Donatur dianonimkan demi privasi.</p>
 
                   {/* Risky Ingredients Warning if any */}
                   {item.risky_ingredients.length > 0 && (
-                    <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 flex items-start gap-2 text-amber-300 text-[11px]">
-                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+                    <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-start gap-2 text-amber-800 text-[11px] font-body">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
                       <span>
                         Bahan rentan: <strong>{item.risky_ingredients.join(", ")}</strong>. {item.handling_notes}
                       </span>
@@ -210,27 +213,23 @@ export function SurplusRadar() {
                 </div>
 
                 {/* Footer Action */}
-                <button
+                <Button
                   onClick={() => setClaimedId(item.id)}
                   disabled={isClaimed}
-                  className={cn(
-                    "w-full py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                    isClaimed
-                      ? "bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 cursor-default"
-                      : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                  )}
+                  variant={isClaimed ? "outline" : "default"}
+                  className="w-full rounded-xl font-label font-semibold text-xs"
                 >
                   {isClaimed ? (
                     <>
-                      <ShieldCheck className="w-4 h-4" />
+                      <ShieldCheck className="w-4 h-4 text-primary mr-1" />
                       <span>Klaim Token QR Berhasil!</span>
                     </>
                   ) : (
                     <span>Klaim 1 Porsi (QR Token Instan)</span>
                   )}
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>

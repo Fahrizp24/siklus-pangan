@@ -4,33 +4,57 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Brand Design Tokens (Light Mode Only) */
+    --primary: 127 100% 33.3%; /* #00AA13 */
+    --primary-foreground: 0 0% 100%;
 
-    --card: 222.2 84% 6.9%;
-    --card-foreground: 210 40% 98%;
+    --secondary: 221 69% 14.1%; /* #0B1B3D */
+    --secondary-foreground: 0 0% 100%;
 
-    --popover: 222.2 84% 6.9%;
-    --popover-foreground: 210 40% 98%;
+    --tertiary: 131 100% 17.6%; /* #005A10 */
+    --tertiary-foreground: 0 0% 100%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --neutral: 212 26% 11.2%; /* #151C24 */
+    --neutral-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Semantic Light Theme */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 212 26% 11.2%; /* #151C24 */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 212 26% 11.2%;
 
-    --accent: 142.1 70.6% 45.3%;
-    --accent-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 212 26% 11.2%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 45%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --accent: 127 60% 95%;
+    --accent-foreground: 127 100% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 127 100% 33.3%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 127 100% 33.3%;
+
+    /* Sidebar Tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 212 26% 11.2%;
+    --sidebar-primary: 127 100% 33.3%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 127 60% 95%;
+    --sidebar-accent-foreground: 127 100% 25%;
+    --sidebar-border: 214 20% 90%;
+    --sidebar-ring: 127 100% 33.3%;
 
     --radius: 0.75rem;
   }
@@ -47,12 +71,19 @@
 }
 
 .field {
-  @apply mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-blue-500;
+  @apply mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary;
 }
 
 .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(21, 28, 36, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(11, 27, 61, 0.05);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #00AA13 0%, #005A10 50%, #0B1B3D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
