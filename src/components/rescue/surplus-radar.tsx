@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, Clock, MapPin, AlertTriangle, Utensils, Filter } from "lucide-react";
+import { ShieldCheck, Clock, AlertTriangle, Utensils, Filter } from "lucide-react";
 import { FoodListing } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ const MOCK_LISTINGS: FoodListing[] = [
     donor: {
       id: "dnr-1",
       role: "donor",
-      display_name: "Catering Berkah Jaya - Bangkalan",
+      display_name: "Donatur Terverifikasi #001",
       address: "Jl. Raya Telang No. 12, Kamal, Bangkalan",
       organization_capacity: 1,
       credit_balance: 50000,
@@ -51,7 +51,7 @@ const MOCK_LISTINGS: FoodListing[] = [
     donor: {
       id: "dnr-2",
       role: "donor",
-      display_name: "Hotel Grand Trunojoyo",
+      display_name: "Donatur Terverifikasi #002",
       address: "Jl. Soekarno Hatta No. 45, Bangkalan",
       organization_capacity: 1,
       credit_balance: 120000,
@@ -78,7 +78,7 @@ const MOCK_LISTINGS: FoodListing[] = [
     donor: {
       id: "dnr-3",
       role: "donor",
-      display_name: "Resto Warung Amboina",
+      display_name: "Donatur Terverifikasi #003",
       address: "Jl. KH. Moh. Cholil No. 8, Bangkalan",
       organization_capacity: 1,
       credit_balance: 75000,
@@ -196,10 +196,7 @@ export function SurplusRadar() {
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div>
                   <h3 className="font-bold text-base text-slate-100 line-clamp-1">{item.title}</h3>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="truncate">{item.donor?.display_name}</span>
-                  </p>
+                  <p className="text-xs text-slate-500 mt-1">Donatur dianonimkan demi privasi.</p>
 
                   {/* Risky Ingredients Warning if any */}
                   {item.risky_ingredients.length > 0 && (

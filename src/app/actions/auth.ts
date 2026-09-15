@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { signupSchema } from "@/lib/auth/signup-schema";
+import { redirect } from "next/navigation";
 
 export async function signUp(formData: FormData) {
   const parsed = signupSchema.safeParse({
@@ -42,4 +43,29 @@ export async function signUp(formData: FormData) {
     needsConfirmation: !authData.session,
     message: authData.session ? "Akun berhasil dibuat." : "Cek email untuk konfirmasi akun.",
   };
+}
+
+export async function signIn(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  if (!email || !password) return { success: false, error: "Email dan password wajib diisi" };
+
+  const supabase = await createClient();
+  const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !authData.user) return { success: false, error: error?.message ?? "Login gagal" };
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", authData.user.id)
+    .single();
+  if (profileError) return { success: false, error: "Profil akun belum siap" };
+
+  redirect(profile.role === "beneficiary" ? "/rescue" : "/");
+}
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
 }
