@@ -30,7 +30,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     donorCode: "Donatur Anonim #084",
     location: "Renon, Denpasar (1.2 km)",
     distanceKm: 1.2,
-    remainingTime: "01j 42m (14:00 WITA)",
+    remainingTime: "01j 42m",
     isUrgentBadge: true,
     imageUrl:
       "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
@@ -56,7 +56,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     donorCode: "Donatur Anonim #022",
     location: "Sanur, Denpasar (2.4 km)",
     distanceKm: 2.4,
-    remainingTime: "02j 15m (15:30 WITA)",
+    remainingTime: "02j 15m",
     isUrgentBadge: false,
     imageUrl:
       "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=700&q=80",
@@ -82,7 +82,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     donorCode: "Donatur Anonim #109",
     location: "Panjer / Renon (3.1 km)",
     distanceKm: 3.1,
-    remainingTime: "03j 10m (16:00 WITA)",
+    remainingTime: "03j 10m",
     isUrgentBadge: false,
     imageUrl:
       "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&q=80",
@@ -108,7 +108,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     donorCode: "Donatur Anonim #061",
     location: "Seminyak / Kuta (4.5 km)",
     distanceKm: 4.5,
-    remainingTime: "00j 55m (13:30 WITA)",
+    remainingTime: "00j 55m",
     isUrgentBadge: true,
     imageUrl:
       "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=700&q=80",

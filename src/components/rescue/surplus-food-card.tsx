@@ -197,7 +197,7 @@ export function SurplusFoodCard({
           )}
         >
           <QrCode className="w-3.5 h-3.5 shrink-0" />
-          <span>{isClaimed ? "Terklaim!" : "Klaim Jatah (Token QR)"}</span>
+          <span>{isClaimed ? "Terklaim!" : "Klaim Jatah"}</span>
         </Button>
       </div>
     </div>
