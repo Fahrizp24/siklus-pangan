@@ -85,7 +85,8 @@ Progress Rizal: [==================> ] 76%
   - Riwayat Batch Penjemputan Limbah Organik (`history-section.tsx`): Audit trail manifest digital, transparansi GHG Scope 3, sertifikat biokonversi PDF, filter kategori, export CSV, dan paginasi Q2 2025.
 - [x] **RZL-10:** Tampilan *Dynamic QR Code Generator* untuk serah terima lapangan (`src/components/pages/waste/waste-operations-section.tsx`):
   - Token serah terima manifest digital `#SKP-8841-ORG` dengan QR handover terintegrasi.
-- [x] **RZL-11:** Tampilan status transaksi dompet insentif mitra biokonversi (`src/components/pages/waste/waste-operations-section.tsx`):
+- [x] **RZL-11:** Tampilan Dompet Sirkular & Insentif Mitra Biokonversi (`src/app/wallet/page.tsx`, `hero-section.tsx`, `pocket-section.tsx`):
+  - 4 Kartu Metrik Pocket: Saldo Aktif Dapat Ditarik (Rp 14.850.000, Instant 24/7 payout Mandiri/BCA), Akumulasi Reverse Tipping Fee (Rp 42.100.000, +14.2% YoY), Subsidi Logistik & Karbon (Rp 8.450.000, IDXCarbon Scope 3 Offset), Pending Settlement Escrow (Rp 1.250.000, IoT scale verified).
   - Kalkulasi reverse tipping fee otomatis (Rp 500/kg) langsung terhubung ke Dompet Sirkular.
 
 ---
