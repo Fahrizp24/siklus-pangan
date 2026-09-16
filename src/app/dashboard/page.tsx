@@ -2,6 +2,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { HeroSection } from "@/components/pages/dashboard/hero-section";
 import { StatSection } from "@/components/pages/dashboard/stat-section";
 import { SdgMatrixSection } from "@/components/pages/dashboard/sdg-matrix-section";
+import { AuditLogSection } from "@/components/pages/dashboard/audit-log-section";
 
 export default function DashboardPage() {
   return (
@@ -10,6 +11,7 @@ export default function DashboardPage() {
         <HeroSection />
         <StatSection />
         <SdgMatrixSection />
+        <AuditLogSection />
       </main>
     </AppShell>
   );
