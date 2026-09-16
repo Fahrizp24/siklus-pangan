@@ -1,14 +1,12 @@
 "use client";
 
 import React from "react";
-import { Cpu } from "lucide-react";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
    ========================================================================= */
 
 export const ARCHITECTURE_INSIGHT_CONTENT = {
-  tag: "ENGINEERING ARCHITECTURE INSIGHT",
   title: 'Bagaimana SiklusPangan Menghitung "Safe Until" Tanpa Halusinasi AI',
   descriptionPrefix:
     "Berbeda dari sekadar estimasi probabilistik LLM, mesin perhitungan kami menggunakan ",
@@ -46,7 +44,6 @@ export const ARCHITECTURE_INSIGHT_CONTENT = {
 
 export function ArchitectureInsightSection() {
   const {
-    tag,
     title,
     descriptionPrefix,
     descriptionBold,
@@ -59,18 +56,8 @@ export function ArchitectureInsightSection() {
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        {/* Top Tag Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50/70 text-slate-700 shadow-2xs">
-          <div className="w-3.5 h-3.5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-          </div>
-          <span className="text-[11px] font-extrabold tracking-wider text-slate-700 uppercase font-headline">
-            {tag}
-          </span>
-        </div>
-
         {/* Section Headline */}
-        <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-neutral-900 font-headline tracking-tight leading-tight mt-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-neutral-900 font-headline tracking-tight leading-tight">
           {title}
         </h2>
 

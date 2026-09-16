@@ -374,7 +374,7 @@ export function SurplusFeedSection() {
         const query = searchQuery.toLowerCase();
         const matchesTitle = item.title.toLowerCase().includes(query);
         const matchesDonor = item.donorCode.toLowerCase().includes(query);
-        const matchesLocation = item.location.toLowerCase().includes(query);
+        const matchesLocation = item.location?.toLowerCase().includes(query) ?? false;
         const matchesTag = item.tags.some((t) =>
           t.label.toLowerCase().includes(query)
         );

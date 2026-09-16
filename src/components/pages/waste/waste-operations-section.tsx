@@ -13,7 +13,6 @@ import {
   Factory,
   Phone,
   Send,
-  Radio,
   QrCode,
   Landmark,
   Star,
@@ -96,9 +95,7 @@ export const WASTE_OPERATIONS_DATA = {
   },
   facilityFleet: {
     title: "Armada & Fasilitas BSF",
-    telemetryBadge: "Live Telemetry",
     facility: {
-      tag: "MITRA PENGOLAH BSF TERVERIFIKASI",
       name: "PT Bali Biokonversi Sirkular",
       location: "Hub Fasilitas Sentral Tabanan • 14.5 km dari lokasi Anda",
       capacity: "5 Ton / hari",
@@ -125,7 +122,6 @@ export const WASTE_OPERATIONS_DATA = {
   },
   mutationScaleLog: {
     title: "Log Mutasi & Token Timbangan",
-    iotBadge: "IoT Scale Ready",
     description:
       "Validasi timbangan digital IoT terhubung otomatis dengan Bluetooth saat driver tiba di dock pemuatan hotel.",
     handoverToken: {
@@ -436,19 +432,13 @@ export function WasteOperationsSection() {
                   {facilityFleet.title}
                 </h2>
               </div>
-              <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
-                {facilityFleet.telemetryBadge}
-              </span>
             </div>
 
             {/* Facility Hub Box */}
             <div className="mt-4 p-4 rounded-2xl border border-border bg-muted/40">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-headline block">
-                    {facilityFleet.facility.tag}
-                  </span>
-                  <h3 className="font-bold text-sm sm:text-base text-foreground font-headline mt-0.5">
+                  <h3 className="font-bold text-sm sm:text-base text-foreground font-headline">
                     {facilityFleet.facility.name}
                   </h3>
                   <p className="text-[11px] text-muted-foreground font-body mt-0.5">
@@ -461,23 +451,10 @@ export function WasteOperationsSection() {
               </div>
 
               {/* Facility Capacity & Temp */}
-              <div className="mt-3 pt-3 border-t border-border/70 grid grid-cols-2 gap-2 text-[11px]">
-                <div>
-                  <span className="text-muted-foreground block">
-                    Kapasitas Fasilitas:
-                  </span>
-                  <span className="font-bold text-foreground font-headline block mt-0.5">
-                    {facilityFleet.facility.capacity}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">
-                    Standarisasi Suhu:
-                  </span>
-                  <span className="font-bold text-foreground font-headline block mt-0.5">
-                    {facilityFleet.facility.sanitization}
-                  </span>
-                </div>
+              <div className="mt-3 pt-2.5 border-t border-border/70 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <span>Kapasitas: <strong className="text-foreground font-semibold font-headline">{facilityFleet.facility.capacity}</strong></span>
+                <span>•</span>
+                <span>{facilityFleet.facility.sanitization}</span>
               </div>
             </div>
 
@@ -568,10 +545,6 @@ export function WasteOperationsSection() {
                   {mutationScaleLog.title}
                 </h2>
               </div>
-              <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-primary">
-                <Radio className="w-3 h-3" />
-                <span>{mutationScaleLog.iotBadge}</span>
-              </span>
             </div>
 
             <p className="mt-3 text-xs text-muted-foreground font-body leading-relaxed">

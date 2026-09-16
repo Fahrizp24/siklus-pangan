@@ -3,66 +3,48 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-  Radio,
-  Sparkles,
+  Compass,
   Recycle,
-  Trophy,
-  Clock,
-  QrCode,
   ArrowRight,
-  ShieldCheck,
+  Scale,
+  Truck,
   CheckCircle2,
-  Leaf,
-  LucideIcon,
+  ScanEye,
+  Camera,
+  ShieldCheck,
+  QrCode,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FilterPills } from "@/components/ui/filter-pills";
-import { SurplusFoodCard } from "@/components/ui/surplus-food-card";
+import { SurplusFoodCard, SurplusFoodCardData } from "@/components/ui/surplus-food-card";
 
 /* =========================================================================
-   CONFIGURABLE DATA & CONSTANTS (EASY TO MODIFY)
+   SHOWCASE CONFIG & DATA
    ========================================================================= */
 
-export interface FeatureTabItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  href: string;
-}
-
-export const FEATURE_TABS: FeatureTabItem[] = [
+export const SHOWCASE_TABS = [
   {
-    id: "rescue",
+    id: "radar",
     label: "Live Surplus Radar",
-    icon: Radio,
-    href: "/rescue",
+    icon: Compass,
   },
   {
-    id: "donate",
+    id: "ai_vision",
     label: "Donasi Pangan & AI Vision",
-    icon: Sparkles,
-    href: "/donate",
+    icon: ScanEye,
   },
   {
-    id: "waste",
-    label: "Biokonversi & Dompet",
-    icon: Recycle,
-    href: "/waste",
-  },
-  {
-    id: "leaderboard",
-    label: "Wall of Fame & ESG",
-    icon: Trophy,
-    href: "/leaderboard",
+    id: "waste_scale",
+    label: "Simulasi Timbangan IoT & Biokonversi",
+    icon: Scale,
   },
 ];
 
-export const RADAR_HEADER_CONTENT = {
-  tagline: "REALTIME GEOLOCATION RESCUE FEED",
-  title: "Radar Penyelamatan Surplus Pangan Aktif",
+export const RADAR_SHOWCASE_CONTENT = {
+  title: "Katalog Penyelamatan Surplus Pangan Aktif",
   subtitle:
-    "Setiap donasi disamarkan identitas fisiknya (Nomor Seri Anonim) untuk melindungi privasi korporat.",
+    "Setiap listing dilindungi kode anonim (#00X) untuk privasi komersial donor, dengan masa aman konsumsi berbasis sensor cold chain.",
   filters: [
     { id: "all", label: "Semua Kategori" },
     { id: "halal", label: "Halal Terverifikasi" },
@@ -71,196 +53,130 @@ export const RADAR_HEADER_CONTENT = {
   ],
 };
 
-export interface SurplusCardTag {
-  label: string;
-  colorScheme: "yellow" | "green" | "blue";
-}
-
-export interface SurplusCardItem {
-  id: string;
-  donorCode: string;
-  location: string;
-  imageUrl: string;
-  remainingTime: string;
-  isUrgentBadge: boolean;
-  eventOrShiftLabel: string;
-  safeUntilText: string;
-  title: string;
-  description: string;
-  tags: SurplusCardTag[];
-  portionsCount: number;
-  portionUnit: string;
+export const SHOWCASE_FOOD_CARDS: (SurplusFoodCardData & {
   category: "halal" | "vegetarian" | "gluten_free" | "all";
-}
-
-export const SURPLUS_CARDS_DATA: SurplusCardItem[] = [
+})[] = [
   {
     id: "card-1",
     donorCode: "Donatur Anonim #084",
-    location: "Menteng",
     imageUrl:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
-    remainingTime: "Sisa: 01j 42m",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&auto=format&fit=crop&q=80",
+    remainingTime: "01j 45m",
     isUrgentBadge: true,
-    eventOrShiftLabel: "Jendela 11.30 – 13.45",
-    safeUntilText: "Safe Until: 14:00 WIB",
-    title: "Premium Chicken Teriyaki Bento",
-    description:
-      "Surplus jamuan buffet eksekutif hotel bintang 5. Suhu penyimpanan cold chain 4°C terjaga.",
+    title: "Buffet Chicken Teriyaki & Nasi Pulen Organik",
+    description: "Surplus banquet hotel bintang 5, tersimpan higienis dalam thermo-box standar BPOM.",
+    portionsRemainingText: "35 Porsi Tersisa",
     tags: [
-      { label: "Alergen: Kedelai & Wijen", colorScheme: "yellow" },
-      { label: "Porsi Higienis", colorScheme: "blue" },
+      { label: "Halal MUI", colorScheme: "green" },
+      { label: "Bebas Kacang", colorScheme: "blue" },
     ],
-    portionsCount: 35,
-    portionUnit: "porsi",
+    costInfo: {
+      topLabel: "Porsi Bebas Biaya",
+      bottomLabel: "Subsidi CSR Hotel #084",
+    },
     category: "halal",
   },
   {
     id: "card-2",
     donorCode: "Donatur Anonim #022",
-    location: "Senopati",
     imageUrl:
-      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
-    remainingTime: "Sisa: 02j 15m",
-    isUrgentBadge: true,
-    eventOrShiftLabel: "Bake Shift Pagi",
-    safeUntilText: "Safe Until: 15:30 WIB",
-    title: "Artisan Croissant & Pastry",
-    description:
-      "Kelebihan produksi bakery harian dengan kemasan food grade standar industri Jepang.",
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=700&auto=format&fit=crop&q=80",
+    remainingTime: "02j 30m",
+    isUrgentBadge: false,
+    title: "Artisan Sourdough & Croissant Pastry Box",
+    description: "Sisa panggangan pagi bakery premium dengan kemasan tertutup rapi.",
+    portionsRemainingText: "24 Paket Tersisa",
     tags: [
-      { label: "Gluten & Butter", colorScheme: "yellow" },
       { label: "Vegetarian", colorScheme: "green" },
+      { label: "Mengandung Gluten", colorScheme: "yellow" },
     ],
-    portionsCount: 60,
-    portionUnit: "paket",
+    costInfo: {
+      topLabel: "Porsi Bebas Biaya",
+      bottomLabel: "Subsidi CSR Bakery #022",
+    },
     category: "vegetarian",
   },
   {
     id: "card-3",
-    donorCode: "Donatur Anonim #109",
-    location: "Kuningan",
+    donorCode: "Donatur Anonim #119",
     imageUrl:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80",
-    remainingTime: "Sisa: 03j 10m",
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=700&auto=format&fit=crop&q=80",
+    remainingTime: "03j 15m",
     isUrgentBadge: false,
-    eventOrShiftLabel: "Acara Menara Astra",
-    safeUntilText: "Safe Until: 16:00 WIB",
-    title: "Nasi Kotak Daging & Buncis",
-    description:
-      "Paket seminar belum tersentuh, tersimpan dalam box penghangat termal insulasi.",
+    title: "Medley Salad Bowl & Sayuran Segar Hidroponik",
+    description: "Salad bar siap santap dengan dressing terpisah, bersuhu 4°C stabil.",
+    portionsRemainingText: "40 Porsi Tersisa",
     tags: [
-      { label: "100% Halal MUI", colorScheme: "green" },
-      { label: "Higienis", colorScheme: "blue" },
+      { label: "Bebas Gluten", colorScheme: "blue" },
+      { label: "Vegan Friendly", colorScheme: "green" },
     ],
-    portionsCount: 48,
-    portionUnit: "box porsi",
-    category: "halal",
+    costInfo: {
+      topLabel: "Porsi Bebas Biaya",
+      bottomLabel: "Subsidi Resto #119",
+    },
+    category: "gluten_free",
   },
 ];
-
-export const DUMMY_DONATE_TAB_DATA = {
-  title: "Unggah Donasi Cepat dengan Analisis Gemini AI Vision",
-  subtitle:
-    "Ambil foto hidangan surplus, AI mendeteksi estimasi porsi, bahan rentan basi, dan menghitung batas konsumsi aman secara deterministik.",
-  steps: [
-    {
-      step: "01",
-      title: "Foto Makanan",
-      desc: "VLM mendeteksi jenis makanan dan bahan masakan secara otomatis.",
-    },
-    {
-      step: "02",
-      title: "Engine Higienitas",
-      desc: "Deterministic Rules Engine mengunci jam aman konsumsi (safe_until).",
-    },
-    {
-      step: "03",
-      title: "Publikasi Anonim",
-      desc: "Nomor seri otomatis diterbitkan tanpa mengekspos brand korporat.",
-    },
-  ],
-  ctaText: "Mulai Donasikan Pangan",
-  ctaLink: "/donate",
-};
-
-export const DUMMY_WASTE_TAB_DATA = {
-  title: "Sirkulasi Limbah Basi ke Biokonversi BSF & Reverse Tipping Fee",
-  subtitle:
-    "Sisa makanan yang telah melewati batas safe_until otomatis dialihkan ke peternak larva Black Soldier Fly dengan insentif logistik terbalik.",
-  metrics: [
-    { label: "Tarif Pengolahan Terbuka", value: "Rp 1.000 / kg" },
-    { label: "Kredit Insentif Mitra BSF", value: "Rp 600 / kg" },
-    { label: "Reduksi Emisi Metana", value: "95.8% Diverted" },
-  ],
-  ctaText: "Akses Dompet & Batch Limbah",
-  ctaLink: "/waste",
-};
-
-export const DUMMY_ESG_TAB_DATA = {
-  title: "Wall of Fame Donatur & Ledger ESG Tersertifikasi",
-  subtitle:
-    "Transparansi pelaporan reduksi emisi gas rumah kaca untuk pemenuhan sertifikat CSR & kepatuhan ISO 14064 korporat.",
-  topDonors: [
-    { rank: "01", name: "Hotel Mulia Senayan", savedKg: "12,450 kg", co2e: "7.2 ton CO2e" },
-    { rank: "02", name: "Astra International Hall", savedKg: "9,820 kg", co2e: "5.7 ton CO2e" },
-    { rank: "03", name: "Katering Selera Nusantara", savedKg: "8,140 kg", co2e: "4.7 ton CO2e" },
-  ],
-  ctaText: "Lihat Leaderboard Lengkap",
-  ctaLink: "/leaderboard",
-};
 
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
 export function FeaturesSection() {
-  const [activeTab, setActiveTab] = useState<string>("rescue");
-  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("radar");
+  const [selectedFilter, setSelectedFilter] = useState("all");
   const [claimedId, setClaimedId] = useState<string | null>(null);
 
-  const filteredCards = SURPLUS_CARDS_DATA.filter((card) => {
+  // Waste simulator state
+  const [simulatedKg, setSimulatedKg] = useState(75);
+  const incentivePerKg = 500;
+  const co2SavedPerKg = 0.58;
+  const totalIncentive = simulatedKg * incentivePerKg;
+  const totalCo2 = (simulatedKg * co2SavedPerKg).toFixed(1);
+
+  const filteredCards = SHOWCASE_FOOD_CARDS.filter((card) => {
     if (selectedFilter === "all") return true;
     return card.category === selectedFilter;
   });
 
-
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        {/* TAB NAVIGATION HEADER (ALL 4 IN ONE ROW) */}
+      <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+        {/* Tab Navigation Header with Semantic ARIA */}
         <div
-          onWheel={(e) => {
-            if (e.deltaY !== 0) {
-              e.currentTarget.scrollLeft += e.deltaY;
-            }
-          }}
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          className="border-b border-slate-200 pb-px flex items-center gap-3 sm:gap-6 overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+          role="tablist"
+          aria-label="Fitur Utama SiklusPangan"
+          className="flex items-center gap-4 sm:gap-6 border-b border-border/80 overflow-x-auto no-scrollbar"
         >
-          {FEATURE_TABS.map((tab) => {
+          {SHOWCASE_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+
             return (
               <button
                 key={tab.id}
+                role="tab"
+                id={`tab-${tab.id}`}
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.id}`}
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-2 pb-3 px-1 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all relative ${
+                className={`inline-flex items-center gap-2 pb-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                   isActive
                     ? "text-primary font-bold"
-                    : "text-slate-500 hover:text-slate-800"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon
                   className={`w-4 h-4 shrink-0 ${
-                    isActive ? "text-primary stroke-[2.5]" : "text-slate-400"
+                    isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground"
                   }`}
                 />
                 <span>{tab.label}</span>
                 {isActive && (
                   <motion.div
-                    layoutId="activeTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                    layoutId="activeFeatureUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                   />
                 )}
               </button>
@@ -268,36 +184,36 @@ export function FeaturesSection() {
           })}
         </div>
 
-        {/* TAB CONTENTS */}
+        {/* Tab Content Panels */}
         <div className="mt-6 sm:mt-8">
           <AnimatePresence mode="wait">
-            {/* TAB 1: MODUL A - LIVE SURPLUS RADAR */}
-            {activeTab === "rescue" && (
+            {/* TAB 1: RADAR RESCUE SHOWCASE */}
+            {activeTab === "radar" && (
               <motion.div
-                key="tab-rescue"
+                key="tab-panel-radar"
+                id="panel-radar"
+                role="tabpanel"
+                aria-labelledby="tab-radar"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.25 }}
                 className="space-y-6"
               >
                 {/* Header & Filter Controls */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div>
-                    <p className="text-[11px] font-bold tracking-wider text-primary uppercase font-headline">
-                      — {RADAR_HEADER_CONTENT.tagline}
-                    </p>
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline mt-1 tracking-tight">
-                      {RADAR_HEADER_CONTENT.title}
-                    </h2>
-                    <p className="text-xs sm:text-sm text-slate-500 font-body mt-1 max-w-2xl">
-                      {RADAR_HEADER_CONTENT.subtitle}
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-foreground font-headline tracking-tight">
+                      {RADAR_SHOWCASE_CONTENT.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1 max-w-2xl">
+                      {RADAR_SHOWCASE_CONTENT.subtitle}
                     </p>
                   </div>
 
                   {/* Filter Pills */}
                   <FilterPills
-                    options={RADAR_HEADER_CONTENT.filters}
+                    options={RADAR_SHOWCASE_CONTENT.filters}
                     selectedId={selectedFilter}
                     onSelect={setSelectedFilter}
                   />
@@ -314,60 +230,15 @@ export function FeaturesSection() {
                     />
                   ))}
                 </div>
-              </motion.div>
-            )}
 
-            {/* TAB 2: DUMMY - DONASI PANGAN & AI VISION */}
-            {activeTab === "donate" && (
-              <motion.div
-                key="tab-donate"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="py-6 space-y-6"
-              >
-                <div>
-                  <p className="text-[11px] font-bold tracking-wider text-primary uppercase font-headline">
-                    — AI COMPUTER VISION VERIFICATION
+                {/* Direct CTA to full radar */}
+                <div className="pt-4 flex items-center justify-between border-t border-border/70 flex-wrap gap-3">
+                  <p className="text-xs text-muted-foreground font-body">
+                    Menampilkan 3 dari 14 batch donasi yang aktif di radius 5.0 km Anda.
                   </p>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline mt-1 tracking-tight">
-                    {DUMMY_DONATE_TAB_DATA.title}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-body mt-1 max-w-2xl">
-                    {DUMMY_DONATE_TAB_DATA.subtitle}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  {DUMMY_DONATE_TAB_DATA.steps.map((s) => (
-                    <div
-                      key={s.step}
-                      className="rounded-2xl border border-slate-200/90 p-5 bg-slate-50/50 flex flex-col justify-between"
-                    >
-                      <div>
-                        <span className="text-2xl font-extrabold text-primary/40 font-headline">
-                          {s.step}
-                        </span>
-                        <h4 className="text-base font-bold text-neutral-900 font-headline mt-1">
-                          {s.title}
-                        </h4>
-                        <p className="text-xs text-slate-600 font-body mt-1 leading-relaxed">
-                          {s.desc}
-                        </p>
-                      </div>
-                      <div className="mt-4 flex items-center gap-1.5 text-xs text-primary font-semibold">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Otomatis Terverifikasi</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2 flex items-center justify-end">
-                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold">
-                    <Link href={DUMMY_DONATE_TAB_DATA.ctaLink}>
-                      <span>{DUMMY_DONATE_TAB_DATA.ctaText}</span>
+                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Link href="/rescue">
+                      <span>Buka Seluruh Radar Makanan (14 Batch)</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </Button>
@@ -375,117 +246,275 @@ export function FeaturesSection() {
               </motion.div>
             )}
 
-            {/* TAB 3: DUMMY - BIOKONVERSI & DOMPET */}
-            {activeTab === "waste" && (
+            {/* TAB 2: DONASI PANGAN & AI VISION */}
+            {activeTab === "ai_vision" && (
               <motion.div
-                key="tab-waste"
+                key="tab-panel-ai_vision"
+                id="panel-ai_vision"
+                role="tabpanel"
+                aria-labelledby="tab-ai_vision"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="py-6 space-y-6"
+                transition={{ duration: 0.25 }}
+                className="py-2 space-y-6"
               >
                 <div>
-                  <p className="text-[11px] font-bold tracking-wider text-primary uppercase font-headline">
-                    — CIRCULAR ECONOMY & REVERSE TIPPING FEE
-                  </p>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline mt-1 tracking-tight">
-                    {DUMMY_WASTE_TAB_DATA.title}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-body mt-1 max-w-2xl">
-                    {DUMMY_WASTE_TAB_DATA.subtitle}
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground font-headline tracking-tight">
+                    Verifikasi Mutu & Kelayakan Pangan Otomatis
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1 max-w-2xl">
+                    Pipeline Computer Vision berbasis Gemini 2.5 Flash multimodal VLM yang mengekstrak estimasi porsi, bahan, dan alergen, dipadukan dengan kalkulator batas aman konsumsi BPOM.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  {DUMMY_WASTE_TAB_DATA.metrics.map((m) => (
-                    <div
-                      key={m.label}
-                      className="rounded-2xl border border-slate-200/90 p-5 bg-slate-50/50"
-                    >
-                      <p className="text-xs font-semibold text-slate-500 uppercase font-headline">
-                        {m.label}
-                      </p>
-                      <p className="text-2xl font-extrabold text-neutral-900 font-headline mt-2">
-                        {m.value}
-                      </p>
-                      <div className="mt-3 flex items-center gap-1.5 text-xs text-primary font-medium">
-                        <Leaf className="w-3.5 h-3.5" />
-                        <span>Sistem Biokonversi Maggot BSF</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2 flex items-center justify-end">
-                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold">
-                    <Link href={DUMMY_WASTE_TAB_DATA.ctaLink}>
-                      <span>{DUMMY_WASTE_TAB_DATA.ctaText}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* TAB 4: DUMMY - WALL OF FAME & ESG */}
-            {activeTab === "leaderboard" && (
-              <motion.div
-                key="tab-leaderboard"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="py-6 space-y-6"
-              >
-                <div>
-                  <p className="text-[11px] font-bold tracking-wider text-primary uppercase font-headline">
-                    — CERTIFIED CARBON OFFSET & CSR RECOGNITION
-                  </p>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline mt-1 tracking-tight">
-                    {DUMMY_ESG_TAB_DATA.title}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-body mt-1 max-w-2xl">
-                    {DUMMY_ESG_TAB_DATA.subtitle}
-                  </p>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {DUMMY_ESG_TAB_DATA.topDonors.map((donor) => (
-                    <div
-                      key={donor.rank}
-                      className="rounded-2xl border border-slate-200/90 p-4 sm:p-5 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary font-extrabold text-sm flex items-center justify-center font-headline">
-                          #{donor.rank}
+                {/* Showcase Grid: Inspection Simulator & Pipeline Steps */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  {/* Left Column: Live Inspection Mock Card (5 cols) */}
+                  <div className="lg:col-span-5 rounded-2xl border border-border bg-muted/30 p-5 flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between pb-3 border-b border-border">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                          <span className="text-xs font-bold text-foreground font-headline">
+                            Inspeksi Gemini 2.5 Flash VLM
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                          Score: 98.4%
                         </span>
-                        <div>
-                          <h4 className="font-bold text-neutral-900 font-headline text-sm sm:text-base">
-                            {donor.name}
-                          </h4>
-                          <p className="text-xs text-slate-500">
-                            Terverifikasi ISO 14064 GHG Protocol
-                          </p>
+                      </div>
+
+                      {/* Sample Food Photo with Computer Vision Highlights */}
+                      <div className="relative mt-3 rounded-xl overflow-hidden border border-border bg-slate-900 aspect-video group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&auto=format&fit=crop&q=80"
+                          alt="Inspeksi Makanan"
+                          className="w-full h-full object-cover opacity-90"
+                        />
+                        {/* Overlay Detection Bounding Box */}
+                        <div className="absolute inset-3 border-2 border-dashed border-emerald-400/80 rounded-lg pointer-events-none flex flex-col justify-between p-2 bg-emerald-950/20">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono font-bold bg-emerald-600 text-white px-2 py-0.5 rounded shadow-xs">
+                              Ayam Teriyaki & Bento
+                            </span>
+                            <span className="text-[10px] font-mono font-semibold bg-black/60 text-emerald-300 px-1.5 py-0.5 rounded backdrop-blur-xs">
+                              Thermo: 62°C (Aman)
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-white/90 font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-xs">
+                            <span>Estimasi: 35 Porsi</span>
+                            <span>aw: 0.92</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs">
-                        <span className="font-bold text-neutral-900">
-                          {donor.savedKg}
-                        </span>
-                        <span className="bg-emerald-50 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">
-                          {donor.co2e} Offset
-                        </span>
+                      {/* Structured Output Tags */}
+                      <div className="mt-4 space-y-2.5">
+                        <div className="text-[11px] font-bold text-muted-foreground uppercase font-headline">
+                          Hasil Ekstraksi Multimodal:
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="text-xs px-2.5 py-1 rounded-lg bg-card border border-border font-medium text-foreground">
+                            🍗 Fillet Ayam & Saus Manis
+                          </span>
+                          <span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 font-medium">
+                            ✓ Bebas Kacang
+                          </span>
+                          <span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 font-medium">
+                            ✓ Halal Terverifikasi
+                          </span>
+                          <span className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 font-medium">
+                            ℹ Mengandung Gluten (Kecap Shoyu)
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="p-3 rounded-xl bg-card border border-border text-xs text-muted-foreground font-body">
+                      <p className="text-[11px] leading-relaxed">
+                        <strong className="text-foreground">Aturan Ketat:</strong> Model AI dilarang menebak jam kedaluwarsa secara halusinasi. Safe Until wajib dihitung oleh Deterministic Expiry Engine.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Column: 3 Step Pipeline Cards (7 cols) */}
+                  <div className="lg:col-span-7 flex flex-col justify-between gap-3.5">
+                    {/* Step 1 */}
+                    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 font-headline font-extrabold text-base">
+                        01
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm sm:text-base font-bold text-foreground font-headline flex items-center gap-2">
+                          <span>Unggah Dokumentasi Hidangan</span>
+                          <Camera className="w-3.5 h-3.5 text-primary" />
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                          Tim dapur atau staf banquet mengambil foto makanan dari nampan buffet. Sistem membaca metadata waktu pemanasan terakhir dan kondisi kemasan.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 font-headline font-extrabold text-base">
+                        02
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm sm:text-base font-bold text-foreground font-headline flex items-center gap-2">
+                          <span>Analisis VLM & Deterministic Safe Until</span>
+                          <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                          Gemini VLM mengidentifikasi komposisi bahan dan potensi alergen. Rules Engine BPOM secara kaku menghitung jam aman konsumsi (suhu ruang maks 4 jam, thermo-box dingin hingga 24 jam).
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 font-headline font-extrabold text-base">
+                        03
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm sm:text-base font-bold text-foreground font-headline flex items-center gap-2">
+                          <span>QR Dinamis & Serah Terima Terverifikasi</span>
+                          <QrCode className="w-3.5 h-3.5 text-primary" />
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                          Batch otomatis terbit di Live Radar. Relawan atau pengelola panti memindai QR Code serah terima di lokasi penjemputan, memicu pencatatan audit trail instan.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-end">
-                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold">
-                    <Link href={DUMMY_ESG_TAB_DATA.ctaLink}>
-                      <span>{DUMMY_ESG_TAB_DATA.ctaText}</span>
+                {/* Action Footer */}
+                <div className="pt-4 flex items-center justify-between border-t border-border/70 flex-wrap gap-3">
+                  <p className="text-xs text-muted-foreground font-body">
+                    Proses inspeksi donasi membutuhkan waktu kurang dari 15 detik dari foto hingga terbit di radar.
+                  </p>
+                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Link href="/donate">
+                      <span>Daftarkan Surplus Makanan Sekarang</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 3: WASTE SCALE & BSF SIMULATOR */}
+            {activeTab === "waste_scale" && (
+              <motion.div
+                key="tab-panel-waste"
+                id="panel-waste_scale"
+                role="tabpanel"
+                aria-labelledby="tab-waste_scale"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="py-2 space-y-6"
+              >
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground font-headline tracking-tight">
+                    Simulasi Insentif Reverse Tipping & Biokonversi BSF
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-body mt-1 max-w-2xl">
+                    Bagaimana sisa makanan dapur hotel/restoran Anda diubah langsung menjadi rupiah di Dompet Sirkular dan reduksi karbon terverifikasi.
+                  </p>
+                </div>
+
+                {/* Simulator Interactive Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  {/* Left Column: Interactive Slider (7 cols) */}
+                  <div className="lg:col-span-7 rounded-2xl border border-border bg-muted/40 p-6 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="sim-weight" className="text-xs sm:text-sm font-bold text-foreground font-headline">
+                        Estimasi Berat Residu Dapur:
+                      </label>
+                      <span className="font-mono text-base sm:text-lg font-extrabold text-primary bg-accent px-3 py-1 rounded-lg border border-primary/25">
+                        {simulatedKg} kg / hari
+                      </span>
+                    </div>
+
+                    {/* Weight Range Slider */}
+                    <input
+                      id="sim-weight"
+                      type="range"
+                      min={10}
+                      max={300}
+                      step={5}
+                      value={simulatedKg}
+                      onChange={(e) => setSimulatedKg(Number(e.target.value))}
+                      className="w-full accent-primary h-2 bg-muted rounded-lg cursor-pointer"
+                    />
+
+                    <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
+                      <span>10 kg (Kafe)</span>
+                      <span>100 kg (Resto Menengah)</span>
+                      <span>300 kg (Hotel Bintang 5)</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-card border border-border text-xs text-muted-foreground font-body space-y-1.5">
+                      <div className="flex items-center gap-2 text-foreground font-semibold">
+                        <Truck className="w-3.5 h-3.5 text-primary" />
+                        <span>Armada Jemput Truk Dingin Terjadwal</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed">
+                        Timbangan digital terhubung otomatis via IoT Bluetooth saat driver tiba di loading dock. Nilai insentif langsung dikreditkan seketika.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Calculated Yield Cards (5 cols) */}
+                  <div className="lg:col-span-5 flex flex-col gap-4">
+                    {/* Incentive Card */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline block">
+                        Insentif Dompet Sirkular
+                      </span>
+                      <div className="mt-2 flex items-baseline gap-1">
+                        <span className="font-mono text-2xl sm:text-3xl font-extrabold text-primary">
+                          Rp {totalIncentive.toLocaleString("id-ID")}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          / penjemputan
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 font-body">
+                        Tarif standar Rp 500 / kg (dapat dicairkan via BI-FAST).
+                      </p>
+                    </div>
+
+                    {/* Carbon Offset Card */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline block">
+                        Pencegahan Emisi Metana (GHG)
+                      </span>
+                      <div className="mt-2 flex items-baseline gap-1">
+                        <span className="font-mono text-2xl sm:text-3xl font-extrabold text-foreground">
+                          {totalCo2} kg
+                        </span>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          CO₂e dicegah
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 font-body">
+                        Tersertifikasi ISO 14044 LCA untuk audit ESG korporat.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="pt-4 flex items-center justify-end border-t border-border/70">
+                  <Button asChild className="rounded-xl shadow-xs gap-2 text-xs font-semibold bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                    <Link href="/waste">
+                      <span>Buka Modul Pengolahan Limbah & Armada</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </Button>

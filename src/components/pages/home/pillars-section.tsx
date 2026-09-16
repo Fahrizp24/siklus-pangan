@@ -1,141 +1,154 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { Utensils, Recycle, BarChart3, ArrowRight, ShieldCheck, Scale, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
-/* =========================================================================
-   CONFIGURABLE DATA & CONSTANTS (EASY TO MODIFY)
-   ========================================================================= */
-
-export const PILLARS_HEADER_CONTENT = {
-  tagline: "ARSITEKTUR REKAYASA SISTEM TERPADU",
-  title: "10 Pilar Alur Ekosistem SiklusPangan",
+export const CIRCULAR_FLOW_CONTENT = {
+  title: "Tiga Pilar Alur Sirkularitas Pangan",
   description:
-    "Dirancang dengan standar rekayasa perangkat lunak presisi tinggi untuk menjamin integritas data, kelaikan pangan, dan kepatuhan audit ESG.",
+    "Dari dapur komersial hingga ekosistem pangan sirkular: bagaimana SiklusPangan menyatukan penyelamatan makanan, biokonversi residu, dan pelaporan kepatuhan ESG dalam satu alur terpadu.",
+  steps: [
+    {
+      id: "step-rescue",
+      stepBadge: "PILAR 01",
+      title: "Penyelamatan Surplus Pangan Segar",
+      subtitle: "Makanan layak konsumsi ke panti & dhuafa",
+      description:
+        "Surplus hidangan hotel & katering divalidasi keamanannya dengan Deterministic Expiry Engine. Identitas donatur dienkripsi (#00X) dan diklaim dengan verifikasi 2FA Dynamic QR.",
+      highlights: [
+        "Enkripsi Anonimitas Donatur (#00X)",
+        "Standar Kelayakan Higienis BPOM",
+        "Penjemputan Terjadwal & Kuota Dhuafa",
+      ],
+      icon: Utensils,
+      action: {
+        label: "Buka Live Radar",
+        href: "/rescue",
+      },
+    },
+    {
+      id: "step-waste",
+      stepBadge: "PILAR 02",
+      title: "Biokonversi Residu Pangan BSF",
+      subtitle: "Sisa makanan non-layak jadi pakan protein",
+      description:
+        "Sisa makanan dapur yang tidak memenuhi syarat konsumsi dialihkan dari TPA menuju fasilitas pengolahan larva Black Soldier Fly (BSF) untuk menghasilkan pakan ternak berkelanjutan.",
+      highlights: [
+        "Timbangan Digital IoT di Loading Dock",
+        "Armada Truk Coldbox Berpendingin",
+        "Zero Organic Waste to Landfill",
+      ],
+      icon: Recycle,
+      action: {
+        label: "Kelola Limbah Organik",
+        href: "/waste",
+      },
+    },
+    {
+      id: "step-ledger",
+      stepBadge: "PILAR 03",
+      title: "Dompet Sirkular & Audit Emisi ESG",
+      subtitle: "Insentif finansial & kepatuhan Scope 3",
+      description:
+        "Setiap kilogram limbah yang dialihkan menerima insentif reverse tipping fee otomatis ke Dompet Sirkular, lengkap dengan sertifikat kalkulasi reduksi emisi metana yang siap diaudit.",
+      highlights: [
+        "Insentif Reverse Tipping Fee Rp 500 / kg",
+        "Sertifikat Audit ISO 14044 LCA",
+        "Rekonsiliasi Payout BI-FAST Terverifikasi",
+      ],
+      icon: BarChart3,
+      action: {
+        label: "Lihat Dashboard ESG",
+        href: "/dashboard/esg",
+      },
+    },
+  ],
 };
 
-export interface EcosystemPillarItem {
-  id: string;
-  number: string;
-  title: string;
-  description: string;
-}
-
-export const ECOSYSTEM_PILLARS_DATA: EcosystemPillarItem[] = [
-  {
-    id: "pillar-01",
-    number: "01",
-    title: "Food Rescue Radar",
-    description: "Geolokasi realtime radius 5km dan filter kebutuhan diet.",
-  },
-  {
-    id: "pillar-02",
-    number: "02",
-    title: "Gemini AI Vision",
-    description: "Inspeksi visual menu, porsi, dan deteksi alergen otomatis.",
-  },
-  {
-    id: "pillar-03",
-    number: "03",
-    title: "Deterministic Expiry",
-    description: "Kalkulasi Safe_Until berbasis jenis pangan & suhu simpan.",
-  },
-  {
-    id: "pillar-04",
-    number: "04",
-    title: "Anonimitas Donor",
-    description: "Penyamaran nomor seri dan lokasi terenkripsi privasi tinggi.",
-  },
-  {
-    id: "pillar-05",
-    number: "05",
-    title: "Serah Terima QR",
-    description: "Bukti penjemputan kriptografis terverifikasi kedua belah pihak.",
-  },
-  {
-    id: "pillar-06",
-    number: "06",
-    title: "Biokonversi BSF",
-    description: "Pengalihan residu organik ke larva Black Soldier Fly.",
-  },
-  {
-    id: "pillar-07",
-    number: "07",
-    title: "Dompet Sirkular",
-    description: "Reverse tipping fee & pembayaran instan mitra processor.",
-  },
-  {
-    id: "pillar-08",
-    number: "08",
-    title: "Kalkulasi ESG",
-    description: "Formula GHG Protocol otomatis dari log pengalihan limbah.",
-  },
-  {
-    id: "pillar-09",
-    number: "09",
-    title: "Wall of Fame",
-    description: "Peringkat kontribusi hijau korporat yang dapat diaudit publik.",
-  },
-  {
-    id: "pillar-10",
-    number: "10",
-    title: "Supabase Realtime",
-    description: "Sinkronisasi status kilat dengan Row Level Security ketat.",
-  },
-];
-
-/* =========================================================================
-   COMPONENT IMPLEMENTATION
-   ========================================================================= */
-
 export function PillarsSection() {
-  const { tagline, title, description } = PILLARS_HEADER_CONTENT;
+  const { title, description, steps } = CIRCULAR_FLOW_CONTENT;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        {/* Header */}
-        <div>
-          <p className="text-[11px] font-bold tracking-wider text-primary uppercase font-headline">
-            — {tagline}
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 font-headline mt-1 tracking-tight">
+      <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+        {/* Section Header */}
+        <div className="max-w-3xl">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground font-headline tracking-tight">
             {title}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-body mt-2 max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground font-body mt-2 leading-relaxed">
             {description}
           </p>
         </div>
 
-        {/* 10 Pillars Grid (2 rows of 5 on desktop) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 mt-8">
-          {ECOSYSTEM_PILLARS_DATA.map((pillar, index) => (
-            <motion.div
-              key={pillar.id}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: index * 0.04 }}
-              className="rounded-2xl border border-slate-200/90 bg-slate-50/40 hover:bg-white hover:border-slate-300 p-4 sm:p-5 flex flex-col justify-start transition-all shadow-2xs hover:shadow-sm group"
-            >
-              {/* Badge Number */}
-              <div>
-                <span className="inline-flex items-center justify-center bg-primary text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md font-headline shadow-2xs">
-                  {pillar.number}
-                </span>
-              </div>
+        {/* 3 Circular Steps Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
 
-              {/* Title */}
-              <h3 className="font-headline font-bold text-sm text-neutral-900 mt-3 group-hover:text-primary transition-colors">
-                {pillar.title}
-              </h3>
+            return (
+              <motion.div
+                key={step.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: index * 0.08 }}
+                className="rounded-2xl border border-border bg-muted/30 p-6 flex flex-col justify-between hover:bg-card hover:border-primary/30 transition-all shadow-2xs hover:shadow-sm"
+              >
+                <div>
+                  {/* Top Step Header */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] font-bold text-primary bg-accent px-2.5 py-1 rounded-md border border-primary/20">
+                      {step.stepBadge}
+                    </span>
+                    <div className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center shrink-0 shadow-2xs">
+                      <Icon className="w-4 h-4 text-primary" />
+                    </div>
+                  </div>
 
-              {/* Description */}
-              <p className="text-xs text-slate-500 font-body mt-1.5 leading-relaxed">
-                {pillar.description}
-              </p>
-            </motion.div>
-          ))}
+                  {/* Title & Subtitle */}
+                  <h3 className="font-headline font-bold text-lg text-foreground mt-4 leading-snug">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs font-semibold text-primary mt-1 font-body">
+                    {step.subtitle}
+                  </p>
+
+                  {/* Body Description */}
+                  <p className="text-xs text-muted-foreground font-body mt-2.5 leading-relaxed">
+                    {step.description}
+                  </p>
+
+                  {/* Key Highlights List */}
+                  <div className="mt-4 pt-4 border-t border-border/70 space-y-2">
+                    {step.highlights.map((h, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-foreground/90 font-body">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                        <span>{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer Action Button */}
+                <div className="mt-6 pt-4 border-t border-border/70">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full justify-between rounded-xl border-border text-foreground hover:bg-card font-headline font-semibold text-xs h-10 shadow-2xs group"
+                  >
+                    <Link href={step.action.href}>
+                      <span>{step.action.label}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </Link>
+                  </Button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
