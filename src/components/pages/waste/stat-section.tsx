@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Recycle, Bug, Sprout, Leaf, Wallet, TrendingUp } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -92,9 +93,9 @@ export function StatSection() {
           const Icon = stat.icon;
 
           return (
-            <div
+            <Card
               key={stat.id}
-              className="rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)] flex flex-col justify-between gap-4 transition-all hover:shadow-md"
+              className="p-5 sm:p-6 flex flex-col justify-between gap-4 hover:shadow-md"
             >
               {/* Top Header: Title & Green Icon */}
               <div className="flex items-center justify-between gap-2">
@@ -148,7 +149,7 @@ export function StatSection() {
                   </span>
                 )}
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>

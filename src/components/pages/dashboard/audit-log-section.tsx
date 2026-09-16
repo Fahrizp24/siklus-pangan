@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { CheckCircle2, Eye, Download, Lock } from "lucide-react";
+import { Card, Badge } from "@/components/ui";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -93,7 +94,7 @@ export function AuditLogSection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+      <Card className="p-6 sm:p-7">
         {/* Header Row: Title & Segmented Filter Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/70">
           <div>
@@ -170,9 +171,12 @@ export function AuditLogSection() {
 
                   {/* METODOLOGI BADGE */}
                   <td className="py-4 px-3 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-muted/60 border border-border text-muted-foreground font-mono text-[10px] font-bold">
+                    <Badge
+                      variant="muted"
+                      className="rounded-md font-mono text-[10px] font-bold px-2.5 py-1"
+                    >
                       {row.methodology}
-                    </span>
+                    </Badge>
                   </td>
 
                   {/* AUDITOR INDEPENDEN */}
@@ -234,7 +238,7 @@ export function AuditLogSection() {
             ))}
           </div>
         </div>
-      </div>
+      </Card>
     </section>
   );
 }

@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Filter,
-  Download,
-  FileText,
-  CheckCircle2,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Filter, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { StatusPill } from "@/components/ui/status-pill";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -132,7 +127,7 @@ export function HistorySection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+      <Card className="p-6 sm:p-7">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/70">
           <div>
@@ -210,10 +205,11 @@ export function HistorySection() {
                   {/* KEMURNIAN BSF */}
                   <td className="py-4 px-3 whitespace-nowrap">
                     {row.purityBadge.type === "grade_a" ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/70 border border-primary/25 text-primary text-[11px] font-bold font-headline">
-                        <Check className="w-3 h-3 stroke-[3]" />
-                        <span>{row.purityBadge.text}</span>
-                      </span>
+                      <StatusPill
+                        label={row.purityBadge.text}
+                        variant="success"
+                        hasCheck
+                      />
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-muted border border-border text-muted-foreground text-[11px] font-bold font-headline">
                         {row.purityBadge.text}
@@ -229,15 +225,18 @@ export function HistorySection() {
                   {/* STATUS BIOKONVERSI */}
                   <td className="py-4 px-3 whitespace-nowrap">
                     {row.statusBadge.type === "incubating" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/50 border border-primary/25 text-primary text-[11px] font-bold font-headline">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        <span>{row.statusBadge.text}</span>
-                      </span>
+                      <StatusPill
+                        label={row.statusBadge.text}
+                        variant="success"
+                        hasDot
+                        isPulse
+                      />
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/60 border border-border text-foreground text-[11px] font-bold font-headline">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                        <span>{row.statusBadge.text}</span>
-                      </span>
+                      <StatusPill
+                        label={row.statusBadge.text}
+                        variant="neutral"
+                        hasCheck
+                      />
                     )}
                   </td>
 
@@ -257,57 +256,16 @@ export function HistorySection() {
           </table>
         </div>
 
-        {/* Section Footer: Summary & Pagination */}
-        <div className="mt-6 pt-4 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <p className="text-muted-foreground font-body">
-            {footer.summaryText}
-          </p>
-
-          <div className="flex items-center gap-1 self-center sm:self-auto">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="h-8 px-2.5 border-border text-muted-foreground hover:bg-muted font-body text-xs rounded-lg"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 sm:hidden" />
-              <span className="hidden sm:inline">{footer.pagination.prevText}</span>
-            </Button>
-
-            {footer.pagination.pages.map((pageNum) => {
-              const isActive = currentPage === pageNum;
-              return (
-                <button
-                  key={pageNum}
-                  type="button"
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold font-mono transition-colors flex items-center justify-center ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:bg-muted border border-border/60"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 3}
-              onClick={() => setCurrentPage((p) => Math.min(3, p + 1))}
-              className="h-8 px-2.5 border-border text-muted-foreground hover:bg-muted font-body text-xs rounded-lg"
-            >
-              <span className="hidden sm:inline">{footer.pagination.nextText}</span>
-              <ChevronRight className="w-3.5 h-3.5 sm:hidden" />
-            </Button>
-          </div>
-        </div>
-      </div>
+        {/* Reusable Table Pagination */}
+        <TablePagination
+          currentPage={currentPage}
+          pages={footer.pagination.pages}
+          summaryText={footer.summaryText}
+          onPageChange={(page) => setCurrentPage(page)}
+          prevLabel={footer.pagination.prevText}
+          nextLabel={footer.pagination.nextText}
+        />
+      </Card>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Card, Badge } from "@/components/ui";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -87,9 +88,9 @@ export function SdgMatrixSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {cards.map((card) => (
-          <div
+          <Card
             key={card.id}
-            className="rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)] flex flex-col justify-between gap-5 transition-all hover:shadow-md hover:-translate-y-0.5"
+            className="p-5 sm:p-6 flex flex-col justify-between gap-5 hover:shadow-md hover:-translate-y-0.5"
           >
             {/* Top Row: Number Square & SDG Tag Badge */}
             <div className="flex items-center justify-between gap-2">
@@ -99,9 +100,12 @@ export function SdgMatrixSection() {
                 {card.number}
               </div>
 
-              <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md border border-border">
+              <Badge
+                variant="muted"
+                className="rounded-md font-mono text-[10px] font-bold px-2.5 py-1"
+              >
                 {card.tag}
-              </span>
+              </Badge>
             </div>
 
             {/* Middle Content: Title & Description */}
@@ -129,7 +133,7 @@ export function SdgMatrixSection() {
                 {card.statHighlight}
               </span>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </section>
