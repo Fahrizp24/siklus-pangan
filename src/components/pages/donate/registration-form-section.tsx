@@ -180,8 +180,7 @@ export function RegistrationFormSection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <form onSubmit={handlePublish}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* =================================================================
               LEFT COLUMN (7 COLS):
               1. Inspeksi Visual Gemini AI VLM Card
@@ -743,36 +742,9 @@ export function RegistrationFormSection() {
                   <span>{legalCompliance.clauses[1].text}</span>
                 </label>
               </div>
-
-              {/* Publish Action Button */}
-              <div className="mt-6 pt-5 border-t border-border/70">
-                <Button
-                  type="submit"
-                  disabled={!isClause1Checked || !isClause2Checked || isSubmitted}
-                  className="w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-sm rounded-xl py-3 shadow-sm gap-2 transition-all disabled:opacity-50"
-                >
-                  {isSubmitted ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-white" />
-                      <span>Listing Berhasil Diterbitkan!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>{publishCta.buttonText}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-
-                <p className="mt-2 text-center text-[11px] text-muted-foreground font-body">
-                  {publishCta.helperText}
-                </p>
-              </div>
             </div>
           </div>
         </div>
-      </form>
     </section>
   );
 }
