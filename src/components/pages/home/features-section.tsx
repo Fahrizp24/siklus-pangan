@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FilterPills } from "@/components/ui/filter-pills";
-import { SurplusFoodCard } from "@/components/rescue/surplus-food-card";
+import { SurplusFoodCard } from "@/components/ui/surplus-food-card";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO MODIFY)

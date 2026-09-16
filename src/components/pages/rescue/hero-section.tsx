@@ -15,7 +15,7 @@ import {
   Package,
 } from "lucide-react";
 import { FilterPills, FilterPillOption } from "@/components/ui/filter-pills";
-import { useRescueFilter } from "./rescue-filter-context";
+import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -81,7 +81,7 @@ export const RADAR_CATEGORY_OPTIONS: FilterPillOption[] = [
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function RadarHeroSection() {
+export function HeroSection() {
   const {
     searchQuery,
     setSearchQuery,

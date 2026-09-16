@@ -50,17 +50,17 @@ Progress Rizal: [==============>     ] 58%
   - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
   - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
 - [x] **RZL-05:** Komponen *Live Surplus Radar Feed & Hero* (`src/app/rescue/page.tsx`, `src/components/pages/rescue/`):
-  - **Modular Page Sections:** Penataan modular selaras dengan `src/components/pages/rescue/` (`radar-hero-section.tsx`, `surplus-feed-section.tsx`, `architecture-insight-section.tsx`).
-  - **Radar Hero:** Telemetry status live, cycle tracker, headline, search box, filter radius km slider, kuota dhuafa toggle, dan filter category pills (`radar-hero-section.tsx`).
-  - **Surplus Food List Grid (2-Kolom):** Grid 4 kartu makanan surplus real-time berstandar rekayasa mutu dengan donor anonim, lokasi, estimasi waktu expired, badge mutu (Cold Chain, Shift Pagi Hotel, Halal LPOM MUI, 100% Organik & Vegan), porsi tersisa, dan tombol klaim token QR (`surplus-feed-section.tsx`, `surplus-food-card.tsx`).
-  - **Side Menu Cards:** Card *Kapasitas Beneficiary* (kuota harian 45/150 porsi, progress bar, aksi histori & lapor) dan Card *Protokol Penjemputan Aman* (4 tahap kepatuhan BPOM & eliminasi kontaminasi).
+  - **Modular Page Sections:** Penataan modular selaras murni 1:1 dengan `src/components/pages/home/` (`hero-section.tsx`, `surplus-feed-section.tsx`, `architecture-insight-section.tsx`).
+  - **Radar Hero:** Telemetry status live, cycle tracker, headline, search box, filter radius km slider, kuota dhuafa toggle, dan filter category pills (`hero-section.tsx`).
+  - **Surplus Food List Grid (2-Kolom):** Grid 4 kartu makanan surplus real-time berstandar rekayasa mutu dengan donor anonim, lokasi, estimasi waktu expired, badge mutu (Cold Chain, Shift Pagi Hotel, Halal LPOM MUI, 100% Organik & Vegan), porsi tersisa, dan tombol klaim (`surplus-feed-section.tsx`, `src/components/ui/surplus-food-card.tsx`).
+  - **Side Menu Cards:** Terenkapsulasi rapi di dalam `surplus-feed-section.tsx` (*Kapasitas Beneficiary* & *Protokol Penjemputan Aman*).
   - **Architecture Insight Section:** Penjelasan rekayasa sistem *Deterministic Food Expiry Engine* tanpa halusinasi AI dengan 3 metrik (Akurasi Kelayakan 0.9997, 100% Anonim, Scope 3 Ready) (`architecture-insight-section.tsx`).
-  - **Atomic Badges:** `AnonDonorBadge` (`anon-donor-badge.tsx`) & `ExpiryTimeBadge` (`expiry-time-badge.tsx`).
-  - **State Coordination:** `RescueFilterContext` untuk reaktivitas instan pencarian, radius slider, dan filter kategori tanpa reload.
+  - **Atomic UI Badges:** `AnonDonorBadge` & `ExpiryTimeBadge` terpusat di `src/components/ui/`.
+  - **State Coordination:** `RescueFilterContext` terpusat di `src/lib/context/rescue-filter-context.tsx`.
 - [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
   - Komponen `DietaryTag` semantic color schemes (yellow, green, blue, red, neutral) untuk Halal, Vegetarian, Gluten-Free, Bebas Kacang, Dairy-Free.
   - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
-- [ ] **RZL-07:** Antarmuka Modal Klaim Token QR untuk penerima manfaat (`src/components/rescue/claim-qr-modal.tsx`).
+- [ ] **RZL-07:** Antarmuka Modal Klaim Token QR untuk penerima manfaat (`src/components/ui/claim-qr-modal.tsx`).
 - [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
 
 ---

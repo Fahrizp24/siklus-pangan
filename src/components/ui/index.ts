@@ -7,3 +7,6 @@ export * from "./toast";
 export * from "./toaster";
 export * from "./filter-pills";
 export * from "./dietary-tag";
+export * from "./anon-donor-badge";
+export * from "./expiry-time-badge";
+export * from "./surplus-food-card";

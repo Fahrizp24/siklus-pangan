@@ -5,8 +5,8 @@ import Image from "next/image";
 import { QrCode, MapPin, Sparkles, Coffee, ShieldCheck, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DietaryTag, DietaryTagColorScheme } from "@/components/ui/dietary-tag";
-import { AnonDonorBadge } from "@/components/rescue/anon-donor-badge";
-import { ExpiryTimeBadge } from "@/components/rescue/expiry-time-badge";
+import { AnonDonorBadge } from "@/components/ui/anon-donor-badge";
+import { ExpiryTimeBadge } from "@/components/ui/expiry-time-badge";
 import { cn } from "@/lib/utils";
 
 export interface SurplusFoodTag {
@@ -111,7 +111,7 @@ export function SurplusFoodCard({
         </div>
 
         {/* Image Container with Inner Rounded Corners & Image Badge Overlay */}
-        <div className="px-4 sm:px-5">
+        <div className="px-4 sm:p-5">
           <div className="relative h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-100 shadow-2xs">
             <Image
               src={card.imageUrl}
