@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   SurplusFoodCard,
   SurplusFoodCardData,
+  SurplusFoodTag,
 } from "@/components/ui/surplus-food-card";
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 
@@ -331,15 +332,105 @@ export function SurplusFeedSection() {
 
   const router = useRouter();
   const [claimedId, setClaimedId] = useState<string | null>(null);
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(SURPLUS_FEED_LISTINGS);
 
-  const handleClaimFood = (id: string) => {
+  // Ambil data live dari view Postgres public.food_radar di Supabase
+  React.useEffect(() => {
+    async function loadLiveRadar() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const { data, error } = await supabase.from("food_radar").select("*");
+        if (!error && data && data.length > 0) {
+          const mapped: SurplusFoodCardData[] = data.map((row: any, idx: number) => {
+            const diffMs = new Date(row.safe_until).getTime() - Date.now();
+            const hoursLeft = Math.max(0, Math.floor(diffMs / (3600 * 1000)));
+            const minsLeft = Math.max(0, Math.floor((diffMs % (3600 * 1000)) / (60 * 1000)));
+            const remainingTime = `${String(hoursLeft).padStart(2, "0")}j ${String(minsLeft).padStart(2, "0")}m`;
+
+            const tags: SurplusFoodTag[] = [];
+            if (row.dietary_tags?.includes("halal")) tags.push({ label: "Halal Terverifikasi", colorScheme: "green" });
+            if (row.dietary_tags?.includes("vegetarian")) tags.push({ label: "Vegetarian", colorScheme: "green" });
+            if (row.dietary_tags?.includes("bebas-gluten")) tags.push({ label: "Bebas Gluten", colorScheme: "blue" });
+            if (row.risky_ingredients && row.risky_ingredients.length > 0) {
+              tags.push({ label: `Alergen: ${row.risky_ingredients.join(", ")}`, colorScheme: "yellow" });
+            }
+
+            return {
+              id: row.id,
+              donorCode: `Donatur Terverifikasi #${row.id.slice(0, 4).toUpperCase()}`,
+              location: "Renon, Denpasar (1.2 km)",
+              distanceKm: 1.2 + idx * 0.4,
+              imageUrl: row.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
+              remainingTime,
+              isUrgentBadge: hoursLeft < 2,
+              title: row.title,
+              portionsCount: row.remaining_portions,
+              portionsRemainingText: `${row.remaining_portions} Porsi Tersisa`,
+              batchInfo: `Dimasak: ${new Date(row.cooked_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WITA`,
+              tags,
+              category: row.dietary_tags?.[0] || "halal",
+              imageBadge: {
+                label: row.storage_method === "refrigerated" ? "Cold Chain 4°C" : "Kemasan Higienis",
+                iconType: row.storage_method === "refrigerated" ? "cold_chain" : "default",
+              },
+            };
+          });
+          setLiveListings(mapped);
+        }
+      } catch (err) {
+        console.warn("Using initial listings:", err);
+      }
+    }
+    loadLiveRadar();
+  }, []);
+
+  const handleClaimFood = async (id: string) => {
     setClaimedId(id);
-    router.push("/claims");
+    try {
+      // Panggil Server Action claimFoodToken: stok porsi langsung berkurang di Supabase!
+      const { claimFoodToken } = await import("@/actions/transactions");
+      const res = await claimFoodToken({ listing_id: id, portions: 1 });
+
+      // Perbarui tampilan porsi secara live
+      setLiveListings((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const current = item.portionsCount || 1;
+            const updated = Math.max(0, current - 1);
+            return {
+              ...item,
+              portionsCount: updated,
+              portionsRemainingText: `${updated} Porsi Tersisa`,
+            };
+          }
+          return item;
+        })
+      );
+
+      if (res.success && res.data) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "siklus_active_claim",
+            JSON.stringify({
+              claimId: res.data.id,
+              qrToken: res.data.qr_token,
+              listingId: id,
+            })
+          );
+        }
+        router.push(`/claims?claimId=${res.data.id}&token=${res.data.qr_token}`);
+      } else {
+        router.push("/claims");
+      }
+    } catch {
+      router.push("/claims");
+    }
   };
 
   // Filter listings reactively based on context state
   const filteredListings = useMemo(() => {
-    return SURPLUS_FEED_LISTINGS.filter((item) => {
+    return liveListings.filter((item) => {
       // 1. Radius distance filter
       if (item.distanceKm !== undefined && item.distanceKm > radiusKm) {
         return false;
@@ -390,7 +481,7 @@ export function SurplusFeedSection() {
       }
       return 0;
     });
-  }, [searchQuery, radiusKm, selectedCategory, sortBy]);
+  }, [liveListings, searchQuery, radiusKm, selectedCategory, sortBy]);
 
   const { title, badgeText, sortLabelPrefix, sortOptions, emptyMessage, resetFilterText } =
     FEED_HEADER_CONTENT;

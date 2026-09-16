@@ -179,9 +179,65 @@ export const CLAIM_DETAILS_CONTENT = {
 export function ClaimDetailsSection() {
   const { qrCard, dishSummary, auditLog, pickupGuide } = CLAIM_DETAILS_CONTENT;
 
+  const [activeClaim, setActiveClaim] = useState<{
+    id: string;
+    token: string;
+    title: string;
+    portions: number;
+    isCollected: boolean;
+    collectedAt?: string | null;
+  } | null>(null);
+
   // Real-time OTP countdown timer
   const [secondsLeft, setSecondsLeft] = useState(qrCard.initialTimerSeconds);
   const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    async function loadClaimData() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+
+        let tokenToFind: string | null = null;
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          tokenToFind = params.get("token");
+          if (!tokenToFind) {
+            const saved = localStorage.getItem("siklus_active_claim");
+            if (saved) {
+              try {
+                tokenToFind = JSON.parse(saved)?.qrToken;
+              } catch {}
+            }
+          }
+        }
+
+        let query = supabase
+          .from("food_claims")
+          .select("id, qr_token, portions_claimed, is_collected, collected_at, food_listings(title, image_url, safe_until)")
+          .order("created_at", { ascending: false });
+
+        if (tokenToFind) {
+          query = query.eq("qr_token", tokenToFind);
+        }
+
+        const { data, error } = await query.limit(1).single();
+        if (!error && data) {
+          setActiveClaim({
+            id: data.id,
+            token: data.qr_token,
+            title: (data.food_listings as any)?.title || dishSummary.dishTitle,
+            portions: data.portions_claimed || 1,
+            isCollected: data.is_collected,
+            collectedAt: data.collected_at,
+          });
+        }
+      } catch (err) {
+        console.warn("Using default claim fixture:", err);
+      }
+    }
+    loadClaimData();
+  }, [dishSummary.dishTitle]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -190,8 +246,14 @@ export function ClaimDetailsSection() {
     return () => clearInterval(timer);
   }, [qrCard.initialTimerSeconds]);
 
+  const displayOtpCode = activeClaim?.token
+    ? activeClaim.token.length >= 8
+      ? `SP-${activeClaim.token.slice(0, 4).toUpperCase()}-${activeClaim.token.slice(4, 8).toUpperCase()}`
+      : activeClaim.token
+    : qrCard.manualOtp.code;
+
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(qrCard.manualOtp.code.replace(/\s+/g, ""));
+    navigator.clipboard.writeText(activeClaim?.token || qrCard.manualOtp.code.replace(/\s+/g, ""));
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -321,14 +383,27 @@ export function ClaimDetailsSection() {
               </div>
             </div>
 
+            {/* Status Penjemputan / Serah Terima Realtime */}
+            {activeClaim?.isCollected ? (
+              <div className="mt-4 p-3.5 rounded-xl border border-primary/30 bg-primary/10 flex items-center gap-2.5 text-primary text-xs font-bold font-headline animate-in fade-in">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                <span>Status: Pangan Telah Selesai Diserahterimakan & Tercatat di Ledger</span>
+              </div>
+            ) : (
+              <div className="mt-4 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center gap-2.5 text-amber-700 dark:text-amber-300 text-xs font-bold font-headline">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span>Status: Siap Dijemput (Tunjukkan Token QR ke Donatur)</span>
+              </div>
+            )}
+
             {/* Manual OTP Fallback Code Box */}
             <div className="mt-5 p-4 rounded-2xl border border-border bg-card shadow-2xs">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline block">
                 {qrCard.manualOtp.label}
               </span>
               <div className="mt-2 flex items-center justify-between gap-3">
-                <span className="font-mono font-extrabold text-xl sm:text-2xl text-foreground tracking-widest">
-                  {qrCard.manualOtp.code}
+                <span className="font-mono font-extrabold text-lg sm:text-xl text-foreground tracking-wider select-all">
+                  {displayOtpCode}
                 </span>
                 <Button
                   variant="outline"
@@ -483,7 +558,7 @@ export function ClaimDetailsSection() {
                 </h2>
               </div>
               <span className="inline-flex items-center px-3 py-1 rounded-lg bg-muted text-muted-foreground font-semibold text-xs border border-border shrink-0 font-headline">
-                {dishSummary.portionBadge}
+                {activeClaim ? `${activeClaim.portions} Porsi Diklaim` : dishSummary.portionBadge}
               </span>
             </div>
 
@@ -493,7 +568,7 @@ export function ClaimDetailsSection() {
               <div className="relative w-full sm:w-56 h-48 sm:h-52 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs">
                 <Image
                   src={dishSummary.imageUrl}
-                  alt={dishSummary.dishTitle}
+                  alt={activeClaim?.title || dishSummary.dishTitle}
                   fill
                   sizes="(max-width: 768px) 100vw, 240px"
                   className="object-cover"
@@ -507,7 +582,7 @@ export function ClaimDetailsSection() {
               {/* Food Info & 2x2 Specs Grid */}
               <div className="flex-1 min-w-0">
                 <h3 className="font-headline font-bold text-lg sm:text-xl text-foreground">
-                  {dishSummary.dishTitle}
+                  {activeClaim?.title || dishSummary.dishTitle}
                 </h3>
                 <p className="text-xs text-muted-foreground font-body leading-relaxed mt-1.5">
                   {dishSummary.dishDescription}
