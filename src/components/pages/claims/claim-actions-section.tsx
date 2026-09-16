@@ -1,8 +1,16 @@
 "use client";
 
-import React from "react";
-import { GitFork, Navigation, Download, HelpCircle, XCircle, AlertTriangle } from "lucide-react";
+import React, { useState } from "react";
+import {
+  GitFork,
+  Navigation,
+  Download,
+  HelpCircle,
+  XCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DisputeModal } from "@/components/scanner/dispute-modal";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -43,9 +51,19 @@ export const CLAIM_ACTIONS_CONTENT = {
 
 export function ClaimActionsSection() {
   const { logisticsInfo, buttons, footerPolicy } = CLAIM_ACTIONS_CONTENT;
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Modal Dispute Escalation */}
+      {showDisputeModal && (
+        <DisputeModal
+          listingId="2a02ea19-32b6-43ac-b4d2-71c2eeead97b"
+          foodTitle="Gourmet Bento Box Korporat (#CLM-89210-BTO)"
+          onClose={() => setShowDisputeModal(false)}
+        />
+      )}
+
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         {/* Top Content Row: Logistics Notice (Left) & Action Buttons (Right) */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -67,7 +85,7 @@ export function ClaimActionsSection() {
           <div className="flex flex-col items-stretch lg:items-end gap-2.5 shrink-0">
             {/* Top Row of Buttons */}
             <div className="flex flex-wrap items-center gap-2.5">
-              {/* 1. Buka Navigasi Rute (Green Primary) */}
+              {/* 1. Buka Navigasi Rute */}
               <Button
                 asChild
                 className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors"
@@ -77,10 +95,11 @@ export function ClaimActionsSection() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Navigation className="w-4 h-4 fill-current" />
+                  <Navigation className="w-4 h-4 text-primary-foreground" />
                   <span>{buttons.navigate.label}</span>
                 </a>
               </Button>
+
 
               {/* 2. Unduh Bukti Klaim PDF (Navy Secondary) */}
               <Button
@@ -90,12 +109,14 @@ export function ClaimActionsSection() {
                 <span>{buttons.downloadPdf.label}</span>
               </Button>
 
-              {/* 3. Bantuan / Sengketa (Outline) */}
+              {/* 3. Bantuan / Sengketa (Dispute Trigger) */}
               <Button
+                type="button"
                 variant="outline"
+                onClick={() => setShowDisputeModal(true)}
                 className="border-border text-foreground hover:bg-muted font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors"
               >
-                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                <HelpCircle className="w-4 h-4 text-destructive" />
                 <span>{buttons.help.label}</span>
               </Button>
             </div>
@@ -110,6 +131,7 @@ export function ClaimActionsSection() {
             </Button>
           </div>
         </div>
+
 
         {/* Bottom Policy & Timestamp Footer Row */}
         <div className="border-t border-border/70 pt-4 mt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">

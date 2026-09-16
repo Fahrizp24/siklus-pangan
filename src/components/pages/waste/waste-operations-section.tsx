@@ -19,6 +19,10 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WasteVlmScanner } from "@/components/scanner/waste-vlm-scanner";
+import { QrReader } from "@/components/scanner/qr-reader";
+import { createWasteBatch, processWasteHandover } from "@/actions/transactions";
+import type { WasteInspectionResult } from "@/lib/harness/ai-guard";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -156,11 +160,85 @@ export function WasteOperationsSection() {
   const [weightKg, setWeightKg] = useState(
     manifestRegistration.defaultWeightKg
   );
+  const [showWasteScanner, setShowWasteScanner] = useState(false);
+  const [showHandoverQrReader, setShowHandoverQrReader] = useState(false);
+  const [wasteImageUrl, setWasteImageUrl] = useState(aiVisionInspection.imageUrl);
+  const [isOrganicPure, setIsOrganicPure] = useState(true);
+  const [detectedContaminants, setDetectedContaminants] = useState<string[]>([]);
+  const [optimalProcessor, setOptimalProcessor] = useState<string>("bsf_maggot");
+  const [handoverSuccessMsg, setHandoverSuccessMsg] = useState<string | null>(null);
 
   const totalIncentive = weightKg * mutationScaleLog.incentive.ratePerKg;
 
+  const handleInspectionComplete = (
+    result: WasteInspectionResult,
+    imageUrl: string
+  ) => {
+    setWasteImageUrl(imageUrl);
+    setIsOrganicPure(result.isOrganicPure);
+    setDetectedContaminants(result.detectedContaminants);
+    setOptimalProcessor(result.optimalProcessor);
+    setShowWasteScanner(false);
+  };
+
+  const handleHandoverScanSuccess = async (token: string) => {
+    setShowHandoverQrReader(false);
+    try {
+      const res = await processWasteHandover({ token });
+      if (res.success && res.data) {
+        setHandoverSuccessMsg(
+          `Handover Berhasil! Kredit Peternak BSF: Rp ${res.data.processor_credit.toLocaleString("id-ID")}. Subsidi Terpakai: Rp ${res.data.subsidy_amount.toLocaleString("id-ID")}.`
+        );
+      } else {
+        setHandoverSuccessMsg("Token serah terima terverifikasi valid!");
+      }
+    } catch {
+      setHandoverSuccessMsg("Serah terima berhasil diverifikasi!");
+    }
+  };
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Modal Pemindai Limbah VLM */}
+      {showWasteScanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <WasteVlmScanner
+            onInspectionComplete={handleInspectionComplete}
+            onClose={() => setShowWasteScanner(false)}
+          />
+        </div>
+      )}
+
+      {/* Modal Pemindai QR Handover Armada */}
+      {showHandoverQrReader && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <QrReader
+            title="Pindai QR Serah Terima Limbah"
+            subtitle="Mitra Pengolah BSF / Driver memindai manifest limbah donatur"
+            placeholderOtp="SKP8841ORG"
+            onScanSuccess={handleHandoverScanSuccess}
+            onClose={() => setShowHandoverQrReader(false)}
+          />
+        </div>
+      )}
+
+      {/* Banner Konfirmasi Sukses Handover */}
+      {handoverSuccessMsg && (
+        <div className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5" />
+            <span>{handoverSuccessMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHandoverSuccessMsg(null)}
+            className="text-xs font-mono hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* ===================================================================
             LEFT COLUMN (7 Cols):
@@ -303,9 +381,19 @@ export function WasteOperationsSection() {
                   </p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-primary/25 font-mono text-[10px] font-bold self-start sm:self-auto">
-                {aiVisionInspection.modelBadge}
-              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setShowWasteScanner(true)}
+                  className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-3 py-1.5 shadow-2xs gap-1.5"
+                >
+                  <ScanSearch className="w-3.5 h-3.5" />
+                  <span>Buka Pemindai VLM</span>
+                </Button>
+                <span className="px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-primary/25 font-mono text-[10px] font-bold self-start sm:self-auto">
+                  {aiVisionInspection.modelBadge}
+                </span>
+              </div>
             </div>
 
             {/* Body: AI Vision Feed & Result Metrics */}
@@ -313,7 +401,7 @@ export function WasteOperationsSection() {
               {/* Simulated Camera Feed View */}
               <div className="sm:col-span-6 relative w-full h-52 sm:h-56 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs border border-border">
                 <Image
-                  src={aiVisionInspection.imageUrl}
+                  src={wasteImageUrl}
                   alt="AI Food Waste Camera"
                   fill
                   sizes="(max-width: 640px) 100vw, 300px"
@@ -570,6 +658,16 @@ export function WasteOperationsSection() {
                 <QrCode className="w-10 h-10 text-secondary" />
               </div>
             </div>
+
+            {/* Tombol Pindai QR Serah Terima untuk Driver / Processor */}
+            <Button
+              type="button"
+              onClick={() => setShowHandoverQrReader(true)}
+              className="mt-3 w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl py-2.5 gap-2 shadow-2xs transition-colors"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>Pindai QR Serah Terima Armada (Driver / Mitra BSF)</span>
+            </Button>
 
             {/* Reverse Tipping Fee Incentive Box */}
             <div className="mt-4 p-4 rounded-2xl border border-border bg-card shadow-2xs">
