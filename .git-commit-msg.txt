@@ -1,0 +1,8 @@
+feat(phase3): backend actions, deposit-only billing, quota guard, harness tests
+
+- FHR-09: quota guard 50% threshold + self-check
+- FHR-10-14: server actions food listing, claim, waste, handover, dispute
+- Migrations 0003/0004: RLS RPCs, subsidy/deposit-only billing, collect_food_claim, lock order fix
+- Billing: Rp600/kg, Rp12000 one-time donor subsidy, invoice = paid recap only
+- Tests: local action, 175 edge cases, rollback/live verification scripts
+- Docs: DECISION, PRD, ARCHITECTURE, HARNESS, PHASE3_VERIFICATION, PROGRESS_FAHRI

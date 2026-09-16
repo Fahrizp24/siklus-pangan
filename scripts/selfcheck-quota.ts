@@ -1,6 +1,5 @@
-// Self-check ad-hoc: node --loader untuk ts belum tersedia di project ini,
-// jadi assert langsung lewat ts-node tidak dipakai. Cukup jalankan via tsx/node build.
-// Dipakai manual: `npx tsx scripts/selfcheck-quota.ts`
+// Run: npx --no-install tsc scripts/selfcheck-quota.ts --outDir .next/quota-check --module commonjs --target es2020 --skipLibCheck
+// Then: node .next/quota-check/scripts/selfcheck-quota.js
 import { getMealWindow, canClaimInWindow, shouldRouteToIndividualRadar, capOrganizationClaim } from "../src/lib/rules/quota";
 
 function assert(cond: boolean, msg: string) {
@@ -27,4 +26,16 @@ assert(shouldRouteToIndividualRadar(30, 50) === false, "30/50 (>=50%) stays for 
 assert(capOrganizationClaim(100, 40) === 40, "org claim capped to capacity");
 assert(capOrganizationClaim(10, 40) === 10, "org claim under capacity untouched");
 
+assert(shouldRouteToIndividualRadar(17, 35), "17/35 reroutes");
+assert(!shouldRouteToIndividualRadar(18, 35), "18/35 permits organization");
+assert(!shouldRouteToIndividualRadar(20, 40), "exactly 50% permits organization");
+assert(shouldRouteToIndividualRadar(0, 40), "empty stock cannot serve organization");
+for (const invalid of [-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+  assert(shouldRouteToIndividualRadar(invalid, 40), "invalid stock fails closed");
+  assert(shouldRouteToIndividualRadar(40, invalid), "invalid capacity fails closed");
+  assert(capOrganizationClaim(invalid, 40) === 0, "invalid request rejected");
+  assert(capOrganizationClaim(40, invalid) === 0, "invalid capacity rejected");
+}
+assert(capOrganizationClaim(0, 40) === 0, "zero request rejected");
+assert(capOrganizationClaim(40, 0) === 0, "zero capacity rejected");
 console.log("ALL PASS");

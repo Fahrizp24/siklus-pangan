@@ -1,5 +1,7 @@
 # Progress & Task Tracking: FAHRI (P1 - Lead Backend & Logic)
 
+> Status terbaru: bagian NO DEBT / 0004 di bawah menggantikan laporan review lama. TLS/catalog telah terverifikasi; collection RPC tersedia; individual in-window SQL sequential sudah lulus. E2E/race/UI tetap gap.
+
 **Peran:** Lead Backend, Data Infrastructure, API & Functional UI Logic  
 **Proyek:** SiklusPangan — Vibe Code TCC 2026 UTM  
 **Git Branch:** `feature/p1-backend-logic`  
@@ -11,11 +13,11 @@
 ## 📊 Ringkasan Progress P1 (Fahri)
 
 ```
-Progress Fahri: [=========>              ] 45%
+Progress Fahri: Phase3 IN PROGRESS (persentase total belum dihitung ulang)
 - Foundation & Spec Readiness: 100% [DONE]
 - Phase 1 (Database & Auth Setup): 100% [DONE]
-- Phase 2 (AI Gemini SDK & Rules): 75% [IN PROGRESS]
-- Phase 3 (Server Actions Mutasi): 0% [TODO]
+- Phase 2 (AI Gemini SDK & Rules): 100% [DONE — integrasi klaim menunggu FHR-11]
+- Phase 3 (Server Actions Mutasi): [IN PROGRESS — implementasi + verifikasi parsial]
 - Phase 4 (Functional UI Camera/QR): 0% [TODO]
 - Phase 5 (Harness Verification): 30% [IN PROGRESS]
 ```
@@ -48,7 +50,9 @@ Progress Fahri: [=========>              ] 45%
 - [x] **FHR-08:** Mengembangkan *Deterministic Expiry Rules Engine* (`src/lib/rules/expiry.ts`) dan bridge AI (`src/lib/ai/food-safety.ts`):
   - Kategori Kering: max 4 jam suhu ruang.
   - Kategori Wet/Santan/Susu: max 2 jam suhu ruang.
-- [ ] **FHR-09:** Mengembangkan *Orphanage Threshold Quota Guard* (`src/lib/rules/quota.ts`).
+- [x] **FHR-09:** *Orphanage Threshold Quota Guard* (`src/lib/rules/quota.ts`): surplus <50% kapasitas diarahkan ke individu; tepat 50% memenuhi threshold; klaim dibatasi kapasitas. Input harus safe integer, stok nonnegatif, kapasitas/request positif.
+  - Self-check: `scripts/selfcheck-quota.ts` (perintah compile/run di header), mencakup kapasitas ganjil, batas 50%, input invalid, dan batas klaim.
+  - Ini aturan murni, belum mutasi database/rerouting feed otomatis. FHR-11 wajib memverifikasi stok, otorisasi, dan kuota secara atomik.
 
 ---
 
@@ -56,13 +60,15 @@ Progress Fahri: [=========>              ] 45%
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Fahri Phase 2** (Rules Engine `FHR-08` & Zod Schema `FHR-07` selesai).  
 > - **Dibutuhkan oleh:** **Rizal Phase 3 & 4** (UI Form Biokonversi & ESG Dashboard butuh Server Actions Fahri).  
-> - **Status Kerja:** 🟡 **Menunggu Fahri Phase 2 selesai**.
+> - **Status Kerja:** 🟡 **IN PROGRESS — backend tersedia, verifikasi live dan wiring belum lengkap**.
 
-- [ ] **FHR-10:** Server Action `createFoodListing()` — penambahan surplus food + kalkulasi expiry.
-- [ ] **FHR-11:** Server Action `claimFoodToken()` — pembuatan klaim token QR + verifikasi kuota per akun.
-- [ ] **FHR-12:** Server Action `createWasteBatch()` — pendaftaran limbah basi & *reverse tipping fee*.
-- [ ] **FHR-13:** Server Action `processWasteHandover()` — pemotongan saldo donor & penambahan kredit insentif mitra.
-- [ ] **FHR-14:** Server Action `submitDisputeStrike()` — penanganan sengketa makanan basi $1 \times 24\text{ jam}$.
+- [ ] **FHR-10 (IN PROGRESS):** `src/actions/food.ts`, strict Zod/session donor/expiry. Test lokal real action + mock transport lulus. Sesi sebelumnya melaporkan live insert; review ini tidak dapat menemukan fixture ID tersebut lewat SELECT. Form belum wired; file implementasi/test FHR-10 dipertahankan.
+- [ ] **FHR-11 (IN PROGRESS):** `claimFoodToken` + RPC lock profil/listing, stok atomik, threshold/capacity organisasi, kuota individu Asia/Jakarta. Sesi sebelumnya melaporkan stock race berhasil; individu hanya outside-window rejection. Happy path dan race individu dalam jam makan belum terverifikasi live.
+- [ ] **FHR-12 (IN PROGRESS):** `createWasteBatch` + RPC, tarif fixed Rp600/kg, prepaid/monthly_invoice; subsidi lifetime Rp12.000 per donor terpisah deposit.
+- [ ] **FHR-13 (IN PROGRESS):** handover atomik, subsidi dahulu, processor dibayar penuh, retry same processor idempotent. Sesi sebelumnya melaporkan prepaid/invoice/subsidy/race; fixture/ledger sekarang tidak ditemukan, verifikasi independen masih gap.
+- [ ] **FHR-14 (IN PROGRESS):** report hanya collected sebelum safe_until, recall, deadline 24 jam, repeat reporter/listing tidak menduplikasi. Tidak menambah strike otomatis; adjudikasi FHR-18. RPC food collection belum tersedia (test sebelumnya memakai SQL privileged untuk collected).
+
+Review lokal: `scripts/test-phase3-local.cjs` lulus (transport mock); keamanan harness diperbaiki: hapus kode cleanup fixture, live write opt-in, TLS terverifikasi, helper CLI read-only. Tidak menjalankan ulang live writer, tidak mutasi/delete DB, tidak push. `scripts/verify-phase3-readonly.mjs` gagal koneksi PostgreSQL; SELECT service-role PostgREST untuk listing `2a02ea19-32b6-43ac-b4d2-71c2eeead97b`, claim `cdc6fe4c-5c90-4c88-8a20-911c2c54ad8f`, batches `c2d5a6e6-f2ad-4866-8541-dcd101a0b797` / `35566cea-4830-4208-9403-1b220d192cb4` dan ledger terkait: seluruhnya `[]`. Tidak mengklaim cleanup verified. Gate lokal `npx tsc --noEmit && npm run build`: exit 0, Next.js 15.5.25, 17/17 halaman. Action harness dan quota self-check: exit 0. Detail harness dan gaps: `docs/HARNESS.md`. Scope FHR-10–14 milik Fahri; UI Rizal tidak diubah.
 
 ---
 
@@ -85,3 +91,9 @@ Progress Fahri: [=========>              ] 45%
 
 - [ ] **FHR-19:** Membuat utilitas *Resilience Harness* `withFallbackHarness()` dengan batas timeout $3000\text{ ms}$ (`src/lib/harness/resilience.ts`).
 - [ ] **FHR-20:** Pengetesan `npx tsc --noEmit` & `npm run build` untuk memastikan 0 error tipe data pada seluruh *actions*.
+
+## Update final NO DEBT / collection (0004)
+
+Migrasi `0004_no_debt_collection.sql` deployed, TLS verified; 0003 unchanged. Semua handover memakai subsidi lalu deposit; saldo kurang ditolak. `paid_at IS NOT NULL` wajib untuk rekap invoice lunas; tanpa backfill historis. Dispute lock profil sebelum listing; `collectFoodClaim` donor-only, idempotent, tersedia. Organisasi tetap self-declared (risiko signup abuse diterima).
+
+Rollback SQL integration dan readback katalog lulus; bukan Auth/PostgREST E2E atau race multi-session. Deposit posting/payment provider/pencairan belum tersedia; saldo tidak client-writable. UI dan FHR-18 belum selesai, Phase3 IN PROGRESS. Tidak ada cleanup/delete/commit/push. Bukti, perintah, batas verifikasi: `docs/PHASE3_VERIFICATION.md`. Catatan review sebelumnya bersifat historis.

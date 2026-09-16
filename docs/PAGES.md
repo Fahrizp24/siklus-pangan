@@ -1,32 +1,26 @@
 # SiklusPangan — Dokumentasi Halaman & Fitur
 
-Dokumen ini mencatat seluruh halaman aplikasi, fungsi utama, role yang memakai, serta status implementasinya.
-
-Status:
-- ✅ Implementasi aktif
-- 🟡 Route/placeholder tersedia; fitur belum lengkap
-- 🔴 Belum dibuat
-
+Dokumen ini mencatat seluruh halaman aplikasi, fungsi utama, role yang memakai.
 ## 1. Matriks Route
 
-| Route | Nama Halaman | Role | Status |
+| Route | Nama Halaman | Role |
 |---|---|---|---|
-| `/` | Beranda | Publik | ✅ |
-| `/login` | Masuk | Publik | ✅ |
-| `/signup` | Daftar | Publik | ✅ |
-| `/rescue` | Live Surplus Radar | Beneficiary, publik terbatas | ✅ |
-| `/donate` | Donasi Pangan | Donor | 🟡 |
-| `/claims` | Klaim Saya | Beneficiary | 🟡 |
-| `/waste` | Limbah Organik | Donor, processor | 🟡 |
-| `/waste/scan` | Scan Limbah | Donor, processor | 🟡 |
-| `/wallet` | Dompet Sirkular | Donor, processor | 🟡 |
-| `/profile` | Profil | Semua user login | 🟡 |
-| `/disputes` | Sengketa | Beneficiary, donor, admin | 🟡 |
-| `/leaderboard` | Wall of Fame | Publik | 🟡 |
-| `/dashboard` | Dashboard Role | Semua user login | 🟡 |
-| `/admin` | Dashboard Admin | Admin | 🟡 |
-| `/dashboard/esg` | Dashboard ESG | Donor, admin, publik | 🔴 |
-| `/wall-of-fame` | Wall of Fame legacy route | Publik | 🔴 |
+| `/` | Beranda | Publik |
+| `/login` | Masuk | Publik |
+| `/signup` | Daftar | Publik |
+| `/rescue` | Live Surplus Radar | Beneficiary, publik terbatas |
+| `/donate` | Donasi Pangan | Donor |
+| `/claims` | Klaim Saya | Beneficiary |
+| `/waste` | Limbah Organik | Donor, processor |
+| `/waste/scan` | Scan Limbah | Donor, processor |
+| `/wallet` | Dompet Sirkular | Donor, processor |
+| `/profile` | Profil | Semua user login |
+| `/disputes` | Sengketa | Beneficiary, donor, admin |
+| `/leaderboard` | Wall of Fame | Publik |
+| `/dashboard` | Dashboard Role | Semua user login |
+| `/admin` | Dashboard Admin | Admin |
+| `/dashboard/esg` | Dashboard ESG | Donor, admin, publik |
+| `/wall-of-fame` | Wall of Fame legacy route | Publik |
 
 ## 2. Halaman Publik
 

@@ -1,5 +1,7 @@
 # Product Requirement Document (PRD) & Harness Architecture: SiklusPangan
 
+> Status terbaru: bagian NO DEBT / 0004 di bawah menggantikan laporan review lama. TLS/catalog telah terverifikasi; collection RPC tersedia; individual in-window SQL sequential sudah lulus. E2E/race/UI tetap gap.
+
 **Versi Dokumen:** 2.0.0  
 **Status:** Approved for Harness Execution  
 **Target Event:** Vibe Code Competition - TCC 2026 (Universitas Trunojoyo Madura)  
@@ -42,7 +44,7 @@ Dalam pengerjaan proyek ini, seluruh siklus pengembangan software tidak diserahk
 
 #### 2. Sisi Penerima Manfaat (Masyarakat, Mahasiswa, dan Panti Asuhan)
 * **Live Surplus Radar (Text-Based Efficient Feed):**
-  * Umpan data berbasis kartu lokasi dengan alamat jelas tanpa dependensi SDK peta berat yang membebani memori peramban seluler.
+  * Umpan data berbasis kartu tanpa identitas/alamat persis donatur pada radar publik tanpa dependensi SDK peta berat yang membebani memori peramban seluler.
   * Indikator batas waktu dengan ekspresi waktu alami (*natural time expression*), contoh: "Sisa 45 menit sebelum batas aman berakhir".
 * **Filter Diet & Alergen Terstruktur:**
   * Filter preferensi cepat: Halal, Vegetarian, Bebas Gluten, Bebas Kacang, Bebas Boga Bahari.
@@ -76,14 +78,14 @@ Penyaluran limbah basi diarahkan secara eksplisit kepada mitra pengolah produkti
 * **Nutrient Routing System:** Sistem merekomendasikan kategori pengolah yang paling optimal untuk menjaga efisiensi biokonversi.
 
 #### 3. Mekanisme Finansial Insentif Terbalik (*Reverse Tipping Fee*)
-* **Tarif Mikro Berkeadilan:** Donatur membayar biaya pengolahan limbah (misal: Rp600 / kg), memberikan penghematan $70\%$ dibanding tarif jasa pembuangan limbah swasta konvensional.
+* **Tarif Mikro Berkeadilan:** Donatur membayar tarif tetap Rp600/kg, memberikan penghematan $70\%$ dibanding tarif jasa pembuangan limbah swasta konvensional.
 * **Insentif Mitra Pengolah:** Biaya pembayaran donatur langsung dialokasikan ke saldo dompet digital mitra pengolah sebagai kompensasi BBM dan biaya operasional penjemputan.
-* **Kredit Awal Pendaftaran:** Donatur baru mendapatkan *Welcome Credit* penjemputan 100 kg limbah pertama gratis.
-* **Dual Billing Ledger:** Usaha skala kecil (UMKM) menggunakan sistem saldo deposit prabayar (*prepaid deposit*); hotel/restoran besar menggunakan faktur konsolidasi pascabayar bulanan (*monthly invoice*).
+* **Subsidi Awal Pendaftaran:** Subsidi platform Rp12.000 sekali seumur akun donatur, terpisah dari deposit; tidak reset bulanan. Mitra tetap menerima penuh Rp600/kg. Subsidi terpakai dahulu, sisanya wajib dipotong dari deposit untuk SEMUA billing mode; saldo kurang menolak handover.
+* **NO DEBT:** Tidak ada utang atau credit limit. `monthly_invoice` hanya rekap bulanan transaksi yang telah dibayar (`paid_at IS NOT NULL`), bukan fasilitas pascabayar. Ledger historis tidak diubah atau dilabel lunas.
 
 #### 4. Handover Kode QR Dinamis Dua Arah
-* Staf donatur memasukkan bobot riil limbah (kg) pada antarmuka web, memicu pembuatan **Dynamic QR Code** yang memuat `waste_batch_id`, bobot, dan nominal insentif.
-* Mitra pengolah memindai QR Code dari layar donatur menggunakan peramban seluler. Transaksi tervalidasi seketika, saldo donatur terpotong, dan kredit insentif masuk ke saldo mitra.
+* Donatur memasukkan bobot riil limbah dan billing mode melalui `createWasteBatch`; QR hanya membawa token acak, bukan nominal terpercaya.
+* `processWasteHandover` mengunci batch dan akun, menghitung subsidi serta tagihan di database, membayar penuh mitra. Semua billing mode memotong deposit setelah subsidi; invoice hanya rekap lunas. Retry processor yang sama tidak mendebit ulang. UI pemindai belum terintegrasi.
 
 ---
 
@@ -125,154 +127,14 @@ Penyaluran limbah basi diarahkan secara eksplisit kepada mitra pengolah produkti
 
 ## 5. Skema Basis Data Relasional (PostgreSQL DDL) & RLS
 
-Berikut adalah struktur DDL relasional PostgreSQL yang siap diinisialisasi pada Supabase:
+Sumber skema executable: `supabase/migrations/0001_initial_schema.sql`, `0002_signup_profile_metadata.sql`, `0003_phase3.sql`, dan `0004_no_debt_collection.sql`; jangan menjalankan DDL konseptual lama.
 
-```sql
--- ==========================================
--- 1. ENUM DEFINITIONS
--- ==========================================
-CREATE TYPE user_role AS ENUM ('donor', 'beneficiary', 'orphanage', 'processor', 'admin');
-CREATE TYPE listing_status AS ENUM ('active', 'claimed', 'expired', 'recalled');
-CREATE TYPE waste_category AS ENUM ('bsf_maggot', 'poultry_fish', 'compost_biogas');
-CREATE TYPE transaction_type AS ENUM ('prepaid_deposit', 'monthly_invoice', 'processor_incentive');
-
--- ==========================================
--- 2. USER PROFILES TABLE
--- ==========================================
-CREATE TABLE profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    role user_role NOT NULL DEFAULT 'beneficiary',
-    display_name VARCHAR(150) NOT NULL,
-    phone_number VARCHAR(20),
-    address TEXT NOT NULL,
-    organization_capacity INT DEFAULT 1,
-    credit_balance DECIMAL(12, 2) DEFAULT 0.00,
-    strikes_count INT DEFAULT 0,
-    is_banned BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 3. FOOD SURPLUS LISTINGS TABLE
--- ==========================================
-CREATE TABLE food_listings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    donor_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    title VARCHAR(200) NOT NULL,
-    image_url TEXT NOT NULL,
-    portions INT NOT NULL CHECK (portions > 0),
-    remaining_portions INT NOT NULL CHECK (remaining_portions >= 0),
-    risky_ingredients TEXT[] DEFAULT '{}',
-    dietary_tags TEXT[] DEFAULT '{}',
-    storage_method VARCHAR(100) NOT NULL,
-    cooked_at TIMESTAMPTZ NOT NULL,
-    safe_until TIMESTAMPTZ NOT NULL,
-    handling_notes TEXT,
-    status listing_status DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 4. FOOD CLAIMS TABLE
--- ==========================================
-CREATE TABLE food_claims (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_id UUID NOT NULL REFERENCES food_listings(id) ON DELETE CASCADE,
-    claimant_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    portions_claimed INT NOT NULL DEFAULT 1,
-    qr_token VARCHAR(64) UNIQUE NOT NULL,
-    is_collected BOOLEAN DEFAULT FALSE,
-    collected_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 5. STRIKE DISPUTES TABLE
--- ==========================================
-CREATE TABLE strike_disputes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    donor_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    listing_id UUID NOT NULL REFERENCES food_listings(id) ON DELETE CASCADE,
-    reported_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    reason TEXT NOT NULL,
-    donor_evidence_url TEXT,
-    donor_statement TEXT,
-    is_resolved BOOLEAN DEFAULT FALSE,
-    penalty_applied BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 6. WASTE BATCHES (BIOCONVERSION) TABLE
--- ==========================================
-CREATE TABLE waste_batches (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    donor_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    processor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    image_url TEXT NOT NULL,
-    target_category waste_category NOT NULL,
-    weight_kg DECIMAL(8, 2) NOT NULL DEFAULT 0.00,
-    rate_per_kg DECIMAL(8, 2) NOT NULL DEFAULT 600.00,
-    is_collected BOOLEAN DEFAULT FALSE,
-    qr_handover_token VARCHAR(64) UNIQUE NOT NULL,
-    collected_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 7. FINANCIAL TRANSACTIONS LEDGER TABLE
--- ==========================================
-CREATE TABLE financial_transactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    waste_batch_id UUID REFERENCES waste_batches(id) ON DELETE SET NULL,
-    amount DECIMAL(12, 2) NOT NULL,
-    type transaction_type NOT NULL,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ==========================================
--- 8. ROW LEVEL SECURITY (RLS) POLICIES
--- ==========================================
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE food_listings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE food_claims ENABLE ROW LEVEL SECURITY;
-ALTER TABLE waste_batches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE financial_transactions ENABLE ROW LEVEL SECURITY;
-
--- Profiles: pengguna dapat membaca semua profil, hanya dapat mengedit profil milik sendiri
-CREATE POLICY "Profiles are viewable by authenticated users" 
-ON profiles FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Users can update their own profile" 
-ON profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
-
--- Food Listings: listing aktif terbuka untuk publik, donatur mengelola listing milik sendiri
-CREATE POLICY "Active food listings are viewable by everyone" 
-ON food_listings FOR SELECT USING (status = 'active');
-
-CREATE POLICY "Donors can insert and manage their own listings" 
-ON food_listings FOR ALL TO authenticated USING (auth.uid() = donor_id);
-
--- Food Claims: pengguna dapat melihat klaim miliknya
-CREATE POLICY "Users can view their own claims" 
-ON food_claims FOR SELECT TO authenticated USING (auth.uid() = claimant_id OR auth.uid() IN (
-    SELECT donor_id FROM food_listings WHERE id = food_claims.listing_id
-));
-
-CREATE POLICY "Users can insert claims" 
-ON food_claims FOR INSERT TO authenticated WITH CHECK (auth.uid() = claimant_id);
-
--- Waste Batches: donatur dan processor dapat mengelola batch limbah terkait
-CREATE POLICY "Waste batches viewable by donor or processor" 
-ON waste_batches FOR SELECT TO authenticated USING (
-    auth.uid() = donor_id OR auth.uid() = processor_id OR processor_id IS NULL
-);
-
-CREATE POLICY "Donors can create waste batches" 
-ON waste_batches FOR INSERT TO authenticated WITH CHECK (auth.uid() = donor_id);
-```
+- Role: donor, beneficiary (individu atau `is_organization`), processor, admin. Admin tidak dapat dipilih lewat signup.
+- Tujuh tabel: profiles, food_listings, food_claims, strike_disputes, waste_batches, financial_transactions, donor_subsidies; seluruhnya RLS.
+- Mutasi klaim, limbah, handover, laporan melalui RPC atomik; izin tulis langsung dicabut. Update profil hanya display_name, phone_number, address.
+- Radar publik memakai `food_radar`, tanpa donor_id/alamat/telepon. Foto dan teks bebas belum disanitasi terhadap identitas visual donatur.
+- FHR-14 hanya laporan dari klaim collected sebelum safe_until, recall, deadline 24 jam; verifikasi bukti, penalti dan blokir tiga strike masih FHR-18.
+- Status Phase3 IN PROGRESS. Migrasi pernah dilaporkan applied pada sesi sebelumnya; review ini tidak menerapkan perubahan DB. Koneksi katalog PostgreSQL read-only gagal, verifikasi independen penuh belum tersedia. SELECT PostgREST pada empat ID fixture yang diberikan mengembalikan kosong; bukan bukti sukses test atau cleanup oleh review ini.
 
 ---
 
@@ -338,3 +200,13 @@ Sistem Harness mengeksekusi pengujian berkala pada setiap penyelesaian modul:
 ### 6.4 Resilience & Offline Fixture Harness
 Untuk mengantisipasi kendala koneksi seluler saat demonstrasi live di hadapan juri TCC 2026 UTM:
 * Jika panggilan API Gemini 2.0 Flash atau Supabase mengalami *timeout* $> 3.0\text{ detik}$, **Resilience Harness** mengalihkan antarmuka ke *Offline Mock Fixtures* yang tersimpan di peramban tanpa menghentikan pengalaman pengguna (*zero crash UI*).
+## Keputusan final NO DEBT — 0004 (menggantikan catatan Phase3 sebelumnya)
+
+- Migrasi baru `0004_no_debt_collection.sql` telah diterapkan; 0003 tidak ditulis ulang. Rp600/kg; subsidi Rp12.000 sekali per akun donor; SEMUA mode memakai subsidi lalu deposit. Saldo kurang menolak seluruh transaksi; processor menerima penuh sebagai kredit ledger internal, bukan bukti pencairan bank.
+- `monthly_invoice` hanya rekap transaksi lunas. Query rekap wajib `paid_at IS NOT NULL` dan periode `paid_at`; ledger debit baru bertipe `prepaid_deposit`. Kolom baru nullable tanpa backfill: invoice historis tidak boleh dianggap lunas. Tidak ada perubahan ledger historis saat migrasi.
+- `collectFoodClaim` / `collect_food_claim(text)`: donor pemilik listing memindai token beneficiary, role/ban/expiry/recall diperiksa, retry mengembalikan timestamp yang sama. Dispute mengunci profil reporter sebelum listing; collection mengunci donor KEY SHARE, listing lalu claim. UI belum wired; race multi-session belum dibuktikan.
+- Organisasi/kapasitas tetap self-declared sesuai keputusan pengguna. Risiko manipulasi signup dan akun ganda diterima untuk demo; bukan verifikasi organisasi atau kuota per manusia.
+- Deposit hanya trusted/admin: client tidak dapat menulis saldo/ledger. Belum ada endpoint posting top-up, payment provider, verifikasi settlement, referensi pembayaran/idempotency atau rekonsiliasi; E2E pendanaan/pencairan BELUM selesai. Jangan menambahkan gateway palsu. Prosedur posting dipercaya perlu keputusan/provider terpisah.
+- Bukti: `scripts/test-phase3-no-debt.mjs` RED pada 0003 (invoice tanpa saldo diterima), GREEN candidate ROLLBACK lalu GREEN deployed. JWT-context SQL role authenticated, BUKAN login/PostgREST/Server Action E2E. Test collection action memakai transport mock.
+- TLS authorized=true, TLSv1.3; readback delapan body fungsi cocok sumber migrasi terbaru, lima RPC grants, tujuh RLS tables, sembilan boundary waktu. Fixture baru hanya transaksi ROLLBACK; SELECT memastikan tidak tersimpan. Tidak ada DELETE/cleanup, clock override, commit/push.
+- Phase3 tetap IN PROGRESS: concurrent individual quota, authenticated in-window action, seeded RLS replay menyeluruh, UI, adjudikasi FHR-18. Historical fixture IDs masih tidak ditemukan; bukan bukti cleanup.

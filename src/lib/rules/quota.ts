@@ -44,8 +44,8 @@ export function shouldRouteToIndividualRadar(
   remainingPortions: number,
   organizationCapacity: number
 ): boolean {
-  if (!Number.isInteger(remainingPortions) || remainingPortions < 0) return true;
-  if (!Number.isInteger(organizationCapacity) || organizationCapacity <= 0) return true;
+  if (!Number.isSafeInteger(remainingPortions) || remainingPortions < 0) return true;
+  if (!Number.isSafeInteger(organizationCapacity) || organizationCapacity <= 0) return true;
   return remainingPortions < organizationCapacity * 0.5;
 }
 
@@ -53,7 +53,7 @@ export function capOrganizationClaim(
   requestedPortions: number,
   organizationCapacity: number
 ): number {
-  if (!Number.isInteger(requestedPortions) || requestedPortions < 1) return 0;
-  if (!Number.isInteger(organizationCapacity) || organizationCapacity < 1) return 0;
+  if (!Number.isSafeInteger(requestedPortions) || requestedPortions < 1) return 0;
+  if (!Number.isSafeInteger(organizationCapacity) || organizationCapacity < 1) return 0;
   return Math.min(requestedPortions, organizationCapacity);
 }

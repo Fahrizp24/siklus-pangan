@@ -108,12 +108,14 @@ sequenceDiagram
     participant DB as Supabase PostgreSQL
 
     Donor->>WebApp: Input Bobot Limbah (kg) & Kategori
-    WebApp->>DB: INSERT INTO waste_batches (Generate QR Token)
+    WebApp->>DB: RPC create_waste_batch (session donor, token acak)
     DB-->>WebApp: QR Code Token Dinamis Rendered
     
     Processor->>WebApp: Pindai QR Code via Kamera Ponsel
-    WebApp->>DB: UPDATE waste_batches SET is_collected = TRUE, processor_id = Auth.uid()
-    WebApp->>DB: INSERT INTO financial_transactions (Debit Donor, Credit Processor)
+    WebApp->>DB: RPC process_waste_handover(token), transaksi atomik
+    DB->>DB: Lock batch/profiles/subsidy, hitung Rp600/kg
+    DB->>DB: Subsidi lifetime Rp12000 lalu debit deposit SEMUA mode; saldo kurang ditolak
+    DB->>DB: Kredit penuh processor dan ledger once
     DB-->>WebApp: Transaksi Sukses & Saldo Insentif Ter-update
     WebApp-->>Processor: Notifikasi Insentif Berhasil Ditambahkan
 ```
@@ -140,22 +142,34 @@ flowchart TD
 
 Sistem menerapkan model **Least Privilege Access** di tingkat basis data PostgreSQL:
 
-| Nama Tabel | Peran (Role) | Hak Akses (Privilege) | Kondisi Kebijakan (RLS Policy Condition) |
-|---|---|---|---|
-| `profiles` | `authenticated` | `SELECT` | `true` (dapat dilihat pengguna terautentikasi) |
-| `profiles` | `authenticated` | `UPDATE` | `auth.uid() = id` (hanya edit profil sendiri) |
-| `food_listings` | `anon` / `authenticated` | `SELECT` | `status = 'active'` (listing aktif publik) |
-| `food_listings` | `donor` | `ALL` | `auth.uid() = donor_id` |
-| `food_claims` | `beneficiary` | `INSERT` | `auth.uid() = claimant_id` |
-| `food_claims` | `beneficiary` / `donor` | `SELECT` | `auth.uid() = claimant_id OR donor_id = auth.uid()` |
-| `waste_batches` | `donor` / `processor` | `SELECT` | `auth.uid() = donor_id OR auth.uid() = processor_id OR processor_id IS NULL` |
-| `financial_transactions` | `authenticated` | `SELECT` | `auth.uid() = user_id` |
+| Objek | Akses aktual setelah 0003 |
+|---|---|
+| profiles | SELECT sendiri/admin; UPDATE hanya display_name, phone_number, address + RLS |
+| food_listings | SELECT donor sendiri/admin; INSERT donor aktif dengan guard expiry/stock; UPDATE/DELETE client dicabut |
+| food_radar | SELECT anon/authenticated, proyeksi tanpa donor_id, hanya stok aman aktif |
+| food_claims | SELECT peserta/admin; claim hanya RPC atomik, kuota Asia/Jakarta; collection RPC belum ada |
+| waste_batches | SELECT donor/processor terkait/admin; create/handover hanya RPC |
+| strike_disputes | SELECT pihak terkait/admin; submit hanya RPC, penalti menunggu FHR-18 |
+| financial_transactions | SELECT sendiri/admin; ledger ditulis RPC |
+| donor_subsidies | SELECT donor sendiri/admin; tidak dapat ditulis client |
+
+RPC: `claim_food_token`, `create_waste_batch`, `process_waste_handover`, `submit_dispute_strike`. EXECUTE hanya authenticated (bukan anon/PUBLIC), role diperiksa di dalam fungsi. RLS tetap aktif; security-definer memerlukan guard eksplisit. Sumber kebenaran: migration files, bukan tabel rancangan lama.
+
+Phase3 IN PROGRESS: review lokal tidak menerapkan migration. Verifikasi katalog DB read-only gagal terkoneksi; fixture ID sesi sebelumnya tidak ditemukan lewat service-role SELECT PostgREST. Ini tidak membuktikan cleanup atau RLS. Live in-window individual quota dan jalur collection belum terbukti. Radar menghilangkan kolom identitas, tetapi teks/foto donor masih dapat mengungkap identitas.
 
 ---
 
-## 5. Resilience & Offline Fallback Strategy (TCC 2026 UTM Demo)
+## 5. Resilience & Offline Fallback Strategy (rancangan, bukan bukti implementasi)
+
+Mutasi finansial/klaim tidak boleh melaporkan sukses dari fixture fallback; timeout wajib memeriksa riwayat transaksi.
 
 Untuk menjamin presentasi luring di Universitas Trunojoyo Madura berjalan $100\%$ tanpa hambatan teknis:
 1. **Network Interceptor:** Modul Next.js Server Action dibungkus dengan utilitas `withFallbackHarness()`.
 2. **Timeout Enforcement:** Batas waktu panggilan API Gemini dan Supabase ditetapkan maksimal $3000\text{ ms}$.
 3. **Mock Storage:** Jika jaringan aula penjurian terputus, sistem secara otomatis mengambil data simulasi (*fixtures*) dari `localStorage` atau *static JSON fallback*, memastikan UI pemindai dan radar tetap merespons secara mulus di hadapan dewan juri.
+
+## Update final NO DEBT / collection (0004)
+
+Migrasi `0004_no_debt_collection.sql` deployed, TLS verified; 0003 unchanged. Semua handover memakai subsidi lalu deposit; saldo kurang ditolak. `paid_at IS NOT NULL` wajib untuk rekap invoice lunas; tanpa backfill historis. Dispute lock profil sebelum listing; `collectFoodClaim` donor-only, idempotent, tersedia. Organisasi tetap self-declared (risiko signup abuse diterima).
+
+Rollback SQL integration dan readback katalog lulus; bukan Auth/PostgREST E2E atau race multi-session. Deposit posting/payment provider/pencairan belum tersedia; saldo tidak client-writable. UI dan FHR-18 belum selesai, Phase3 IN PROGRESS. Tidak ada cleanup/delete/commit/push. Bukti, perintah, batas verifikasi: `docs/PHASE3_VERIFICATION.md`. Catatan review sebelumnya bersifat historis.
