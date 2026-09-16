@@ -2,6 +2,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { HeroSection } from "@/components/pages/wallet/hero-section";
 import { PocketSection } from "@/components/pages/wallet/pocket-section";
 import { PayoutSection } from "@/components/pages/wallet/payout-section";
+import { LedgerSection } from "@/components/pages/wallet/ledger-section";
 
 export default function WalletPage() {
   return (
@@ -10,6 +11,7 @@ export default function WalletPage() {
         <HeroSection />
         <PocketSection />
         <PayoutSection />
+        <LedgerSection />
       </main>
     </AppShell>
   );
