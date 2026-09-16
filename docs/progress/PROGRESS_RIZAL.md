@@ -62,8 +62,9 @@ Progress Rizal: [================>   ] 68%
   - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
 - [x] **RZL-07:** Halaman Penjemputan & Klaim Token QR Penerima Manfaat (`src/app/claims/page.tsx`, `src/components/pages/claims/`):
   - **Hero Section Penjemputan Terjadwal:** Status live `#CLM-89210-BTO`, `🟢 MENUNGGU PENJEMPUTAN (Siap Diambil)`, protokol B2B, info Yayasan Sayap Ibu, dan countdown card batas jendela penjemputan & BPOM (`hero-section.tsx`).
-  - **Handover QR Section:** Tampilan kode QR kriptografis dinamis dengan scanner frame hijau, countdown refresh otomatis (43s), kode cadangan OTP manual (`SP - 892 - 104`) dengan tombol salin, security notice SHA-256, serta spesifikasi hidangan bento box dengan 4 badge spesifikasi & segel primer (`handover-qr-section.tsx`).
-  - **Pickup Protocol Section:** Real-time audit log timeline (Listing Dipublikasikan, Jatah Diklaim, Menuju Lokasi, Scan QR Pending), peta live GPS interaktif dengan rute titik penjemputan Loading Dock Barat, protokol masuk fasilitas, tombol WhatsApp enkripsi koordinator dapur, serta checklist SOP higienitas ISO 22000 (`pickup-protocol-section.tsx`).
+  - **Claim Details Section (Zero-Gap 2-Kolom):** Penataan kolom kiri (Token QR Kriptografis, OTP manual `SP - 892 - 104`, security notice SHA-256, & Log Audit serah terima) serta kolom kanan (Spesifikasi Makanan Terselamatkan & Panduan Titik Penjemputan berurutan rapat tanpa gap) (`claim-details-section.tsx`).
+  - **Logistics Quick Bar & Actions Section:** Info waktu tempuh ~7 menit Jl. Tantular, tombol navigasi rute (hijau primary), unduh PDF klaim (navy secondary), bantuan/sengketa, pembatalan klaim (destructive outline), kebijakan pembatalan 12:30 WITA, dan timestamp hash kriptografi (`claim-actions-section.tsx`).
+  - **Design Token Compliance:** Menggunakan 100% token warna brand (`primary`, `secondary`, `accent`, `muted`, `border`, `card`, `destructive`).
 - [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
 
 ---
