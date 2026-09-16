@@ -43,38 +43,38 @@ export function HeroSection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+      <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Left Side: Badges, Headline, Description */}
           <div className="flex-1">
             {/* Badges Row */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Claim ID Badge */}
-              <span className="px-2.5 py-1 rounded-md bg-slate-900 text-white font-mono text-xs font-bold tracking-wide">
+              <span className="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground font-mono text-xs font-bold tracking-wide">
                 {claimId}
               </span>
 
               {/* Status Badge with Live Green Indicator */}
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent text-accent-foreground border border-primary/25 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span>{statusBadge}</span>
               </span>
 
               {/* Protocol Badge */}
-              <span className="px-2.5 py-1 rounded-md bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium">
+              <span className="px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-medium">
                 {protocolBadge}
               </span>
             </div>
 
             {/* Headline Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-neutral-900 font-headline tracking-tight leading-tight mt-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-foreground font-headline tracking-tight leading-tight mt-4">
               {title}
             </h1>
 
             {/* Subtext Description */}
-            <p className="text-xs sm:text-sm text-slate-600 font-body leading-relaxed max-w-2xl mt-3">
+            <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed max-w-2xl mt-3">
               {descriptionPrefix}
-              <strong className="text-neutral-900 font-semibold">
+              <strong className="text-foreground font-semibold">
                 {beneficiaryName}
               </strong>
               {descriptionSuffix}
@@ -82,44 +82,44 @@ export function HeroSection() {
           </div>
 
           {/* Right Side: Pickup Window Countdown Card */}
-          <div className="rounded-2xl border border-slate-200/90 bg-slate-50/50 p-4 sm:p-5 flex items-start gap-4 shrink-0 w-full lg:w-96 shadow-2xs">
+          <div className="rounded-2xl border border-border bg-muted/40 p-4 sm:p-5 flex items-start gap-4 shrink-0 w-full lg:w-96 shadow-2xs">
             {/* Timer Icon Box */}
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60">
-              <Timer className="w-6 h-6 text-emerald-700" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0 border border-primary/20">
+              <Timer className="w-6 h-6 text-primary" />
             </div>
 
             {/* Content Details */}
             <div className="flex-1 min-w-0">
               {/* Top Row: Label and Specific WITA Hour */}
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">
+                <span className="text-muted-foreground font-medium">
                   {timer.pickupWindowLabel}
                 </span>
-                <span className="font-mono font-bold text-neutral-900">
+                <span className="font-mono font-bold text-foreground">
                   {timer.pickupWindowTime}
                 </span>
               </div>
 
               {/* Middle Row: Countdown Display */}
               <div className="mt-1 flex items-baseline gap-1.5">
-                <span className="font-extrabold font-headline text-lg sm:text-xl text-neutral-900 tracking-tight">
+                <span className="font-extrabold font-headline text-lg sm:text-xl text-foreground tracking-tight">
                   {timer.remainingHoursMinutes}
                 </span>
-                <span className="text-xs text-emerald-600 font-bold">
+                <span className="text-xs text-primary font-bold">
                   {timer.remainingLabel}
                 </span>
               </div>
 
               {/* Divider */}
-              <div className="border-t border-slate-200/80 pt-2.5 mt-2.5">
+              <div className="border-t border-border pt-2.5 mt-2.5">
                 {/* Bottom Row: Deterministic BPOM Expiry Limit */}
                 <div className="flex items-start gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-[11px] leading-tight">
-                    <span className="text-slate-500 block">
+                    <span className="text-muted-foreground block">
                       {timer.deterministicBpomLabel}
                     </span>
-                    <span className="font-mono font-bold text-neutral-900 block mt-0.5">
+                    <span className="font-mono font-bold text-foreground block mt-0.5">
                       {timer.deterministicBpomTime}
                     </span>
                   </div>

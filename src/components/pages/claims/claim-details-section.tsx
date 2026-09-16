@@ -206,37 +206,37 @@ export function ClaimDetailsSection() {
             =================================================================== */}
         <div className="lg:col-span-5 w-full flex flex-col gap-6">
           {/* 1. Token QR Handover Card */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-5 border-b border-slate-100">
+            <div className="flex items-start justify-between gap-3 pb-5 border-b border-border/70">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-neutral-900 font-headline">
+                <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
                   {qrCard.title}
                 </h2>
-                <p className="text-xs text-slate-500 font-body mt-0.5">
+                <p className="text-xs text-muted-foreground font-body mt-0.5">
                   {qrCard.subtitle}
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold font-mono shrink-0">
-                <Lock className="w-3 h-3 text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent text-accent-foreground border border-primary/25 text-xs font-bold font-mono shrink-0">
+                <Lock className="w-3 h-3 text-primary" />
                 <span>{qrCard.encryptionBadge}</span>
               </span>
             </div>
 
             {/* QR Code Container with High-Tech Corner Brackets */}
-            <div className="mt-5 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-6 flex flex-col items-center justify-center">
-              <div className="relative p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs">
+            <div className="mt-5 rounded-2xl border border-border bg-muted/40 p-6 flex flex-col items-center justify-center">
+              <div className="relative p-5 rounded-2xl border border-border bg-card shadow-2xs">
                 {/* 4 Corner Targeting Brackets */}
-                <div className="absolute -top-1.5 -left-1.5 w-4 h-4 border-t-2 border-l-2 border-emerald-500 rounded-tl-sm" />
-                <div className="absolute -top-1.5 -right-1.5 w-4 h-4 border-t-2 border-r-2 border-emerald-500 rounded-tr-sm" />
-                <div className="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-2 border-l-2 border-emerald-500 rounded-bl-sm" />
-                <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-2 border-r-2 border-emerald-500 rounded-br-sm" />
+                <div className="absolute -top-1.5 -left-1.5 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-sm" />
+                <div className="absolute -top-1.5 -right-1.5 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-sm" />
+                <div className="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-sm" />
+                <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-sm" />
 
                 {/* SVG QR Code */}
                 <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
                   <svg
                     viewBox="0 0 100 100"
-                    className="w-full h-full text-slate-900"
+                    className="w-full h-full text-secondary"
                     fill="currentColor"
                   >
                     {/* Corner Position Detection Squares */}
@@ -304,77 +304,77 @@ export function ClaimDetailsSection() {
 
                   {/* High-Tech Central Sprout Badge */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-11 h-11 rounded-full bg-white border-2 border-emerald-500 shadow-sm flex items-center justify-center">
-                      <Sprout className="w-6 h-6 text-emerald-600" />
+                    <div className="w-11 h-11 rounded-full bg-card border-2 border-primary shadow-xs flex items-center justify-center">
+                      <Sprout className="w-6 h-6 text-primary" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Automatic Cryptographic Refresh Countdown */}
-              <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span>{qrCard.autoRefreshPrefix}</span>
-                <span className="font-mono font-bold text-neutral-900">
+                <span className="font-mono font-bold text-foreground">
                   {secondsLeft}s
                 </span>
               </div>
             </div>
 
             {/* Manual OTP Fallback Code Box */}
-            <div className="mt-5 p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-headline block">
+            <div className="mt-5 p-4 rounded-2xl border border-border bg-card shadow-2xs">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline block">
                 {qrCard.manualOtp.label}
               </span>
               <div className="mt-2 flex items-center justify-between gap-3">
-                <span className="font-mono font-extrabold text-xl sm:text-2xl text-neutral-900 tracking-widest">
+                <span className="font-mono font-extrabold text-xl sm:text-2xl text-foreground tracking-widest">
                   {qrCard.manualOtp.code}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCopyCode}
-                  className="rounded-xl border-slate-200 text-xs font-semibold gap-1.5 px-3 py-1.5 text-neutral-800 hover:bg-slate-50 shadow-2xs"
+                  className="rounded-xl border-border text-xs font-semibold gap-1.5 px-3 py-1.5 text-foreground hover:bg-muted shadow-2xs"
                 >
                   {isCopied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{qrCard.manualOtp.copiedButtonText}</span>
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-primary font-bold">{qrCard.manualOtp.copiedButtonText}</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-slate-500" />
+                      <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>{qrCard.manualOtp.copyButtonText}</span>
                     </>
                   )}
                 </Button>
               </div>
-              <p className="mt-2 text-[11px] text-slate-500 font-body leading-relaxed">
+              <p className="mt-2 text-[11px] text-muted-foreground font-body leading-relaxed">
                 {qrCard.manualOtp.helperText}
               </p>
             </div>
 
             {/* Security Notice: Valid & Terenkripsi SHA-256 */}
-            <div className="mt-4 p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-start gap-3">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="mt-4 p-3.5 rounded-xl border border-primary/20 bg-accent/60 flex items-start gap-3">
+              <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-neutral-900 font-headline">
+                <h4 className="text-xs font-bold text-foreground font-headline">
                   {qrCard.securityNotice.title}
                 </h4>
-                <p className="text-[11px] text-slate-600 font-body leading-normal mt-0.5">
+                <p className="text-[11px] text-muted-foreground font-body leading-normal mt-0.5">
                   {qrCard.securityNotice.desc}
                 </p>
               </div>
             </div>
 
             {/* Instruction Notice */}
-            <div className="mt-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start gap-3">
-              <Info className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+            <div className="mt-3 p-3.5 rounded-xl border border-border bg-muted/50 flex items-start gap-3">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-neutral-900 font-headline">
+                <h4 className="text-xs font-bold text-foreground font-headline">
                   {qrCard.instructionNotice.title}
                 </h4>
-                <p className="text-[11px] text-slate-600 font-body leading-normal mt-0.5">
+                <p className="text-[11px] text-muted-foreground font-body leading-normal mt-0.5">
                   {qrCard.instructionNotice.desc}
                 </p>
               </div>
@@ -382,24 +382,24 @@ export function ClaimDetailsSection() {
           </div>
 
           {/* 2. Log Audit Serah Terima Card */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
             {/* Header */}
-            <div className="flex items-center justify-between pb-5 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-5 border-b border-border/70">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Activity className="w-4 h-4 text-emerald-600" />
+                <div className="w-7 h-7 rounded-lg bg-accent text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                  <Activity className="w-4 h-4 text-primary" />
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-neutral-900 font-headline">
+                <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
                   {auditLog.title}
                 </h2>
               </div>
-              <span className="font-mono text-xs text-slate-400 font-medium">
+              <span className="font-mono text-xs text-muted-foreground font-medium">
                 {auditLog.nodeId}
               </span>
             </div>
 
             {/* Vertical Audit Timeline */}
-            <div className="mt-6 relative pl-7 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-3 before:w-0.5 before:bg-slate-200">
+            <div className="mt-6 relative pl-7 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-3 before:w-0.5 before:bg-border">
               {auditLog.steps.map((step) => {
                 const isCompleted = step.status === "completed";
                 const isActive = step.status === "active";
@@ -410,20 +410,20 @@ export function ClaimDetailsSection() {
                     {/* Timeline Node Indicator Icon */}
                     <div className="absolute -left-7 top-0.5 z-10 flex items-center justify-center">
                       {isCompleted && (
-                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-600 fill-emerald-100" />
+                        <div className="w-6 h-6 rounded-full bg-card flex items-center justify-center">
+                          <CheckCircle2 className="w-5 h-5 text-primary fill-accent" />
                         </div>
                       )}
                       {isActive && (
-                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                          <div className="w-5 h-5 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center">
-                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
+                        <div className="w-6 h-6 rounded-full bg-card flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-accent border-2 border-primary flex items-center justify-center">
+                            <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
                           </div>
                         </div>
                       )}
                       {isPending && (
-                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                          <div className="w-4 h-4 rounded-full border-2 border-slate-300 bg-white" />
+                        <div className="w-6 h-6 rounded-full bg-card flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full border-2 border-border bg-card" />
                         </div>
                       )}
                     </div>
@@ -432,18 +432,18 @@ export function ClaimDetailsSection() {
                     <div className="flex items-start justify-between gap-2">
                       <h3
                         className={`text-xs sm:text-sm font-bold font-headline ${
-                          isPending ? "text-slate-400" : "text-neutral-900"
+                          isPending ? "text-muted-foreground/60" : "text-foreground"
                         }`}
                       >
                         {step.title}
                       </h3>
 
                       {isActive ? (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold shrink-0">
+                        <span className="px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-primary/25 text-[10px] font-bold shrink-0">
                           {step.timeOrStatus}
                         </span>
                       ) : (
-                        <span className="font-mono text-[11px] text-slate-400 shrink-0">
+                        <span className="font-mono text-[11px] text-muted-foreground shrink-0">
                           {step.timeOrStatus}
                         </span>
                       )}
@@ -451,7 +451,7 @@ export function ClaimDetailsSection() {
 
                     <p
                       className={`text-xs font-body mt-1 leading-relaxed ${
-                        isPending ? "text-slate-400" : "text-slate-500"
+                        isPending ? "text-muted-foreground/60" : "text-muted-foreground"
                       }`}
                     >
                       {step.description}
@@ -471,18 +471,18 @@ export function ClaimDetailsSection() {
             =================================================================== */}
         <div className="lg:col-span-7 w-full flex flex-col gap-6">
           {/* 1. Claimed Dish Summary Card */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-5 border-b border-slate-100">
+            <div className="flex items-start justify-between gap-3 pb-5 border-b border-border/70">
               <div>
-                <span className="text-xs text-slate-500 font-medium font-body block">
+                <span className="text-xs text-muted-foreground font-medium font-body block">
                   {dishSummary.badgeTop}
                 </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-neutral-900 font-headline mt-0.5">
+                <h2 className="text-lg sm:text-xl font-extrabold text-foreground font-headline mt-0.5">
                   {dishSummary.title}
                 </h2>
               </div>
-              <span className="inline-flex items-center px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs border border-slate-200/80 shrink-0 font-headline">
+              <span className="inline-flex items-center px-3 py-1 rounded-lg bg-muted text-muted-foreground font-semibold text-xs border border-border shrink-0 font-headline">
                 {dishSummary.portionBadge}
               </span>
             </div>
@@ -490,7 +490,7 @@ export function ClaimDetailsSection() {
             {/* Content Body: Image (Left) & Food Details (Right) */}
             <div className="mt-6 flex flex-col sm:flex-row items-start gap-5">
               {/* Food Image with Floating Primary Seal Badge */}
-              <div className="relative w-full sm:w-56 h-48 sm:h-52 rounded-2xl overflow-hidden bg-slate-100 shrink-0 shadow-2xs">
+              <div className="relative w-full sm:w-56 h-48 sm:h-52 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs">
                 <Image
                   src={dishSummary.imageUrl}
                   alt={dishSummary.dishTitle}
@@ -499,17 +499,17 @@ export function ClaimDetailsSection() {
                   className="object-cover"
                   unoptimized
                 />
-                <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md bg-neutral-900/85 backdrop-blur-xs text-white text-[10px] font-mono font-bold tracking-wider shadow-xs border border-white/10">
+                <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md bg-secondary/90 backdrop-blur-xs text-secondary-foreground text-[10px] font-mono font-bold tracking-wider shadow-xs border border-white/10">
                   {dishSummary.imageBadge}
                 </div>
               </div>
 
               {/* Food Info & 2x2 Specs Grid */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline font-bold text-lg sm:text-xl text-neutral-900">
+                <h3 className="font-headline font-bold text-lg sm:text-xl text-foreground">
                   {dishSummary.dishTitle}
                 </h3>
-                <p className="text-xs text-slate-500 font-body leading-relaxed mt-1.5">
+                <p className="text-xs text-muted-foreground font-body leading-relaxed mt-1.5">
                   {dishSummary.dishDescription}
                 </p>
 
@@ -518,26 +518,26 @@ export function ClaimDetailsSection() {
                   {dishSummary.specs.map((spec) => (
                     <div
                       key={spec.label}
-                      className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/70"
+                      className="p-2.5 rounded-xl border border-border/70 bg-muted/40"
                     >
                       <div className="flex items-center gap-1.5">
                         {spec.icon === "snowflake" && (
-                          <Snowflake className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <Snowflake className="w-3.5 h-3.5 text-primary shrink-0" />
                         )}
                         {spec.icon === "halal" && (
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
                         )}
                         {spec.icon === "allergen" && (
-                          <AlertCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
                         )}
                         {spec.icon === "package" && (
-                          <Package className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <Package className="w-3.5 h-3.5 text-primary shrink-0" />
                         )}
-                        <span className="text-[10px] text-slate-400 font-medium">
+                        <span className="text-[10px] text-muted-foreground font-medium">
                           {spec.label}
                         </span>
                       </div>
-                      <span className="font-bold text-xs text-neutral-900 font-headline block mt-1">
+                      <span className="font-bold text-xs text-foreground font-headline block mt-1">
                         {spec.value}
                       </span>
                     </div>
@@ -547,31 +547,31 @@ export function ClaimDetailsSection() {
             </div>
 
             {/* Provider Footer Row */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-400 font-medium">
+            <div className="mt-6 pt-4 border-t border-border/70 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground font-medium">
                 {dishSummary.provider.label}
               </span>
-              <div className="flex items-center gap-1.5 font-bold text-neutral-900 font-headline">
-                <Star className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600 shrink-0" />
+              <div className="flex items-center gap-1.5 font-bold text-foreground font-headline">
+                <Star className="w-3.5 h-3.5 text-primary fill-primary shrink-0" />
                 <span>{dishSummary.provider.name}</span>
               </div>
             </div>
           </div>
 
           {/* 2. Panduan Titik Penjemputan Card (Directly Below Dish Summary) */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-5 border-b border-slate-100">
+            <div className="flex items-start justify-between gap-3 pb-5 border-b border-border/70">
               <div>
-                <span className="text-xs text-slate-500 font-medium font-body block">
+                <span className="text-xs text-muted-foreground font-medium font-body block">
                   {pickupGuide.badgeTop}
                 </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-neutral-900 font-headline mt-0.5">
+                <h2 className="text-lg sm:text-xl font-extrabold text-foreground font-headline mt-0.5">
                   {pickupGuide.title}
                 </h2>
               </div>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shrink-0 font-headline">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-accent text-accent-foreground border border-primary/25 text-xs font-bold shrink-0 font-headline">
+                <MapPin className="w-3.5 h-3.5 text-primary" />
                 <span>{pickupGuide.distanceBadge}</span>
               </span>
             </div>
@@ -579,13 +579,13 @@ export function ClaimDetailsSection() {
             {/* Middle Row: Live GPS Map (Left) & Access Protocols / Contact (Right) */}
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
               {/* Minimalist Live GPS Map Graphic Card */}
-              <div className="relative rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 flex flex-col justify-between overflow-hidden shadow-2xs min-h-[190px]">
+              <div className="relative rounded-2xl border border-border bg-muted/40 p-4 sm:p-5 flex flex-col justify-between overflow-hidden shadow-2xs min-h-[190px]">
                 {/* Subtle Grid Map Graphic Background */}
                 <div
                   className="absolute inset-0 opacity-40 pointer-events-none"
                   style={{
                     backgroundImage:
-                      "radial-gradient(#00AA13 0.75px, transparent 0.75px), radial-gradient(#00AA13 0.75px, #f8fafc 0.75px)",
+                      "radial-gradient(hsl(var(--primary)) 0.75px, transparent 0.75px), radial-gradient(hsl(var(--primary)) 0.75px, hsl(var(--muted)) 0.75px)",
                     backgroundSize: "20px 20px",
                     backgroundPosition: "0 0, 10px 10px",
                   }}
@@ -599,33 +599,33 @@ export function ClaimDetailsSection() {
                 >
                   <path
                     d="M 20 130 Q 80 110 130 60 T 170 30"
-                    stroke="#10b981"
+                    stroke="#00AA13"
                     strokeWidth="2.5"
                     strokeDasharray="4 4"
                   />
                   <circle cx="20" cy="130" r="4" fill="#00AA13" />
                   <circle cx="170" cy="30" r="5" fill="#0B1B3D" />
-                  <circle cx="170" cy="30" r="8" stroke="#10b981" strokeWidth="2" opacity="0.6" />
+                  <circle cx="170" cy="30" r="8" stroke="#00AA13" strokeWidth="2" opacity="0.6" />
                 </svg>
 
                 {/* Top Location Tag */}
                 <div className="relative z-10 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold text-neutral-800 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs">
+                  <span className="text-[11px] font-bold text-foreground bg-card/90 backdrop-blur-xs px-2.5 py-1 rounded-md border border-border shadow-2xs">
                     {pickupGuide.map.zoneName}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded-md bg-emerald-600 text-white shadow-2xs">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded-md bg-primary text-primary-foreground shadow-2xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                     {pickupGuide.map.gpsStatus}
                   </span>
                 </div>
 
                 {/* Bottom Address Card with Open Map Button */}
-                <div className="relative z-10 mt-12 p-3 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-between gap-2">
+                <div className="relative z-10 mt-12 p-3 rounded-xl bg-card border border-border shadow-xs flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <h4 className="font-bold text-xs text-neutral-900 font-headline truncate">
+                    <h4 className="font-bold text-xs text-foreground font-headline truncate">
                       {pickupGuide.map.destinationTitle}
                     </h4>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                    <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                       {pickupGuide.map.address}
                     </p>
                   </div>
@@ -633,7 +633,7 @@ export function ClaimDetailsSection() {
                     href={pickupGuide.map.googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shrink-0 transition-colors shadow-2xs"
+                    className="w-8 h-8 rounded-lg bg-primary hover:bg-tertiary text-primary-foreground flex items-center justify-center shrink-0 transition-colors shadow-2xs"
                     title="Buka Peta"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -644,25 +644,25 @@ export function ClaimDetailsSection() {
               {/* Access Protocol & WhatsApp Contact Box */}
               <div className="flex flex-col justify-between gap-4">
                 {/* Facility Protocol Notice Box */}
-                <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 shadow-2xs">
+                <div className="p-4 rounded-2xl border border-border bg-muted/40 shadow-2xs">
                   <div className="flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <h4 className="font-bold text-xs text-neutral-900 font-headline">
+                    <Building2 className="w-4 h-4 text-primary shrink-0" />
+                    <h4 className="font-bold text-xs text-foreground font-headline">
                       {pickupGuide.facilityAccess.title}
                     </h4>
                   </div>
-                  <p className="text-[11px] text-slate-600 font-body leading-relaxed mt-1.5">
+                  <p className="text-[11px] text-muted-foreground font-body leading-relaxed mt-1.5">
                     {pickupGuide.facilityAccess.description}
                   </p>
                 </div>
 
                 {/* Narahubung & WhatsApp Enkripsi Button */}
-                <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between gap-3">
+                <div className="p-4 rounded-2xl border border-border bg-card shadow-2xs flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-[10px] text-slate-400 font-medium block">
+                    <span className="text-[10px] text-muted-foreground font-medium block">
                       {pickupGuide.contact.label}
                     </span>
-                    <span className="font-bold text-xs text-neutral-900 font-headline block mt-0.5">
+                    <span className="font-bold text-xs text-foreground font-headline block mt-0.5">
                       {pickupGuide.contact.name}
                     </span>
                   </div>
@@ -671,7 +671,7 @@ export function ClaimDetailsSection() {
                     href={pickupGuide.contact.whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-xs font-headline shrink-0"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary hover:bg-tertiary text-primary-foreground text-xs font-bold transition-colors shadow-xs font-headline shrink-0"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     <span>{pickupGuide.contact.whatsappLabel}</span>
@@ -681,9 +681,9 @@ export function ClaimDetailsSection() {
             </div>
 
             {/* Bottom Checklist: SOP Higienitas ISO 22000 */}
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-900 font-headline">
-                <ClipboardCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="mt-6 pt-5 border-t border-border/70">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground font-headline">
+                <ClipboardCheck className="w-4 h-4 text-primary shrink-0" />
                 <span>{pickupGuide.checklist.title}</span>
               </div>
 
@@ -691,11 +691,11 @@ export function ClaimDetailsSection() {
                 {pickupGuide.checklist.items.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/40 flex items-start gap-2 text-[11px] leading-relaxed shadow-2xs"
+                    className="p-3 rounded-xl border border-border bg-muted/30 flex items-start gap-2 text-[11px] leading-relaxed shadow-2xs"
                   >
-                    <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="text-slate-600">
-                      <strong className="text-neutral-900 font-bold">
+                    <CheckSquare className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">
+                      <strong className="text-foreground font-bold">
                         {item.boldPrefix}
                       </strong>
                       {item.suffix}
