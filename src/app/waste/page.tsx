@@ -2,6 +2,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { HeroSection } from "@/components/pages/waste/hero-section";
 import { StatSection } from "@/components/pages/waste/stat-section";
 import { WasteOperationsSection } from "@/components/pages/waste/waste-operations-section";
+import { HistorySection } from "@/components/pages/waste/history-section";
 
 export default function WastePage() {
   return (
@@ -10,6 +11,7 @@ export default function WastePage() {
         <HeroSection />
         <StatSection />
         <WasteOperationsSection />
+        <HistorySection />
       </main>
     </AppShell>
   );
