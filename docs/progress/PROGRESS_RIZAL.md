@@ -11,10 +11,10 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [===========>        ] 46%
+Progress Rizal: [==============>     ] 58%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
-- Phase 2 (Live Surplus Radar UI):    25% [IN PROGRESS - RZL-04 DONE]
+- Phase 2 (Live Surplus Radar UI):    60% [IN PROGRESS - RZL-04, 05, 06 DONE]
 - Phase 3 (Biokonversi & QR UI):       0% [TODO]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
@@ -24,14 +24,12 @@ Progress Rizal: [===========>        ] 46%
 
 ## 📋 Checklist Tugas, Deliverables & Syarat Ketergantungan (Prerequisites)
 
-### 🎨 Phase 1: Design System, Theme & App Shell Layout
+### 🎨 Phase 1: Design System, Tokens, & Layout Shell
 > 📌 **Prasyarat (Dependencies):**  
-> - **Membutuhkan:** Berkas spesifikasi di [AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md).  
-> - **Dibutuhkan oleh:** **Fahri Phase 4** (Pemindai Kamera VLM Fahri butuh tema & komponen UI Rizal).  
-> - **Status Kerja:** 🟢 **SELESAI (Phase 1 Closed)**.
+> - **Mandiri (Bisa Langsung Dikerjakan)** tanpa menunggu backend.  
+> - **Status Kerja:** 🟢 **COMPLETED (Semua tugas Phase 1 selesai)**.
 
-- [x] **RZL-00 (Spec):** Meninjau aturan visual, token warna, dan standar UI di [AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md).
-- [x] **RZL-01:** Konfigurasi Tailwind CSS v3 dengan palet warna HSL khusus (Primary `#00AA13`, Secondary `#0B1B3D`, Tertiary `#005A10`, Neutral `#151C24`), Light Mode Only, efek Glassmorphism, & font Google Plus Jakarta Sans & Inter (`src/app/globals.css`, `tailwind.config.ts`).
+- [x] **RZL-01:** Definisi token warna CSS & Tipografi di `tailwind.config.ts` dan `src/app/globals.css`.
 - [x] **RZL-02:** Setup fondasi `shadcn/ui` (Button, Card, Badge, Dialog, Tabs, Toast/Toaster) + hook `use-toast`.
 - [x] **RZL-03:** Membangun *App Shell* responsif (`src/components/layout/app-shell.tsx`):
   - Header Navbar dengan identitas sirkular, menu terpusat `nav.ts`, status aktif dot/underline, dan profil entitas (`src/components/layout/navbar.tsx`).
@@ -43,7 +41,7 @@ Progress Rizal: [===========>        ] 46%
 ### 🍱 Phase 2: Landing Page & Antarmuka Live Surplus Radar (Modul A)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Rizal Phase 1** (App Shell `RZL-03` selesai) + **Fahri Phase 2** (Zod Schemas & Expiry function Fahri untuk dummy/live data).  
-> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04 Landing Page & Sections Selesai)**.
+> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04, RZL-05, RZL-06 Selesai)**.
 
 - [x] **RZL-04:** Antarmuka *Hero Section*, *Stat Section*, *Feature Tabs Section*, & *10 Pilar Ekosistem* pada Landing Page (`src/app/page.tsx`, `src/components/pages/home/`):
   - **Hero Section Card:** Desain kartu enterprise, headline normal vs highlight, dan 3 badge teknologi (`hero-section.tsx`).
@@ -51,10 +49,13 @@ Progress Rizal: [===========>        ] 46%
   - **Feature Tabs Highlight:** 4 tab menu (Live Surplus Radar, Donasi Pangan, Biokonversi, Wall of Fame) dalam 1 baris horizontal dengan filter kategori dan 3 kartu surplus bento, croissant, dan nasi kotak (`features-section.tsx`).
   - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
   - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
-- [ ] **RZL-05:** Komponen *Live Surplus Radar Feed* (`src/components/rescue/surplus-radar.tsx`):
-  - Kartu lokasi makanan tanpa SDK peta berat.
-  - Badge indikator waktu alami (contoh: "Sisa 45 menit lagi").
-- [ ] **RZL-06:** Filter cepat Alergen & Preferensi Diet (Halal, Vegetarian, Gluten-Free).
+- [x] **RZL-05:** Komponen *Live Surplus Radar Feed & Hero* (`src/app/rescue/page.tsx`, `src/components/rescue/`):
+  - **Radar Hero:** Telemetry status live, cycle tracker, headline, search box, filter radius km slider, kuota dhuafa toggle, dan filter category pills (`radar-hero.tsx`).
+  - **Surplus Food Card:** Foto makanan Next.js Image, badge anonim donatur (#00X), estimasi radius km, timer expired otomatis, porsi tersisa progress bar, dan tombol klaim (`surplus-food-card.tsx`).
+  - **Atomic Badges:** `AnonDonorBadge` (`anon-donor-badge.tsx`) & `ExpiryTimeBadge` (`expiry-time-badge.tsx`).
+- [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
+  - Komponen `DietaryTag` semantic color schemes (yellow, green, blue, red, neutral) untuk Halal, Vegetarian, Gluten-Free, Bebas Kacang, Dairy-Free.
+  - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
 - [ ] **RZL-07:** Antarmuka Modal Klaim Token QR untuk penerima manfaat (`src/components/rescue/claim-qr-modal.tsx`).
 - [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
 

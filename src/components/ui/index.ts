@@ -5,3 +5,5 @@ export * from "./dialog";
 export * from "./tabs";
 export * from "./toast";
 export * from "./toaster";
+export * from "./filter-pills";
+export * from "./dietary-tag";

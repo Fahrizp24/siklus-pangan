@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { FilterPills } from "@/components/ui/filter-pills";
+import { SurplusFoodCard } from "@/components/rescue/surplus-food-card";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO MODIFY)
@@ -222,24 +224,20 @@ export function FeaturesSection() {
     return card.category === selectedFilter;
   });
 
-  const getTagClasses = (scheme: "yellow" | "green" | "blue") => {
-    switch (scheme) {
-      case "yellow":
-        return "border-amber-300 bg-amber-50/80 text-amber-800";
-      case "green":
-        return "border-emerald-300 bg-emerald-50/80 text-emerald-800";
-      case "blue":
-        return "border-sky-300 bg-sky-50/80 text-sky-800";
-      default:
-        return "border-slate-200 bg-slate-50 text-slate-700";
-    }
-  };
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         {/* TAB NAVIGATION HEADER (ALL 4 IN ONE ROW) */}
-        <div className="border-b border-slate-200 pb-px flex items-center gap-3 sm:gap-6 overflow-x-auto no-scrollbar">
+        <div
+          onWheel={(e) => {
+            if (e.deltaY !== 0) {
+              e.currentTarget.scrollLeft += e.deltaY;
+            }
+          }}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="border-b border-slate-200 pb-px flex items-center gap-3 sm:gap-6 overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+        >
           {FEATURE_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -298,128 +296,23 @@ export function FeaturesSection() {
                   </div>
 
                   {/* Filter Pills */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
-                    {RADAR_HEADER_CONTENT.filters.map((filter) => {
-                      const isSelected = selectedFilter === filter.id;
-                      return (
-                        <button
-                          key={filter.id}
-                          onClick={() => setSelectedFilter(filter.id)}
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                            isSelected
-                              ? "bg-primary text-white shadow-xs"
-                              : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                          }`}
-                        >
-                          {filter.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <FilterPills
+                    options={RADAR_HEADER_CONTENT.filters}
+                    selectedId={selectedFilter}
+                    onSelect={setSelectedFilter}
+                  />
                 </div>
 
                 {/* 3 Food Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2">
-                  {filteredCards.map((card) => {
-                    const isClaimed = claimedId === card.id;
-
-                    return (
-                      <div
-                        key={card.id}
-                        className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs hover:shadow-md transition-shadow flex flex-col justify-between"
-                      >
-                        {/* Image Container with Badges */}
-                        <div>
-                          <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
-                            <img
-                              src={card.imageUrl}
-                              alt={card.title}
-                              className="w-full h-full object-cover"
-                            />
-
-                            {/* Top Left Anon Donor Badge */}
-                            <div className="absolute top-3 left-3 bg-neutral-900/80 backdrop-blur-xs text-white text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                              <span>
-                                {card.donorCode} • {card.location}
-                              </span>
-                            </div>
-
-                            {/* Bottom Right Sisa Waktu Badge */}
-                            <div
-                              className={`absolute bottom-3 right-3 text-white text-[11px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1 shadow-sm backdrop-blur-xs ${
-                                card.isUrgentBadge
-                                  ? "bg-red-600/90"
-                                  : "bg-amber-600/90"
-                              }`}
-                            >
-                              <Clock className="w-3 h-3 shrink-0" />
-                              <span>{card.remainingTime}</span>
-                            </div>
-                          </div>
-
-                          {/* Card Content */}
-                          <div className="p-4 sm:p-5">
-                            {/* Window & Safe Until Row */}
-                            <div className="flex items-center justify-between gap-2 text-xs">
-                              <span className="bg-emerald-50 text-emerald-800 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
-                                {card.eventOrShiftLabel}
-                              </span>
-                              <span className="text-emerald-700 font-bold text-[11px]">
-                                {card.safeUntilText}
-                              </span>
-                            </div>
-
-                            {/* Title & Description */}
-                            <h3 className="font-headline font-bold text-base text-neutral-900 mt-2.5 line-clamp-1">
-                              {card.title}
-                            </h3>
-                            <p className="text-xs text-slate-500 font-body line-clamp-2 mt-1 leading-relaxed">
-                              {card.description}
-                            </p>
-
-                            {/* Tags */}
-                            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                              {card.tags.map((tag) => (
-                                <span
-                                  key={tag.label}
-                                  className={`text-[11px] font-medium px-2 py-0.5 rounded-md border ${getTagClasses(
-                                    tag.colorScheme
-                                  )}`}
-                                >
-                                  {tag.label}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Row: Portions & Claim Button */}
-                        <div className="p-4 sm:p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
-                          <div className="flex items-baseline">
-                            <span className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
-                              {card.portionsCount}
-                            </span>
-                            <span className="text-xs text-slate-500 font-medium ml-1">
-                              {card.portionUnit}
-                            </span>
-                          </div>
-
-                          <Button
-                            size="sm"
-                            disabled={isClaimed}
-                            onClick={() => setClaimedId(card.id)}
-                            className="bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-2 font-semibold text-xs shadow-xs gap-1.5"
-                          >
-                            <QrCode className="w-3.5 h-3.5 shrink-0" />
-                            <span>
-                              {isClaimed ? "Terklaim!" : "Klaim Jatah"}
-                            </span>
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {filteredCards.map((card) => (
+                    <SurplusFoodCard
+                      key={card.id}
+                      card={card}
+                      isClaimed={claimedId === card.id}
+                      onClaim={(id) => setClaimedId(id)}
+                    />
+                  ))}
                 </div>
               </motion.div>
             )}
