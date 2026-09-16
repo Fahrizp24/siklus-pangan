@@ -60,7 +60,8 @@ Progress Rizal: [==============>     ] 58%
 - [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
   - Komponen `DietaryTag` semantic color schemes (yellow, green, blue, red, neutral) untuk Halal, Vegetarian, Gluten-Free, Bebas Kacang, Dairy-Free.
   - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
-- [ ] **RZL-07:** Antarmuka Modal Klaim Token QR untuk penerima manfaat (`src/components/ui/claim-qr-modal.tsx`).
+- [ ] **RZL-07:** Halaman Penjemputan & Klaim Token QR Penerima Manfaat (`src/app/claims/page.tsx`, `src/components/pages/claims/`):
+  - **Hero Section Penjemputan Terjadwal:** Status live `#CLM-89210-BTO`, `🟢 MENUNGGU PENJEMPUTAN (Siap Diambil)`, protokol B2B, info Yayasan Sayap Ibu, dan countdown card batas jendela penjemputan & BPOM (`hero-section.tsx`).
 - [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
 
 ---
