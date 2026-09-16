@@ -3,6 +3,7 @@ import {
   RescueFilterProvider,
   RadarHeroSection,
   SurplusFeedSection,
+  ArchitectureInsightSection,
 } from "@/components/pages/rescue";
 
 export default function RescuePage() {
@@ -12,6 +13,7 @@ export default function RescuePage() {
         <RescueFilterProvider>
           <RadarHeroSection />
           <SurplusFeedSection />
+          <ArchitectureInsightSection />
         </RescueFilterProvider>
       </main>
     </AppShell>

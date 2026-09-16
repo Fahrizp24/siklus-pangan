@@ -50,10 +50,11 @@ Progress Rizal: [==============>     ] 58%
   - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
   - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
 - [x] **RZL-05:** Komponen *Live Surplus Radar Feed & Hero* (`src/app/rescue/page.tsx`, `src/components/pages/rescue/`):
-  - **Modular Page Sections:** Penataan modular selaras dengan `src/components/pages/rescue/` (`radar-hero-section.tsx`, `surplus-feed-section.tsx`).
+  - **Modular Page Sections:** Penataan modular selaras dengan `src/components/pages/rescue/` (`radar-hero-section.tsx`, `surplus-feed-section.tsx`, `architecture-insight-section.tsx`).
   - **Radar Hero:** Telemetry status live, cycle tracker, headline, search box, filter radius km slider, kuota dhuafa toggle, dan filter category pills (`radar-hero-section.tsx`).
   - **Surplus Food List Grid (2-Kolom):** Grid 4 kartu makanan surplus real-time berstandar rekayasa mutu dengan donor anonim, lokasi, estimasi waktu expired, badge mutu (Cold Chain, Shift Pagi Hotel, Halal LPOM MUI, 100% Organik & Vegan), porsi tersisa, dan tombol klaim token QR (`surplus-feed-section.tsx`, `surplus-food-card.tsx`).
   - **Side Menu Cards:** Card *Kapasitas Beneficiary* (kuota harian 45/150 porsi, progress bar, aksi histori & lapor) dan Card *Protokol Penjemputan Aman* (4 tahap kepatuhan BPOM & eliminasi kontaminasi).
+  - **Architecture Insight Section:** Penjelasan rekayasa sistem *Deterministic Food Expiry Engine* tanpa halusinasi AI dengan 3 metrik (Akurasi Kelayakan 0.9997, 100% Anonim, Scope 3 Ready) (`architecture-insight-section.tsx`).
   - **Atomic Badges:** `AnonDonorBadge` (`anon-donor-badge.tsx`) & `ExpiryTimeBadge` (`expiry-time-badge.tsx`).
   - **State Coordination:** `RescueFilterContext` untuk reaktivitas instan pencarian, radius slider, dan filter kategori tanpa reload.
 - [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
