@@ -2,7 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { FOOTER_SECTIONS, FOOTER_INFO } from "@/lib/nav";
+import logoText from "@/assets/logo-text.webp";
 
 export function Footer() {
   return (
@@ -11,13 +13,12 @@ export function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           {/* Left Column: Brand & Engineering Centers */}
           <div className="lg:col-span-5 flex flex-col space-y-4">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white font-headline font-extrabold text-sm tracking-tight shadow-xs transition-transform group-hover:scale-105">
-                SP
-              </div>
-              <span className="font-headline text-xl font-extrabold tracking-tight text-secondary">
-                {FOOTER_INFO.brandName}
-              </span>
+            <Link href="/" className="inline-block group py-0.5">
+              <Image
+                src={logoText}
+                alt="SiklusPangan"
+                className="h-12 sm:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+              />
             </Link>
 
             <p className="font-body text-sm text-neutral/80 leading-relaxed max-w-md">

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { QrCode, MapPin, Sparkles, Coffee, ShieldCheck, Leaf } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DietaryTag, DietaryTagColorScheme } from "@/components/ui/dietary-tag";
 import { AnonDonorBadge } from "@/components/ui/anon-donor-badge";
@@ -27,7 +27,7 @@ export interface SurplusFoodCostInfo {
 export interface SurplusFoodCardData {
   id: string;
   donorCode: string;
-  location: string;
+  location?: string;
   imageUrl: string;
   remainingTime: string;
   isUrgentBadge?: boolean;
@@ -39,7 +39,7 @@ export interface SurplusFoodCardData {
   portionsCount?: number;
   portionUnit?: string;
   portionsRemainingText?: string; // e.g., "35 Porsi Tersisa"
-  batchInfo?: string; // e.g., "Batch Produksi: 10:15 WITA"
+  batchInfo?: string;
   imageBadge?: SurplusFoodImageBadge;
   costInfo?: SurplusFoodCostInfo;
   category?: string;
@@ -51,21 +51,6 @@ export interface SurplusFoodCardProps {
   isClaimed?: boolean;
   onClaim?: (cardId: string) => void;
   className?: string;
-}
-
-function renderImageBadgeIcon(iconType?: string) {
-  switch (iconType) {
-    case "cold_chain":
-      return <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
-    case "hotel":
-      return <Coffee className="w-3.5 h-3.5 text-amber-300 shrink-0" />;
-    case "halal":
-      return <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
-    case "vegan":
-      return <Leaf className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
-    default:
-      return <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
-  }
 }
 
 export function SurplusFoodCard({
@@ -81,9 +66,6 @@ export function SurplusFoodCard({
       ? `${card.portionsCount} ${card.portionUnit || "Porsi"} Tersisa`
       : "Tersedia");
 
-  const batchLabel =
-    card.batchInfo || card.eventOrShiftLabel || card.safeUntilText || "";
-
   return (
     <div
       className={cn(
@@ -92,15 +74,9 @@ export function SurplusFoodCard({
       )}
     >
       <div>
-        {/* Top Header Row: Donor Anonymous Badge & Location (Left) + Expiry Time Badge (Right) */}
-        <div className="p-4 sm:p-5 pb-3 flex items-start justify-between gap-3">
-          <div className="flex flex-col items-start gap-1">
-            <AnonDonorBadge donorCode={card.donorCode} />
-            <div className="flex items-center gap-1 text-slate-500 text-xs font-medium pl-0.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="truncate max-w-[160px] sm:max-w-[190px]">{card.location}</span>
-            </div>
-          </div>
+        {/* Top Header Row: Donor Anonymous Badge (Left) + Expiry Time Badge (Right) */}
+        <div className="p-4 sm:p-5 pb-3 flex items-center justify-between gap-3">
+          <AnonDonorBadge donorCode={card.donorCode} />
 
           <div className="shrink-0">
             <ExpiryTimeBadge
@@ -110,8 +86,8 @@ export function SurplusFoodCard({
           </div>
         </div>
 
-        {/* Image Container with Inner Rounded Corners & Image Badge Overlay */}
-        <div className="px-4 sm:p-5">
+        {/* Image Container with Inner Rounded Corners */}
+        <div className="px-4 sm:px-5">
           <div className="relative h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-100 shadow-2xs">
             <Image
               src={card.imageUrl}
@@ -121,14 +97,6 @@ export function SurplusFoodCard({
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               unoptimized
             />
-
-            {/* Bottom-Left Image Overlay Badge */}
-            {card.imageBadge && (
-              <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900/85 backdrop-blur-xs text-white text-[11px] font-semibold border border-white/10 shadow-xs">
-                {renderImageBadgeIcon(card.imageBadge.iconType)}
-                <span>{card.imageBadge.label}</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -139,19 +107,11 @@ export function SurplusFoodCard({
             {card.title}
           </h3>
 
-          {/* Portions Remaining & Batch Info */}
+          {/* Portions Remaining */}
           <div className="mt-1.5 flex items-center gap-2 text-xs">
             <span className="font-bold text-primary font-headline">
               {portionsLabel}
             </span>
-            {batchLabel && (
-              <>
-                <span className="text-slate-300 text-xs">•</span>
-                <span className="text-slate-500 font-medium text-[11px] truncate">
-                  {batchLabel}
-                </span>
-              </>
-            )}
           </div>
 
           {/* Description if present */}

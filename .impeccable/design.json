@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-16T12:48:00.000Z",
+  "title": "Design System: SiklusPangan",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Emerald Circular Green",
+        "canonical": "hsl(127, 100%, 33.3%)",
+        "tonalRamp": ["#003306", "#00550a", "#00770d", "#00aa13", "#2bd43e", "#6cf07b", "#b2f8bb", "#e8f8ea"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Enterprise Deep Navy",
+        "canonical": "hsl(221, 69%, 14.1%)",
+        "tonalRamp": ["#030814", "#060f24", "#0b1b3d", "#142d63", "#224591", "#3b67c4", "#7799e6", "#dbe5fb"]
+      },
+      "neutral-ink": {
+        "role": "neutral",
+        "displayName": "Ink Primary",
+        "canonical": "hsl(212, 26%, 11.2%)",
+        "tonalRamp": ["#0b0e12", "#151c24", "#242e3b", "#364556", "#4e6074", "#70849c", "#a0b0c4", "#f1f5f9"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines only." },
+      "headline": { "displayName": "Headline", "purpose": "Section and major card titles." },
+      "title": { "displayName": "Title", "purpose": "Surplus cards and modal headers." },
+      "body": { "displayName": "Body", "purpose": "Standard paragraphs and instructions." },
+      "label": { "displayName": "Label", "purpose": "Pills, badges, and button labels." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 4px 24px -4px rgba(11, 27, 61, 0.05)", "purpose": "Default ambient shadow on cards." },
+      { "name": "interactive-lift", "value": "0 6px 20px -2px rgba(11, 27, 61, 0.08)", "purpose": "Hover state on clickable cards." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default state transitions (150ms-250ms)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tombol aksi utama bernuansa hijau sirkular.",
+      "html": "<button class=\"ds-btn-primary\">Klaim Pangan</button>",
+      "css": ".ds-btn-primary { background: #00AA13; color: #FFFFFF; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer; transition: background 0.15s ease, transform 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); } .ds-btn-primary:hover { background: #005A10; transform: translateY(-1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Tombol aksi korporat berwarna navy gelap.",
+      "html": "<button class=\"ds-btn-secondary\">Unduh Sertifikat</button>",
+      "css": ".ds-btn-secondary { background: #0B1B3D; color: #FFFFFF; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer; transition: background 0.15s ease; } .ds-btn-secondary:hover { background: #142D63; }"
+    },
+    {
+      "name": "Status Pill Active",
+      "kind": "chip",
+      "description": "Pill penanda status aktif atau terverifikasi.",
+      "html": "<span class=\"ds-status-pill\"><span class=\"ds-dot\"></span>Tersedia</span>",
+      "css": ".ds-status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; background: #E8F8EA; border: 1px solid rgba(0, 170, 19, 0.25); color: #00AA13; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; } .ds-dot { width: 6px; height: 6px; border-radius: 50%; background: #00AA13; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Circular Ledger",
+    "overview": "SiklusPangan dibangun di atas metafora buku besar sirkular digital yang mencatat setiap gram pangan berharga dan setiap kilogram reduksi gas rumah kaca secara transparan. Antarmuka mengutamakan kejelasan data operasional, presisi sensorik, dan keandalan korporat kelas enterprise.",
+    "keyCharacteristics": [
+      "Crisp & Tactile Utility: Kontur batas tegas, kontras tinggi, dan umpan balik interaksi yang responsif.",
+      "Light Theme Enterprise: Latar putih jernih dipadukan dengan tinta gelap kontras dan aksen hijau sirkular.",
+      "Zero Fluff Affordance: Setiap badge merepresentasikan status data nyata, tanpa teks eyebrow atau dummy status berulang."
+    ],
+    "rules": [
+      {
+        "name": "The Single-Voice Accent Rule",
+        "body": "Aksen hijau primer (#00AA13) dibatasi maksimal 10–15% dari total luas permukaan layar.",
+        "section": "colors"
+      },
+      {
+        "name": "The High-Contrast Integrity Rule",
+        "body": "Tidak ada teks abu-abu terang yang sulit dibaca; seluruh teks bodi dan deskripsi wajib mempertahankan kontras rasio minimal 4.5:1.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Eyebrow Rule",
+        "body": "Dilarang meletakkan teks huruf kapital kecil dengan tracking renggang (eyebrow/kicker) di atas judul section.",
+        "section": "typography"
+      },
+      {
+        "name": "The Single-Surface Rule",
+        "body": "Permukaan kartu bersifat datar pada posisi diam (flat at rest). Elevasi hanya muncul sebagai respons langsung terhadap interaksi.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Gunakan rasio kontras teks minimal 4.5:1 pada setiap teks bodi dan deskripsi.",
+      "Tampilkan kode batch donatur anonim (#00X) untuk menjaga martabat donatur dan penerima.",
+      "Gunakan satuan porsi yang tegas ('35 Porsi Tersisa') dengan warna aksen primer.",
+      "Terapkan text-wrap: balance pada judul utama.",
+      "Batasi durasi animasi status dan hover pada rentang 150ms–250ms."
+    ],
+    "donts": [
+      "Jangan tambahkan teks eyebrow/kicker uppercase berulang di atas setiap judul section.",
+      "Jangan gunakan badge telemetri tiruan atau dummy pulse indicator yang tidak terhubung ke data fungsional.",
+      "Jangan tampilkan overlay kotak hitam di atas foto makanan yang menutupi gambar hidangan.",
+      "Jangan buat kartu di dalam kartu bertingkat (nested cards) tanpa hierarki yang jelas.",
+      "Jangan gunakan gradasi teks warna-warni yang mengurangi keterbacaan enterprise.",
+      "Jangan gunakan radius lengkung ekstrem (>24px) pada tombol atau input field."
+    ]
+  }
+}

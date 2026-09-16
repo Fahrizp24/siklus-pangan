@@ -25,13 +25,6 @@ export const RADAR_HERO_CONTENT = {
   title: "Radar Penyelamatan Surplus Pangan Aktif",
   description:
     "Memantau surplus pangan segar berstandar BPOM & ISO 14044 di radius 5.0 km Anda. Setiap listing dilindungi Anonimitas Donatur Terenkripsi (#00X) untuk menjaga privasi korporat serta mencegah kerumunan fisik di lokasi penjemputan.",
-  telemetry: {
-    tag: "FEED TELEMETRI",
-    statusText: "LIVE SYNC",
-    radarCycle: "Update 12 detik lalu",
-    availableListings: "14 Batch / 410 Porsi",
-    currentWindow: "Makan Siang (11.00 - 14.00 WIB)",
-  },
   searchPlaceholder:
     "Cari jenis hidangan, kandungan alergen, atau ID anonim (misal: #084)...",
   radiusZoneLabel: "Bangkalan & UTM",
@@ -96,7 +89,6 @@ export function HeroSection() {
   const {
     title,
     description,
-    telemetry,
     searchPlaceholder,
     radiusZoneLabel,
     beneficiaryOnlyLabel,
@@ -105,57 +97,18 @@ export function HeroSection() {
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        {/* ROW 1: Header (Left) & Telemetry Box (Right) */}
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-slate-100">
-          {/* Left Side: Headline & Description */}
-          <div className="max-w-2xl">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-neutral-900 font-headline tracking-tight leading-tight">
-              {title}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 font-body leading-relaxed mt-3">
-              {description.split("Anonimitas Donatur Terenkripsi (#00X)")[0]}
-              <strong className="text-neutral-900 font-semibold">
-                Anonimitas Donatur Terenkripsi (#00X)
-              </strong>
-              {description.split("Anonimitas Donatur Terenkripsi (#00X)")[1]}
-            </p>
-          </div>
-
-          {/* Right Side: Telemetry Box */}
-          <div className="rounded-2xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 w-full lg:w-80 shrink-0 font-body shadow-2xs">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-headline">
-                {telemetry.tag}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-bold text-primary font-headline">
-                  {telemetry.statusText}
-                </span>
-              </div>
-            </div>
-
-            {/* Rows */}
-            <div className="mt-3 space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Siklus Radar:</span>
-                <span className="font-bold text-primary">{telemetry.radarCycle}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Listing Tersedia:</span>
-                <span className="font-bold text-neutral-900">
-                  {telemetry.availableListings}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Jendela Aktif:</span>
-                <span className="font-semibold text-slate-700">
-                  {telemetry.currentWindow}
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* ROW 1: Header */}
+        <div className="pb-6 border-b border-slate-100">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-neutral-900 font-headline tracking-tight leading-tight">
+            {title}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 font-body leading-relaxed mt-3 max-w-4xl">
+            {description.split("Anonimitas Donatur Terenkripsi (#00X)")[0]}
+            <strong className="text-neutral-900 font-semibold">
+              Anonimitas Donatur Terenkripsi (#00X)
+            </strong>
+            {description.split("Anonimitas Donatur Terenkripsi (#00X)")[1]}
+          </p>
         </div>
 
         {/* ROW 2: Search Box & Radar Radius Filter */}
