@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShieldCheck, Recycle, Wallet } from "lucide-react";
+import { Home, Radio, HeartHandshake, Recycle, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -17,7 +17,8 @@ export function AppShell({ children }: AppShellProps) {
 
   const mobileNavItems = [
     { label: "Beranda", href: "/", icon: Home },
-    { label: "Donasi", href: "/rescue", icon: ShieldCheck },
+    { label: "Radar", href: "/rescue", icon: Radio },
+    { label: "Donasi", href: "/donate", icon: HeartHandshake },
     { label: "Limbah", href: "/waste", icon: Recycle },
     { label: "Dompet", href: "/wallet", icon: Wallet },
   ];
