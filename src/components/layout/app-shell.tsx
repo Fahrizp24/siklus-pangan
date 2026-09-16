@@ -28,7 +28,7 @@ export function AppShell({ children }: AppShellProps) {
       <Navbar />
 
       {/* Main Content Area */}
-      <div className="flex-1 pb-20 md:pb-8">{children}</div>
+      <div className="flex-1 pb-16 md:pb-0">{children}</div>
 
       {/* Global Footer */}
       <Footer />

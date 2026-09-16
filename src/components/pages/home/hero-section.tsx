@@ -1,73 +1,89 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, Leaf, Sparkles } from "lucide-react";
+import { Terminal, Database, ShieldCheck, LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
+export interface HeroBadge {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+export interface HeroContent {
+  headline: {
+    normal: string;
+    highlight: string;
+  };
+  description: string;
+  badges: HeroBadge[];
+}
+
+export const HERO_CONTENT: HeroContent = {
+  headline: {
+    normal: "Teknologi Sirkular Pangan Terintegrasi untuk Masa Depan",
+    highlight: "Nol Sampah Makanan",
+  },
+  description:
+    "Menghubungkan surplus pangan korporasi komersial ke panti sosial secara terverifikasi, mengalirkan limbah organik ke biokonversi maggot BSF, dan membukukan reduksi gas rumah kaca tersertifikasi pada sistem ledger yang transparan.",
+  badges: [
+    {
+      id: "expiry-engine",
+      label: "Deterministic Expiry Engine v4.2",
+      icon: Terminal,
+    },
+    {
+      id: "supabase-db",
+      label: "Supabase Enterprise Postgres Realtime",
+      icon: Database,
+    },
+    {
+      id: "crypto-handover",
+      label: "Cryptographic Proof of Handover",
+      icon: ShieldCheck,
+    },
+  ],
+};
 
 export function HeroSection() {
+  const { headline, description, badges } = HERO_CONTENT;
+
   return (
-    <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 flex flex-col items-center justify-center text-center px-4">
-      {/* Background Soft Ambient Light Gradients */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-secondary/5 rounded-full blur-3xl pointer-events-none -z-10" />
-
+    <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl w-full flex flex-col items-center space-y-6"
+        transition={{ duration: 0.45 }}
+        className="rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-10 md:p-12 lg:p-14 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)] text-left relative overflow-hidden"
       >
-        {/* Brand Badge */}
-        <Badge
-          variant="outline"
-          className="px-3.5 py-1.5 gap-2 border-primary/20 bg-primary/5 text-primary text-xs font-semibold rounded-full shadow-xs"
-        >
-          <Leaf className="w-3.5 h-3.5 text-primary" />
-          <span>SiklusPangan — Vibe Code TCC 2026 UTM</span>
-          <Sparkles className="w-3 h-3 text-secondary" />
-        </Badge>
-
-        {/* Title */}
-        <h1 className="font-headline text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-          Penyelamatan Pangan &amp; <br />
-          <span className="text-gradient">
-            Biokonversi Limbah Organik
-          </span>
+        {/* Headline */}
+        <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-extrabold tracking-tight text-neutral-900 leading-[1.18] sm:leading-[1.15] max-w-4xl whitespace-pre-line">
+          {headline.normal}{" "}
+          <span className="text-primary">{headline.highlight}</span>
         </h1>
 
-        {/* Description */}
-        <p className="font-body text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-          Mengintegrasikan rantai pasok sirkular dari hulu ke hilir: Penyelamatan makanan berlebih (<em>Surplus Food Rescue</em>) dan biokonversi sisa makanan basi berbasis insentif logistik terbalik (<em>Reverse Tipping Fee</em>).
+        {/* Subtitle / Description */}
+        <p className="font-body text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-4xl mt-5 sm:mt-6">
+          {description}
         </p>
 
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="pt-2 flex flex-wrap items-center justify-center gap-3.5"
-        >
-          <Button asChild size="lg" className="rounded-xl shadow-md gap-2 font-label">
-            <Link href="/rescue">
-              <span>Jelajahi Radar Surplus</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Button>
-
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="rounded-xl border-border hover:bg-muted font-label"
-          >
-            <Link href="/leaderboard">
-              <span>Wall of Fame Donatur</span>
-            </Link>
-          </Button>
-        </motion.div>
+        {/* Technology Badges */}
+        <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 font-label">
+          {badges.map((badge) => {
+            const Icon = badge.icon;
+            return (
+              <div
+                key={badge.id}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white/90 text-xs sm:text-sm font-medium text-slate-700 shadow-2xs hover:border-primary/40 transition-colors"
+              >
+                <Icon className="w-4 h-4 text-primary shrink-0" />
+                <span>{badge.label}</span>
+              </div>
+            );
+          })}
+        </div>
       </motion.div>
     </section>
   );
 }
+
+

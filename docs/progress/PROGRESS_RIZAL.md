@@ -11,10 +11,10 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [=========>            ] 38%
+Progress Rizal: [===========>        ] 46%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
-- Phase 2 (Live Surplus Radar UI):    0% [READY TO START]
+- Phase 2 (Live Surplus Radar UI):    25% [IN PROGRESS - RZL-04 DONE]
 - Phase 3 (Biokonversi & QR UI):       0% [TODO]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
@@ -43,9 +43,14 @@ Progress Rizal: [=========>            ] 38%
 ### 🍱 Phase 2: Landing Page & Antarmuka Live Surplus Radar (Modul A)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Rizal Phase 1** (App Shell `RZL-03` selesai) + **Fahri Phase 2** (Zod Schemas & Expiry function Fahri untuk dummy/live data).  
-> - **Status Kerja:** 🟡 **Dapat membuat UI Mockup dulu, lalu hubungkan dengan Server Action Fahri (`FHR-10`)**.
+> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04 Landing Page & Sections Selesai)**.
 
-- [ ] **RZL-04:** Antarmuka *Hero Section* & *Landing Page* interaktif (`src/app/page.tsx`).
+- [x] **RZL-04:** Antarmuka *Hero Section*, *Stat Section*, *Feature Tabs Section*, & *10 Pilar Ekosistem* pada Landing Page (`src/app/page.tsx`, `src/components/pages/home/`):
+  - **Hero Section Card:** Desain kartu enterprise, headline normal vs highlight, dan 3 badge teknologi (`hero-section.tsx`).
+  - **Stat Section:** 5 metrik dampak sirkular real-time pangan & limbah (`stat-section.tsx`).
+  - **Feature Tabs Highlight:** 4 tab menu (Live Surplus Radar, Donasi Pangan, Biokonversi, Wall of Fame) dalam 1 baris horizontal dengan filter kategori dan 3 kartu surplus bento, croissant, dan nasi kotak (`features-section.tsx`).
+  - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
+  - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
 - [ ] **RZL-05:** Komponen *Live Surplus Radar Feed* (`src/components/rescue/surplus-radar.tsx`):
   - Kartu lokasi makanan tanpa SDK peta berat.
   - Badge indikator waktu alami (contoh: "Sisa 45 menit lagi").
