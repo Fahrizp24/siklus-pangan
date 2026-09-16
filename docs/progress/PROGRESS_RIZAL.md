@@ -11,10 +11,10 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [==============>     ] 58%
+Progress Rizal: [================>   ] 68%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
-- Phase 2 (Live Surplus Radar UI):    60% [IN PROGRESS - RZL-04, 05, 06 DONE]
+- Phase 2 (Live Surplus Radar UI):    80% [IN PROGRESS - RZL-04, 05, 06, 07 DONE]
 - Phase 3 (Biokonversi & QR UI):       0% [TODO]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
@@ -41,7 +41,7 @@ Progress Rizal: [==============>     ] 58%
 ### 🍱 Phase 2: Landing Page & Antarmuka Live Surplus Radar (Modul A)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Rizal Phase 1** (App Shell `RZL-03` selesai) + **Fahri Phase 2** (Zod Schemas & Expiry function Fahri untuk dummy/live data).  
-> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04, RZL-05, RZL-06 Selesai)**.
+> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04, RZL-05, RZL-06, RZL-07 Selesai)**.
 
 - [x] **RZL-04:** Antarmuka *Hero Section*, *Stat Section*, *Feature Tabs Section*, & *10 Pilar Ekosistem* pada Landing Page (`src/app/page.tsx`, `src/components/pages/home/`):
   - **Hero Section Card:** Desain kartu enterprise, headline normal vs highlight, dan 3 badge teknologi (`hero-section.tsx`).
@@ -60,8 +60,10 @@ Progress Rizal: [==============>     ] 58%
 - [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
   - Komponen `DietaryTag` semantic color schemes (yellow, green, blue, red, neutral) untuk Halal, Vegetarian, Gluten-Free, Bebas Kacang, Dairy-Free.
   - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
-- [ ] **RZL-07:** Halaman Penjemputan & Klaim Token QR Penerima Manfaat (`src/app/claims/page.tsx`, `src/components/pages/claims/`):
+- [x] **RZL-07:** Halaman Penjemputan & Klaim Token QR Penerima Manfaat (`src/app/claims/page.tsx`, `src/components/pages/claims/`):
   - **Hero Section Penjemputan Terjadwal:** Status live `#CLM-89210-BTO`, `🟢 MENUNGGU PENJEMPUTAN (Siap Diambil)`, protokol B2B, info Yayasan Sayap Ibu, dan countdown card batas jendela penjemputan & BPOM (`hero-section.tsx`).
+  - **Handover QR Section:** Tampilan kode QR kriptografis dinamis dengan scanner frame hijau, countdown refresh otomatis (43s), kode cadangan OTP manual (`SP - 892 - 104`) dengan tombol salin, security notice SHA-256, serta spesifikasi hidangan bento box dengan 4 badge spesifikasi & segel primer (`handover-qr-section.tsx`).
+  - **Pickup Protocol Section:** Real-time audit log timeline (Listing Dipublikasikan, Jatah Diklaim, Menuju Lokasi, Scan QR Pending), peta live GPS interaktif dengan rute titik penjemputan Loading Dock Barat, protokol masuk fasilitas, tombol WhatsApp enkripsi koordinator dapur, serta checklist SOP higienitas ISO 22000 (`pickup-protocol-section.tsx`).
 - [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
 
 ---
