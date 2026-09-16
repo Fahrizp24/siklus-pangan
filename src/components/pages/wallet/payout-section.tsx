@@ -84,8 +84,7 @@ export const WALLET_PAYOUT_DATA = {
         unit: "/ kg terfilter",
         isPrimaryRate: false,
         icon: Droplet,
-        iconColor:
-          "text-amber-600 bg-amber-50 border-amber-300 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-400",
+        iconColor: "text-amber-600 bg-amber-50 border-amber-200",
       },
       {
         id: "coffee_dry_organic",

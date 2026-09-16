@@ -67,7 +67,7 @@ export const WALLET_POCKET_DATA = [
     currency: "Rp",
     amount: "1.250.000",
     icon: Hourglass,
-    iconStyle: "text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-400",
+    iconStyle: "text-amber-600 border-amber-300 bg-amber-50/80",
     footerLeft: {
       type: "warning_text",
       text: "Batch timbangan dock IoT verif",
@@ -136,7 +136,7 @@ export function PocketSection() {
                       <span className="truncate">{item.footerLeft.text}</span>
                     </span>
                   ) : item.footerLeft.type === "warning_text" ? (
-                    <span className="text-amber-700 dark:text-amber-400 font-medium truncate block">
+                    <span className="text-amber-700 font-medium truncate block">
                       {item.footerLeft.text}
                     </span>
                   ) : (

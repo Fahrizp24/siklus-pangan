@@ -100,8 +100,7 @@ export const WALLET_LEDGER_DATA = {
       typeBadge: {
         label: "Biofuel UCO",
         icon: Droplet,
-        style:
-          "text-amber-700 bg-amber-50 border-amber-300 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-400",
+        style: "text-amber-700 bg-amber-50/80 border-amber-300/80",
       },
       batchTitle: "Batch #UCO-20250521-12",
       partnerSubtitle: "Mitra: PT Green Biofuel Bali Sentosa (SAF Offtaker)",
@@ -126,8 +125,7 @@ export const WALLET_LEDGER_DATA = {
       typeBadge: {
         label: "Subsidi EV Pangan",
         icon: Truck,
-        style:
-          "text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-700/60 dark:text-blue-300",
+        style: "text-blue-700 bg-blue-50/80 border-blue-200",
       },
       batchTitle: "Surplus Bakery to Food Bank Hub",
       partnerSubtitle: "Armada Cold-chain EV SiklusLog 04 (Denpasar)",
@@ -152,17 +150,15 @@ export const WALLET_LEDGER_DATA = {
       typeBadge: {
         label: "Kliring Escrow",
         icon: Hourglass,
-        style:
-          "text-amber-700 bg-amber-50 border-amber-300 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-400",
+        style: "text-amber-700 bg-amber-50/80 border-amber-300/80",
       },
       batchTitle: "Batch #ORG-20250523-04",
       partnerSubtitle: "Tahap Kalibrasi Sensor Timbang Dock 02 BSF",
       weight: "2.500 kg (est)",
       nominal: "Rp 1.250.000",
-      nominalStyle: "text-amber-700 dark:text-amber-400 font-bold",
+      nominalStyle: "text-amber-700 font-bold",
       status: "Escrow Pending",
-      statusStyle:
-        "text-amber-700 bg-amber-50 border-amber-300 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-400",
+      statusStyle: "text-amber-700 bg-amber-50/80 border-amber-300/80",
       statusDot: "bg-amber-500",
       receipt: {
         type: "verification",
