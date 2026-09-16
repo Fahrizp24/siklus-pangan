@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -13,9 +13,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MAIN_NAV } from "@/lib/nav";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import logoText from "@/assets/logo-text.webp";
 
-interface NavbarUser {
+export interface NavbarUser {
   name: string;
   roleDescription: string;
   avatarUrl?: string;
@@ -26,17 +28,68 @@ interface NavbarProps {
   user?: NavbarUser | null;
 }
 
-export function Navbar({
-  user = {
-    name: "PT Boga Sejahtera",
-    roleDescription: "Verified Commercial Waste Generator",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80",
-    isVerified: true,
-  },
-}: NavbarProps) {
+export function Navbar({ user: initialUser }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(initialUser ?? null);
+
+  useEffect(() => {
+    if (initialUser !== undefined) {
+      setCurrentUser(initialUser);
+      return;
+    }
+
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+      if (authUser) {
+        const metadata = authUser.user_metadata || {};
+        setCurrentUser({
+          name:
+            metadata.display_name ||
+            metadata.full_name ||
+            authUser.email?.split("@")[0] ||
+            "Pengguna",
+          roleDescription:
+            metadata.role === "donor"
+              ? "Donatur Pangan Terverifikasi"
+              : metadata.role === "processor"
+              ? "Pengolah Residu Organik"
+              : "Penerima Manfaat",
+          avatarUrl: metadata.avatar_url,
+          isVerified: true,
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const metadata = session.user.user_metadata || {};
+        setCurrentUser({
+          name:
+            metadata.display_name ||
+            metadata.full_name ||
+            session.user.email?.split("@")[0] ||
+            "Pengguna",
+          roleDescription:
+            metadata.role === "donor"
+              ? "Donatur Pangan Terverifikasi"
+              : metadata.role === "processor"
+              ? "Pengolah Residu Organik"
+              : "Penerima Manfaat",
+          avatarUrl: metadata.avatar_url,
+          isVerified: true,
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [initialUser]);
 
   const navItems = MAIN_NAV;
 
@@ -84,75 +137,90 @@ export function Navbar({
           })}
         </nav>
 
-        {/* Right: Actions & Profile */}
+        {/* Right: Actions & Auth State */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Notification Button */}
-          <button
-            type="button"
-            className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors relative"
-            aria-label="Notifikasi"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
-          </button>
+          {currentUser ? (
+            /* Logged In State */
+            <>
+              {/* Notification Button */}
+              <button
+                type="button"
+                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors relative"
+                aria-label="Notifikasi"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
+              </button>
 
-          {/* Preferences / Filter Button */}
-          <button
-            type="button"
-            className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors"
-            aria-label="Filter dan Pengaturan"
-          >
-            <SlidersHorizontal className="h-5 w-5" />
-          </button>
+              {/* Preferences / Filter Button */}
+              <button
+                type="button"
+                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors"
+                aria-label="Filter dan Pengaturan"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+              </button>
 
-          {/* Vertical Separator */}
-          <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
+              {/* Vertical Separator */}
+              <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
 
-          {/* User Profile Card (Clickable to /dashboard) */}
-          {user ? (
-            <Link
-              href="/dashboard"
-              className={cn(
-                "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
-                pathname === "/dashboard" && "bg-accent/60"
-              )}
-              title="Buka Dashboard ESG & Profil"
-            >
-              <div className="flex flex-col text-right">
-                <div className="flex items-center justify-end gap-1.5">
-                  <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight">
-                    {user.name}
+              {/* User Profile Card (Clickable to /dashboard) */}
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
+                  pathname === "/dashboard" && "bg-accent/60"
+                )}
+                title="Buka Dashboard ESG & Profil"
+              >
+                <div className="flex flex-col text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight">
+                      {currentUser.name}
+                    </span>
+                    {currentUser.isVerified && (
+                      <CheckCircle2 className="h-4 w-4 text-primary fill-primary/10 shrink-0" />
+                    )}
+                  </div>
+                  <span className="font-body text-[11px] text-muted-foreground leading-tight">
+                    {currentUser.roleDescription}
                   </span>
-                  {user.isVerified && (
-                    <CheckCircle2 className="h-4 w-4 text-primary fill-primary/10 shrink-0" />
+                </div>
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted shadow-xs transition-colors">
+                  {currentUser.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentUser.avatarUrl}
+                      alt={currentUser.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
+                      {currentUser.name.charAt(0)}
+                    </div>
                   )}
                 </div>
-                <span className="font-body text-[11px] text-muted-foreground leading-tight">
-                  {user.roleDescription}
-                </span>
-              </div>
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted shadow-xs transition-colors">
-                {user.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
-                    {user.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-            </Link>
+              </Link>
+            </>
           ) : (
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary/90 transition-colors"
-            >
-              Masuk
-            </Link>
+            /* Logged Out / Guest State */
+            <div className="hidden sm:flex items-center gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="rounded-xl text-xs font-semibold text-neutral hover:text-primary font-headline"
+              >
+                <Link href="/login">Masuk</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs font-headline px-3.5"
+              >
+                <Link href="/signup">Daftar</Link>
+              </Button>
+            </div>
           )}
 
           {/* Mobile Menu Toggle Button */}
@@ -170,8 +238,8 @@ export function Navbar({
       {/* Mobile Collapsible Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/80 bg-white px-4 py-4 shadow-lg animate-in slide-in-from-top-2 duration-150">
-          {/* Mobile User Profile Section (Clickable to /dashboard) */}
-          {user && (
+          {currentUser ? (
+            /* Mobile Logged In Section */
             <Link
               href="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
@@ -179,30 +247,30 @@ export function Navbar({
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted">
-                  {user.avatarUrl ? (
+                  {currentUser.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={user.avatarUrl}
-                      alt={user.name}
+                      src={currentUser.avatarUrl}
+                      alt={currentUser.name}
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
-                      {user.name.charAt(0)}
+                      {currentUser.name.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
                     <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors">
-                      {user.name}
+                      {currentUser.name}
                     </span>
-                    {user.isVerified && (
+                    {currentUser.isVerified && (
                       <CheckCircle2 className="h-3.5 w-3.5 text-primary fill-primary/10" />
                     )}
                   </div>
                   <span className="font-body text-[11px] text-muted-foreground">
-                    {user.roleDescription}
+                    {currentUser.roleDescription}
                   </span>
                 </div>
               </div>
@@ -211,6 +279,29 @@ export function Navbar({
                 Dashboard →
               </span>
             </Link>
+          ) : (
+            /* Mobile Guest Login / Register Section */
+            <div className="mb-4 flex items-center gap-2 border-b border-border/60 pb-3">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-1/2 rounded-xl text-xs font-semibold border-border font-headline"
+              >
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  Masuk
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="w-1/2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 font-headline"
+              >
+                <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                  Daftar
+                </Link>
+              </Button>
+            </div>
           )}
 
           {/* Mobile Nav Links */}
