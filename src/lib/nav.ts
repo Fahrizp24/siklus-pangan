@@ -12,7 +12,8 @@ export interface FooterSection {
 
 export const MAIN_NAV: NavItem[] = [
   { label: "Beranda", href: "/" },
-  { label: "Donasi Pangan", href: "/rescue" },
+  { label: "Live Radar", href: "/rescue" },
+  { label: "Donasi Pangan", href: "/donate" },
   { label: "Limbah Organik", href: "/waste" },
   { label: "Dompet Sirkular", href: "/wallet" },
 ];

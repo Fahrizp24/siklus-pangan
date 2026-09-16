@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   SlidersHorizontal,
   Utensils,
@@ -328,7 +329,13 @@ export function SurplusFeedSection() {
     setSelectedCategory,
   } = useRescueFilter();
 
+  const router = useRouter();
   const [claimedId, setClaimedId] = useState<string | null>(null);
+
+  const handleClaimFood = (id: string) => {
+    setClaimedId(id);
+    router.push("/claims");
+  };
 
   // Filter listings reactively based on context state
   const filteredListings = useMemo(() => {
@@ -434,7 +441,7 @@ export function SurplusFeedSection() {
                   key={card.id}
                   card={card}
                   isClaimed={claimedId === card.id}
-                  onClaim={(id) => setClaimedId(id)}
+                  onClaim={handleClaimFood}
                 />
               ))}
             </div>

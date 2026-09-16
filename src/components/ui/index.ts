@@ -10,3 +10,6 @@ export * from "./dietary-tag";
 export * from "./anon-donor-badge";
 export * from "./expiry-time-badge";
 export * from "./surplus-food-card";
+export * from "./metric-stat-card";
+export * from "./table-pagination";
+export * from "./status-pill";

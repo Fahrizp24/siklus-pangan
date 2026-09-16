@@ -11,11 +11,11 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [==============>     ] 58%
+Progress Rizal: [==================> ] 76%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
-- Phase 2 (Live Surplus Radar UI):    60% [IN PROGRESS - RZL-04, 05, 06 DONE]
-- Phase 3 (Biokonversi & QR UI):       0% [TODO]
+- Phase 2 (Live Surplus Radar & Registrasi): 100% [DONE]
+- Phase 3 (Biokonversi & QR UI):       0% [WAITING BACKEND - FHR-12 & 13]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
 ```
@@ -38,15 +38,15 @@ Progress Rizal: [==============>     ] 58%
 
 ---
 
-### 🍱 Phase 2: Landing Page & Antarmuka Live Surplus Radar (Modul A)
+### 🥗 Phase 2: Penyelamatan Pangan & Klaim Surplus (Modul A)
 > 📌 **Prasyarat (Dependencies):**  
-> - **Membutuhkan:** **Rizal Phase 1** (App Shell `RZL-03` selesai) + **Fahri Phase 2** (Zod Schemas & Expiry function Fahri untuk dummy/live data).  
-> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04, RZL-05, RZL-06 Selesai)**.
+> - **Mandiri (Bisa Langsung Dikerjakan)** untuk antarmuka publik, radar feed, dan layout registrasi donasi.  
+> - **Status Kerja:** 🟢 **COMPLETED (Semua tugas Phase 2 selesai 100%)**.
 
-- [x] **RZL-04:** Antarmuka *Hero Section*, *Stat Section*, *Feature Tabs Section*, & *10 Pilar Ekosistem* pada Landing Page (`src/app/page.tsx`, `src/components/pages/home/`):
-  - **Hero Section Card:** Desain kartu enterprise, headline normal vs highlight, dan 3 badge teknologi (`hero-section.tsx`).
-  - **Stat Section:** 5 metrik dampak sirkular real-time pangan & limbah (`stat-section.tsx`).
-  - **Feature Tabs Highlight:** 4 tab menu (Live Surplus Radar, Donasi Pangan, Biokonversi, Wall of Fame) dalam 1 baris horizontal dengan filter kategori dan 3 kartu surplus bento, croissant, dan nasi kotak (`features-section.tsx`).
+- [x] **RZL-04:** Landing Page Section Utama (`src/components/pages/home/`):
+  - **Hero Section:** Headline visual sirkular pangan, badge fitur, dual call-to-actions, dan live telemetry feed (`hero-section.tsx`).
+  - **Stat Section (4 Metrik Dampak):** Metrik kalkulasi surplus pangan, reduksi emisi gas metana, unit biokonversi maggot BSF, dan donatur korporat terdaftar (`stat-section.tsx`).
+  - **Features Interactive Tabs:** 3 pilar operasional interaktif (*Penyelamatan Pangan*, *Biokonversi Maggot BSF*, *Ledger Transparansi ESG*) (`features-section.tsx`).
   - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
   - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
 - [x] **RZL-05:** Komponen *Live Surplus Radar Feed & Hero* (`src/app/rescue/page.tsx`, `src/components/pages/rescue/`):
@@ -60,31 +60,52 @@ Progress Rizal: [==============>     ] 58%
 - [x] **RZL-06:** Filter cepat Alergen & Preferensi Diet (`src/components/ui/dietary-tag.tsx`, `src/components/ui/filter-pills.tsx`):
   - Komponen `DietaryTag` semantic color schemes (yellow, green, blue, red, neutral) untuk Halal, Vegetarian, Gluten-Free, Bebas Kacang, Dairy-Free.
   - Komponen `FilterPills` reusable dengan icon & count badge, hidden scrollbar UI (`display: none; scrollbar-width: none`), touch scroll native, dan desktop mouse wheel horizontal scroll support.
-- [ ] **RZL-07:** Antarmuka Modal Klaim Token QR untuk penerima manfaat (`src/components/ui/claim-qr-modal.tsx`).
-- [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
+- [x] **RZL-07:** Halaman Penjemputan & Klaim Token QR Penerima Manfaat (`src/app/claims/page.tsx`, `src/components/pages/claims/`):
+  - **Hero Section Penjemputan Terjadwal:** Status live `#CLM-89210-BTO`, `🟢 MENUNGGU PENJEMPUTAN (Siap Diambil)`, protokol B2B, info Yayasan Sayap Ibu, dan countdown card batas jendela penjemputan & BPOM (`hero-section.tsx`).
+  - **Claim Details Section (Zero-Gap 2-Kolom):** Penataan kolom kiri (Token QR Kriptografis, OTP manual `SP - 892 - 104`, security notice SHA-256, & Log Audit serah terima) serta kolom kanan (Spesifikasi Makanan Terselamatkan & Panduan Titik Penjemputan berurutan rapat tanpa gap) (`claim-details-section.tsx`).
+  - **Logistics Quick Bar & Actions Section:** Info waktu tempuh ~7 menit Jl. Tantular, tombol navigasi rute (hijau primary), unduh PDF klaim (navy secondary), bantuan/sengketa, pembatalan klaim (destructive outline), kebijakan pembatalan 12:30 WITA, dan timestamp hash kriptografi (`claim-actions-section.tsx`).
+  - **Design Token Compliance:** Menggunakan 100% token warna brand (`primary`, `secondary`, `accent`, `muted`, `border`, `card`, `destructive`).
+- [x] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/donate/page.tsx`, `src/app/rescue/new/page.tsx`, `src/components/pages/donate/`):
+  - **Header Workflow Stepper (4 Tahap):** `Unggah & Gemini VLM` (Selesai), `Validasi Human-in-the-Loop` (Aktif), `Deterministic Expiry Engine`, `Pratinjau Anonim Radar` (`hero-section.tsx`).
+  - **Workspace 2-Kolom:**
+    - **Kolom Kiri:** Kartu Inspeksi Visual Gemini AI VLM (thumbnail foto + komponen hidangan terdeteksi + deteksi alergen otomatis + estimasi volume), Kartu Koreksi Parameter Human-in-the-Loop (nama menu, porsi aktual, kategori katering, checkbox halal MUI & kemasan tersegel), dan Kartu Parameter Termal & Waktu Selesai Masak (jam masak 10:15 WITA, spesifikasi kemasan, toggle radio protokol cold chain vs suhu ruang).
+    - **Kolom Kanan:** Kartu Deterministic Expiry Engine (SOP rule-based BPOM, timer box safe until 14:00 WITA dengan progress bar real-time lock, ambang batas kritis BPOM, audit higienis ISO 14044), Kartu Pratinjau Live Radar publik (/rescue simulasi), Kartu Kepatuhan & Klausul Legal (Good Samaritan Law & sanitasi HACCP), serta tombol submit publish ke live radar (`registration-form-section.tsx`).
 
 ---
 
 ### 🔄 Phase 3: Antarmuka Biokonversi Limbah & QR Handover (Modul B)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Rizal Phase 1** (App Shell) + **Fahri Phase 3** (Server Actions `createWasteBatch` & `processWasteHandover` `FHR-12` & `FHR-13` selesai).  
-> - **Status Kerja:** 🟠 **Menunggu Fahri Phase 3 (Server Actions) selesai untuk integrasi mutasi data**.
+> - **Status Kerja:** 🟢 **Slicing UI & Komponen Selesai 100%** (Siap integrasi mutasi Server Action saat Fahri siap).
 
-- [ ] **RZL-09:** Halaman Form Pendaftaran Limbah Basi (`src/app/waste/new/page.tsx`).
-- [ ] **RZL-10:** Tampilan *Dynamic QR Code Generator* untuk serah terima lapangan (`src/components/waste/qr-handover-card.tsx`).
-- [ ] **RZL-11:** Tampilan status transaksi dompet insentif mitra biokonversi (`src/components/waste/incentive-wallet-card.tsx`).
+- [x] **RZL-09:** Halaman Pendaftaran & Operasional Limbah Organik (`src/app/waste/page.tsx`, `hero-section.tsx`, `stat-section.tsx`, `waste-operations-section.tsx`, `history-section.tsx`):
+  - Form pencatatan batch manifest digital (kategori limbah 2x2, input estimasi berat bersih, status pemilahan sumber & kemurnian).
+  - Inspeksi visual AI VLM Gemini-BioRefine-v2 (bounding box target, spektrometri mikroplastik & logam ferrous, ambang kontaminasi plastik, lolos verifikasi pakan BSF Grade A, status armada penjemputan listrik).
+  - Monitoring armada & fasilitas BSF (PT Bali Biokonversi Sirkular, telemetry live driver Wayan Sukadana, trayektori rute pengiriman Sanur-Kuta-Tabanan, tombol hubungi driver & live GPS).
+  - Riwayat Batch Penjemputan Limbah Organik (`history-section.tsx`): Audit trail manifest digital, transparansi GHG Scope 3, sertifikat biokonversi PDF, filter kategori, export CSV, dan paginasi Q2 2025.
+- [x] **RZL-10:** Tampilan *Dynamic QR Code Generator* untuk serah terima lapangan (`src/components/pages/waste/waste-operations-section.tsx`):
+  - Token serah terima manifest digital `#SKP-8841-ORG` dengan QR handover terintegrasi.
+- [x] **RZL-11:** Tampilan Lengkap Dompet Sirkular & Rekonsiliasi Finansial (`src/app/wallet/page.tsx`, `hero-section.tsx`, `pocket-section.tsx`, `payout-section.tsx`, `ledger-section.tsx`):
+  - **Hero Section:** Indikator real-time BI-FAST payout gateway, tombol ekspor fiskal, & audit log GHG.
+  - **4 Kartu Metrik Pocket:** Saldo Aktif Dapat Ditarik (Rp 14.850.000, Instant 24/7 payout Mandiri/BCA), Akumulasi Reverse Tipping Fee (Rp 42.100.000, +14.2% YoY), Subsidi Logistik & Karbon (Rp 8.450.000, IDXCarbon Scope 3 Offset), Pending Settlement Escrow (Rp 1.250.000, IoT scale verified).
+  - **Tarik Saldo & Indeks Tarif:** Form penarikan 3 bank mitra terdaftar (Mandiri, BCA, BRI), kalkulasi instan BI-FAST tanpa biaya admin, otorisasi dual-signature, dan 3 kartu tarif sirkular terverifikasi (Sisa Dapur Rp 500/kg, UCO Rp 7.500/kg, Ampas Kopi Rp 350/kg).
+  - **Buku Besar Transaksi & Rekonsiliasi:** Tabel ledger immutable hash audit trail, segmented tabs filter (Semua, Insentif BSF, Subsidi Logistik, Penarikan Dana), status mutasi debit/kredit, tombol bukti kuitansi PDF & verifikasi escrow, serta paginasi data.
 
 ---
 
 ### 📊 Phase 4: Wall of Fame, Dasbor ESG & Laporan PDF (Modul C)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Fahri Phase 3** (Tabel & Transaction Ledger `financial_transactions` `FHR-13` selesai agar data metana $CH_4$, $CO_2e$, & Rupiah saved bisa ditarik dari database).  
-> - **Status Kerja:** 🔴 **TIDAK BISA DIKERJAKAN sebelum Fahri Phase 3 selesai!** (Tergantung penuh data ledger Fahri).
+> - **Status Kerja:** 🟢 **Slicing UI & Komponen Dashboard ESG Selesai 100%** (Siap integrasi mutasi ledger saat Fahri siap).
 
-- [ ] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/wall-of-fame/page.tsx`):
+- [ ] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/leaderboard/page.tsx`):
   - Leaderboard donatur unggulan (Hotel, Restoran, Katering).
-- [ ] **RZL-13:** Dasbor Analitik ESG & Reduksi Emisi (`src/app/dashboard/esg/page.tsx`):
-  - Card metrik: Kg Waste Diverted, $CH_4$ metana, $CO_2e$ carbon offset, & Rupiah saved.
+- [x] **RZL-13:** Dasbor Analitik ESG & Reduksi Emisi (`src/app/dashboard/page.tsx`):
+  - **Hero Section:** Sertifikasi ISO 14044 LCA & GHG Protocol Scope 3, Node ID SP-ID-JKT-8829, tombol ekspor laporan audit (PDF/XBRL) dan unduh sertifikat karbon.
+  - **4 Kartu Metrik Stat:** Reduksi Emisi GRK (48.836 kg CO2e, +18.4% YoY), Metana CH4 Dicegah (3.368 kg CH4, Suwung & Bantar Gebang), Pangan Diselamatkan (142.850 Porsi, 28 Mitra Panti), Nilai Dampak S-ROI (Rp 1,42 Miliar, Rasio 1:4.8).
+  - **Grafik & Analitik Scope:** Breakdown emisi Scope 1 (EV 7%), Scope 2 (Cold storage 17%), Scope 3 (Limbah & pangan 76%), Target Net-Zero 2030 (68%), Dual bar chart komparasi bulanan baseline TPA vs aktual tereduksi Jan-Mei 2025, rasio biokonversi BSF 64.5% & kasgot 35.5%.
+  - **Matriks Dampak UN SDGs:** 4 kartu SDG resmi (SDG 2 Tanpa Kelaparan, SDG 12 Konsumsi & Produksi, SDG 13 Perubahan Iklim, SDG 17 Kemitraan Tujuan).
+  - **Log Audit Verifikasi Karbon:** Tabel sertifikat digital terverifikasi (TÜV Rheinland & PT Sucofindo), hash blockchain ledger, tombol pratinjau & unduh PDF, security notice SHA-256 smart contract.
 - [ ] **RZL-14:** Desain Layout Cetak PDF Sertifikat ESG Digital untuk laporan CSR donatur (`src/components/reports/esg-pdf-template.tsx`).
 
 ---

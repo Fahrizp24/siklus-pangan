@@ -17,10 +17,16 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow-sm",
         outline: "text-foreground border-border",
+        accent:
+          "border-primary/25 bg-accent/80 text-primary font-bold",
+        muted:
+          "border-border bg-muted/60 text-muted-foreground font-mono",
         success:
-          "border-transparent bg-emerald-100 text-emerald-800",
+          "border-primary/25 bg-accent/70 text-primary font-semibold",
         warning:
-          "border-transparent bg-amber-100 text-amber-800",
+          "border-amber-300/80 bg-amber-50/80 text-amber-700 font-semibold",
+        info:
+          "border-blue-200 bg-blue-50/80 text-blue-700 font-semibold",
       },
     },
     defaultVariants: {

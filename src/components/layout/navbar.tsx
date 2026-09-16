@@ -112,12 +112,19 @@ export function Navbar({
           {/* Vertical Separator */}
           <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
 
-          {/* User Profile Card */}
+          {/* User Profile Card (Clickable to /dashboard) */}
           {user ? (
-            <div className="hidden sm:flex items-center gap-3 pl-1">
+            <Link
+              href="/dashboard"
+              className={cn(
+                "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
+                pathname === "/dashboard" && "bg-accent/60"
+              )}
+              title="Buka Dashboard ESG & Profil"
+            >
               <div className="flex flex-col text-right">
                 <div className="flex items-center justify-end gap-1.5">
-                  <span className="font-headline text-sm font-bold text-neutral leading-tight">
+                  <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight">
                     {user.name}
                   </span>
                   {user.isVerified && (
@@ -128,7 +135,7 @@ export function Navbar({
                   {user.roleDescription}
                 </span>
               </div>
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 bg-muted shadow-xs">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted shadow-xs transition-colors">
                 {user.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -142,7 +149,7 @@ export function Navbar({
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           ) : (
             <Link
               href="/login"
@@ -167,37 +174,47 @@ export function Navbar({
       {/* Mobile Collapsible Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/80 bg-white px-4 py-4 shadow-lg animate-in slide-in-from-top-2 duration-150">
-          {/* Mobile User Profile Section */}
+          {/* Mobile User Profile Section (Clickable to /dashboard) */}
           {user && (
-            <div className="mb-4 flex items-center gap-3 border-b border-border/60 pb-3">
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 bg-muted">
-                {user.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
-                    {user.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-headline text-sm font-bold text-neutral">
-                    {user.name}
-                  </span>
-                  {user.isVerified && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary fill-primary/10" />
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="mb-4 flex items-center justify-between border-b border-border/60 pb-3 group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted">
+                  {user.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
+                      {user.name.charAt(0)}
+                    </div>
                   )}
                 </div>
-                <span className="font-body text-[11px] text-muted-foreground">
-                  {user.roleDescription}
-                </span>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors">
+                      {user.name}
+                    </span>
+                    {user.isVerified && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary fill-primary/10" />
+                    )}
+                  </div>
+                  <span className="font-body text-[11px] text-muted-foreground">
+                    {user.roleDescription}
+                  </span>
+                </div>
               </div>
-            </div>
+
+              <span className="text-[11px] font-bold text-primary font-headline group-hover:underline">
+                Dashboard →
+              </span>
+            </Link>
           )}
 
           {/* Mobile Nav Links */}
