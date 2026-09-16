@@ -191,7 +191,7 @@ export function SurplusRadar() {
       }
 
       // 3. Filter Beneficiary Only
-      if (isBeneficiaryOnly && item.portionsCount < 30) {
+      if (isBeneficiaryOnly && (item.portionsCount ?? 0) < 30) {
         return false;
       }
 

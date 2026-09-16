@@ -1,11 +1,18 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { SurplusRadar } from "@/components/rescue/surplus-radar";
+import {
+  RescueFilterProvider,
+  RadarHeroSection,
+  SurplusFeedSection,
+} from "@/components/pages/rescue";
 
 export default function RescuePage() {
   return (
     <AppShell>
-      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <SurplusRadar />
+      <main className="w-full py-8 sm:py-10 flex flex-col gap-8 sm:gap-10 items-center justify-start selection:bg-primary/20 selection:text-primary">
+        <RescueFilterProvider>
+          <RadarHeroSection />
+          <SurplusFeedSection />
+        </RescueFilterProvider>
       </main>
     </AppShell>
   );
