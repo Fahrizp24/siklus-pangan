@@ -96,12 +96,16 @@ Progress Rizal: [==================> ] 76%
 ### 📊 Phase 4: Wall of Fame, Dasbor ESG & Laporan PDF (Modul C)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Fahri Phase 3** (Tabel & Transaction Ledger `financial_transactions` `FHR-13` selesai agar data metana $CH_4$, $CO_2e$, & Rupiah saved bisa ditarik dari database).  
-> - **Status Kerja:** 🔴 **TIDAK BISA DIKERJAKAN sebelum Fahri Phase 3 selesai!** (Tergantung penuh data ledger Fahri).
+> - **Status Kerja:** 🟢 **Slicing UI & Komponen Dashboard ESG Selesai 100%** (Siap integrasi mutasi ledger saat Fahri siap).
 
-- [ ] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/wall-of-fame/page.tsx`):
+- [ ] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/leaderboard/page.tsx`):
   - Leaderboard donatur unggulan (Hotel, Restoran, Katering).
-- [ ] **RZL-13:** Dasbor Analitik ESG & Reduksi Emisi (`src/app/dashboard/esg/page.tsx`):
-  - Card metrik: Kg Waste Diverted, $CH_4$ metana, $CO_2e$ carbon offset, & Rupiah saved.
+- [x] **RZL-13:** Dasbor Analitik ESG & Reduksi Emisi (`src/app/dashboard/page.tsx`):
+  - **Hero Section:** Sertifikasi ISO 14044 LCA & GHG Protocol Scope 3, Node ID SP-ID-JKT-8829, tombol ekspor laporan audit (PDF/XBRL) dan unduh sertifikat karbon.
+  - **4 Kartu Metrik Stat:** Reduksi Emisi GRK (48.836 kg CO2e, +18.4% YoY), Metana CH4 Dicegah (3.368 kg CH4, Suwung & Bantar Gebang), Pangan Diselamatkan (142.850 Porsi, 28 Mitra Panti), Nilai Dampak S-ROI (Rp 1,42 Miliar, Rasio 1:4.8).
+  - **Grafik & Analitik Scope:** Breakdown emisi Scope 1 (EV 7%), Scope 2 (Cold storage 17%), Scope 3 (Limbah & pangan 76%), Target Net-Zero 2030 (68%), Dual bar chart komparasi bulanan baseline TPA vs aktual tereduksi Jan-Mei 2025, rasio biokonversi BSF 64.5% & kasgot 35.5%.
+  - **Matriks Dampak UN SDGs:** 4 kartu SDG resmi (SDG 2 Tanpa Kelaparan, SDG 12 Konsumsi & Produksi, SDG 13 Perubahan Iklim, SDG 17 Kemitraan Tujuan).
+  - **Log Audit Verifikasi Karbon:** Tabel sertifikat digital terverifikasi (TÜV Rheinland & PT Sucofindo), hash blockchain ledger, tombol pratinjau & unduh PDF, security notice SHA-256 smart contract.
 - [ ] **RZL-14:** Desain Layout Cetak PDF Sertifikat ESG Digital untuk laporan CSR donatur (`src/components/reports/esg-pdf-template.tsx`).
 
 ---
