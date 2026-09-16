@@ -85,9 +85,11 @@ Progress Rizal: [==================> ] 76%
   - Riwayat Batch Penjemputan Limbah Organik (`history-section.tsx`): Audit trail manifest digital, transparansi GHG Scope 3, sertifikat biokonversi PDF, filter kategori, export CSV, dan paginasi Q2 2025.
 - [x] **RZL-10:** Tampilan *Dynamic QR Code Generator* untuk serah terima lapangan (`src/components/pages/waste/waste-operations-section.tsx`):
   - Token serah terima manifest digital `#SKP-8841-ORG` dengan QR handover terintegrasi.
-- [x] **RZL-11:** Tampilan Dompet Sirkular & Insentif Mitra Biokonversi (`src/app/wallet/page.tsx`, `hero-section.tsx`, `pocket-section.tsx`):
-  - 4 Kartu Metrik Pocket: Saldo Aktif Dapat Ditarik (Rp 14.850.000, Instant 24/7 payout Mandiri/BCA), Akumulasi Reverse Tipping Fee (Rp 42.100.000, +14.2% YoY), Subsidi Logistik & Karbon (Rp 8.450.000, IDXCarbon Scope 3 Offset), Pending Settlement Escrow (Rp 1.250.000, IoT scale verified).
-  - Kalkulasi reverse tipping fee otomatis (Rp 500/kg) langsung terhubung ke Dompet Sirkular.
+- [x] **RZL-11:** Tampilan Lengkap Dompet Sirkular & Rekonsiliasi Finansial (`src/app/wallet/page.tsx`, `hero-section.tsx`, `pocket-section.tsx`, `payout-section.tsx`, `ledger-section.tsx`):
+  - **Hero Section:** Indikator real-time BI-FAST payout gateway, tombol ekspor fiskal, & audit log GHG.
+  - **4 Kartu Metrik Pocket:** Saldo Aktif Dapat Ditarik (Rp 14.850.000, Instant 24/7 payout Mandiri/BCA), Akumulasi Reverse Tipping Fee (Rp 42.100.000, +14.2% YoY), Subsidi Logistik & Karbon (Rp 8.450.000, IDXCarbon Scope 3 Offset), Pending Settlement Escrow (Rp 1.250.000, IoT scale verified).
+  - **Tarik Saldo & Indeks Tarif:** Form penarikan 3 bank mitra terdaftar (Mandiri, BCA, BRI), kalkulasi instan BI-FAST tanpa biaya admin, otorisasi dual-signature, dan 3 kartu tarif sirkular terverifikasi (Sisa Dapur Rp 500/kg, UCO Rp 7.500/kg, Ampas Kopi Rp 350/kg).
+  - **Buku Besar Transaksi & Rekonsiliasi:** Tabel ledger immutable hash audit trail, segmented tabs filter (Semua, Insentif BSF, Subsidi Logistik, Penarikan Dana), status mutasi debit/kredit, tombol bukti kuitansi PDF & verifikasi escrow, serta paginasi data.
 
 ---
 
