@@ -10,10 +10,6 @@ import { Button } from "@/components/ui/button";
    ========================================================================= */
 
 export const WASTE_HERO_CONTENT = {
-  breadcrumbs: [
-    { label: "Beranda", href: "/" },
-    { label: "Limbah Organik & Biokonversi (/waste)", href: "/waste" },
-  ],
   title: "Pengalihan Limbah Organik & Logistik Biokonversi BSF",
   description:
     "Pencatatan sisa pangan non-konsumsi, pemindaian kontaminan berbasis AI, dan penyaluran ke fasilitas biokonversi larva Black Soldier Fly (BSF) mitra terverifikasi.",
@@ -34,30 +30,16 @@ export const WASTE_HERO_CONTENT = {
    ========================================================================= */
 
 export function HeroSection() {
-  const { breadcrumbs, title, description, buttons } = WASTE_HERO_CONTENT;
+  const { title, description, buttons } = WASTE_HERO_CONTENT;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Left Side: Breadcrumb, Title, & Description */}
+          {/* Left Side: Title & Description */}
           <div className="flex-1 max-w-3xl">
-            {/* Breadcrumb Trail */}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-body">
-              <Link
-                href={breadcrumbs[0].href}
-                className="hover:text-primary transition-colors"
-              >
-                {breadcrumbs[0].label}
-              </Link>
-              <span>/</span>
-              <span className="text-foreground font-medium truncate">
-                {breadcrumbs[1].label}
-              </span>
-            </div>
-
             {/* Main Headline */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-foreground font-headline tracking-tight leading-tight mt-2.5">
+            <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-foreground font-headline tracking-tight leading-tight">
               {title}
             </h1>
 
