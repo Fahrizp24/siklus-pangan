@@ -11,11 +11,11 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [================>   ] 68%
+Progress Rizal: [==================> ] 76%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
-- Phase 2 (Live Surplus Radar UI):    80% [IN PROGRESS - RZL-04, 05, 06, 07 DONE]
-- Phase 3 (Biokonversi & QR UI):       0% [TODO]
+- Phase 2 (Live Surplus Radar & Registrasi): 100% [DONE]
+- Phase 3 (Biokonversi & QR UI):       0% [WAITING BACKEND - FHR-12 & 13]
 - Phase 4 (Dashboard ESG & PDF):       0% [TODO]
 - Phase 5 (Polishing & Pitch Deck):    0% [TODO]
 ```
@@ -38,15 +38,15 @@ Progress Rizal: [================>   ] 68%
 
 ---
 
-### 🍱 Phase 2: Landing Page & Antarmuka Live Surplus Radar (Modul A)
+### 🥗 Phase 2: Penyelamatan Pangan & Klaim Surplus (Modul A)
 > 📌 **Prasyarat (Dependencies):**  
-> - **Membutuhkan:** **Rizal Phase 1** (App Shell `RZL-03` selesai) + **Fahri Phase 2** (Zod Schemas & Expiry function Fahri untuk dummy/live data).  
-> - **Status Kerja:** 🟡 **IN PROGRESS (RZL-04, RZL-05, RZL-06, RZL-07 Selesai)**.
+> - **Mandiri (Bisa Langsung Dikerjakan)** untuk antarmuka publik, radar feed, dan layout registrasi donasi.  
+> - **Status Kerja:** 🟢 **COMPLETED (Semua tugas Phase 2 selesai 100%)**.
 
-- [x] **RZL-04:** Antarmuka *Hero Section*, *Stat Section*, *Feature Tabs Section*, & *10 Pilar Ekosistem* pada Landing Page (`src/app/page.tsx`, `src/components/pages/home/`):
-  - **Hero Section Card:** Desain kartu enterprise, headline normal vs highlight, dan 3 badge teknologi (`hero-section.tsx`).
-  - **Stat Section:** 5 metrik dampak sirkular real-time pangan & limbah (`stat-section.tsx`).
-  - **Feature Tabs Highlight:** 4 tab menu (Live Surplus Radar, Donasi Pangan, Biokonversi, Wall of Fame) dalam 1 baris horizontal dengan filter kategori dan 3 kartu surplus bento, croissant, dan nasi kotak (`features-section.tsx`).
+- [x] **RZL-04:** Landing Page Section Utama (`src/components/pages/home/`):
+  - **Hero Section:** Headline visual sirkular pangan, badge fitur, dual call-to-actions, dan live telemetry feed (`hero-section.tsx`).
+  - **Stat Section (4 Metrik Dampak):** Metrik kalkulasi surplus pangan, reduksi emisi gas metana, unit biokonversi maggot BSF, dan donatur korporat terdaftar (`stat-section.tsx`).
+  - **Features Interactive Tabs:** 3 pilar operasional interaktif (*Penyelamatan Pangan*, *Biokonversi Maggot BSF*, *Ledger Transparansi ESG*) (`features-section.tsx`).
   - **10 Pilar Ekosistem:** Arsitektur rekayasa sistem terpadu SiklusPangan (`pillars-section.tsx`).
   - **Harmonisasi Layout Spacing:** Ritme jarak antar-section dan padding simetris ke navbar/footer (`page.tsx`, `app-shell.tsx`).
 - [x] **RZL-05:** Komponen *Live Surplus Radar Feed & Hero* (`src/app/rescue/page.tsx`, `src/components/pages/rescue/`):
@@ -65,7 +65,11 @@ Progress Rizal: [================>   ] 68%
   - **Claim Details Section (Zero-Gap 2-Kolom):** Penataan kolom kiri (Token QR Kriptografis, OTP manual `SP - 892 - 104`, security notice SHA-256, & Log Audit serah terima) serta kolom kanan (Spesifikasi Makanan Terselamatkan & Panduan Titik Penjemputan berurutan rapat tanpa gap) (`claim-details-section.tsx`).
   - **Logistics Quick Bar & Actions Section:** Info waktu tempuh ~7 menit Jl. Tantular, tombol navigasi rute (hijau primary), unduh PDF klaim (navy secondary), bantuan/sengketa, pembatalan klaim (destructive outline), kebijakan pembatalan 12:30 WITA, dan timestamp hash kriptografi (`claim-actions-section.tsx`).
   - **Design Token Compliance:** Menggunakan 100% token warna brand (`primary`, `secondary`, `accent`, `muted`, `border`, `card`, `destructive`).
-- [ ] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/rescue/new/page.tsx`).
+- [x] **RZL-08:** Antarmuka Form Donatur Penyelamatan Makanan (`src/app/donate/page.tsx`, `src/app/rescue/new/page.tsx`, `src/components/pages/donate/`):
+  - **Header Workflow Stepper (4 Tahap):** `Unggah & Gemini VLM` (Selesai), `Validasi Human-in-the-Loop` (Aktif), `Deterministic Expiry Engine`, `Pratinjau Anonim Radar` (`hero-section.tsx`).
+  - **Workspace 2-Kolom:**
+    - **Kolom Kiri:** Kartu Inspeksi Visual Gemini AI VLM (thumbnail foto + komponen hidangan terdeteksi + deteksi alergen otomatis + estimasi volume), Kartu Koreksi Parameter Human-in-the-Loop (nama menu, porsi aktual, kategori katering, checkbox halal MUI & kemasan tersegel), dan Kartu Parameter Termal & Waktu Selesai Masak (jam masak 10:15 WITA, spesifikasi kemasan, toggle radio protokol cold chain vs suhu ruang).
+    - **Kolom Kanan:** Kartu Deterministic Expiry Engine (SOP rule-based BPOM, timer box safe until 14:00 WITA dengan progress bar real-time lock, ambang batas kritis BPOM, audit higienis ISO 14044), Kartu Pratinjau Live Radar publik (/rescue simulasi), Kartu Kepatuhan & Klausul Legal (Good Samaritan Law & sanitasi HACCP), serta tombol submit publish ke live radar (`registration-form-section.tsx`).
 
 ---
 
