@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Recycle,
   Bell,
   SlidersHorizontal,
   CheckCircle2,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MAIN_NAV } from "@/lib/nav";
+import logoText from "@/assets/logo-text.webp";
 
 interface NavbarUser {
   name: string;
@@ -50,18 +51,13 @@ export function Navbar({
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left: Brand Identity */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white shadow-xs transition-transform group-hover:scale-105">
-            <Recycle className="h-6 w-6 stroke-[2.2]" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-headline text-lg font-extrabold tracking-tight text-secondary">
-              Siklus<span className="text-secondary">Pangan</span>
-            </span>
-            <span className="font-label text-[9px] font-bold tracking-[0.22em] text-muted-foreground uppercase leading-none">
-              Circularity Platform
-            </span>
-          </div>
+        <Link href="/" className="flex items-center group py-1">
+          <Image
+            src={logoText}
+            alt="SiklusPangan"
+            priority
+            className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+          />
         </Link>
 
         {/* Center: Desktop Navigation Links */}
