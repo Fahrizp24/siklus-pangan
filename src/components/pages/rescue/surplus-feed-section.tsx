@@ -24,26 +24,26 @@ import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 
 export const FEED_HEADER_CONTENT = {
   title: "Daftar Surplus Realtime",
-  badgeText: "4 Listing Utama",
+  badgeText: "Listing Aktif",
   sortLabelPrefix: "Urutkan:",
   sortOptions: [
-    { id: "distance", label: "Jarak Terdekat" },
-    { id: "expiry", label: "Paling Cepat Basi" },
+    { id: "distance", label: "Jarak Terdekat (Tidak Tersedia)" },
+    { id: "expiry", label: "Batas Konsumsi Terdekat" },
     { id: "portions", label: "Porsi Terbanyak" },
   ],
-  emptyMessage: "Tidak ada listing pangan surplus yang cocok dengan filter atau radius aktif.",
+  emptyMessage: "Tidak ada listing pangan surplus yang cocok dengan pencarian atau tag diet aktif.",
   resetFilterText: "Reset Filter",
 };
 
 export const BENEFICIARY_CAPACITY_DATA = {
   title: "Kapasitas Beneficiary",
-  statusBadge: "Tingkat Aman",
-  label: "Porsi Terserap Hari Ini:",
+  statusBadge: "Simulasi",
+  label: "Contoh Porsi Terserap:",
   consumedPortions: 45,
   totalCapacityPortions: 150,
   foundationName: "Yayasan Sayap Ibu",
   description:
-    "Sisa kuota harian: 105 porsi untuk Yayasan Sayap Ibu. Kuota diperbarui otomatis setiap pukul 00.00 WITA untuk pemerataan distribusi panti & komunitas.",
+    "Simulasi Yayasan Sayap Ibu: 45 dari 150 porsi terserap, sisa 105 porsi. Angka ini data demo, bukan kuota akun Anda dan tidak diperbarui otomatis.",
   historyButtonText: "Histori Klaim",
   reportButtonText: "Lapor Mutu Pangan",
 };
@@ -245,7 +245,14 @@ function BeneficiaryCapacityCard() {
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-2.5 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+      <div
+        role="progressbar"
+        aria-label="Kapasitas beneficiary (data demo)"
+        aria-valuemin={0}
+        aria-valuemax={totalCapacityPortions}
+        aria-valuenow={consumedPortions}
+        className="mt-2.5 h-2 w-full bg-slate-100 rounded-full overflow-hidden"
+      >
         <div
           className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
           style={{ width: `${percentage}%` }}
@@ -268,6 +275,9 @@ function BeneficiaryCapacityCard() {
           <Link href="/claims">{historyButtonText}</Link>
         </Button>
         <Button
+          type="button"
+          disabled
+          aria-describedby="rescue-report-help"
           variant="outline"
           size="sm"
           className="w-full text-xs font-semibold rounded-xl border-slate-200 text-neutral-800 hover:bg-slate-50 shadow-2xs"
@@ -275,6 +285,9 @@ function BeneficiaryCapacityCard() {
           {reportButtonText}
         </Button>
       </div>
+      <p id="rescue-report-help" className="mt-3 text-xs text-slate-500 leading-relaxed">
+        Pelaporan mutu dari halaman ini belum tersedia; tombol dinonaktifkan.
+      </p>
     </div>
   );
 }
@@ -327,20 +340,22 @@ function PickupProtocolCard() {
    MAIN SECTION COMPONENT IMPLEMENTATION
    ========================================================================= */
 
+interface RescueListing extends SurplusFoodCardData {
+  dietaryTags: string[];
+}
+
 export function SurplusFeedSection() {
   const {
     searchQuery,
-    radiusKm,
     selectedCategory,
     sortBy,
     setSortBy,
-    setSearchQuery,
-    setSelectedCategory,
+    resetFilters,
   } = useRescueFilter();
 
   const router = useRouter();
   const [claimStates, setClaimStates] = useState<Record<string, SurplusFoodClaimState>>({});
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>([]);
+  const [liveListings, setLiveListings] = useState<RescueListing[]>([]);
   const [feedStatus, setFeedStatus] = useState<"loading" | "success" | "error">("loading");
   const [reloadKey, setReloadKey] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -381,34 +396,37 @@ export function SurplusFeedSection() {
           setFeedStatus("error");
           return;
         }
-        const mapped: SurplusFoodCardData[] = data.map((row, idx) => {
-            const tags: SurplusFoodTag[] = [];
-            if (row.dietary_tags?.includes("halal")) tags.push({ label: "Halal Terverifikasi", colorScheme: "green" });
-            if (row.dietary_tags?.includes("vegetarian")) tags.push({ label: "Vegetarian", colorScheme: "green" });
-            if (row.dietary_tags?.includes("bebas-gluten")) tags.push({ label: "Bebas Gluten", colorScheme: "blue" });
-            if (row.risky_ingredients && row.risky_ingredients.length > 0) {
-              tags.push({ label: `Alergen: ${row.risky_ingredients.join(", ")}`, colorScheme: "yellow" });
-            }
+        const mapped: RescueListing[] = data.map((row) => {
+          const dietaryTags: string[] = Array.isArray(row.dietary_tags)
+            ? row.dietary_tags.filter((tag: unknown): tag is string => typeof tag === "string")
+            : [];
+          const tags: SurplusFoodTag[] = dietaryTags.map((tag) => ({
+            label: `Tag donatur: ${tag.replace(/[-_]/g, " ")}`,
+            colorScheme: "neutral",
+          }));
+          if (Array.isArray(row.risky_ingredients) && row.risky_ingredients.length > 0) {
+            tags.push({ label: `Alergen tercatat: ${row.risky_ingredients.join(", ")}`, colorScheme: "yellow" });
+          }
+          const portions = typeof row.remaining_portions === "number" &&
+            Number.isFinite(row.remaining_portions) && row.remaining_portions >= 0
+            ? row.remaining_portions : undefined;
+          const cookedAt = Date.parse(row.cooked_at || "");
 
-            return {
-              id: row.id,
-              donorCode: `Donatur Terverifikasi #${row.id.slice(0, 4).toUpperCase()}`,
-              location: "Renon, Denpasar (1.2 km)",
-              distanceKm: 1.2 + idx * 0.4,
-              imageUrl: row.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
-              remainingTime: "",
-              safeUntil: row.safe_until || "",
-              title: row.title,
-              portionsCount: row.remaining_portions,
-              portionsRemainingText: `${row.remaining_portions} Porsi Tersisa`,
-              batchInfo: `Dimasak: ${new Date(row.cooked_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WITA`,
-              tags,
-              category: row.dietary_tags?.[0] || "halal",
-              imageBadge: {
-                label: row.storage_method === "refrigerated" ? "Cold Chain 4°C" : "Kemasan Higienis",
-                iconType: row.storage_method === "refrigerated" ? "cold_chain" : "default",
-              },
-            };
+          return {
+            id: row.id,
+            donorCode: `Donatur #${row.id.slice(0, 4).toUpperCase()}`,
+            imageUrl: row.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
+            remainingTime: "",
+            safeUntil: row.safe_until || "",
+            title: row.title,
+            portionsCount: portions,
+            portionsRemainingText: portions === undefined ? "Jumlah porsi tidak tersedia" : `${portions} Porsi Tersisa`,
+            batchInfo: Number.isFinite(cookedAt)
+              ? `Dimasak: ${new Date(cookedAt).toLocaleString("id-ID", { timeZone: "Asia/Makassar", dateStyle: "medium", timeStyle: "short" })} WITA`
+              : "Waktu masak tidak tersedia",
+            tags,
+            dietaryTags,
+          };
         });
         setLiveListings(mapped);
         setNow(Date.now());
@@ -498,60 +516,28 @@ export function SurplusFeedSection() {
     };
   }), [liveListings, now]);
 
-  // Filter listings reactively based on context state
   const filteredListings = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return timedListings.filter((item) => {
-      // 1. Radius distance filter
-      if (item.distanceKm !== undefined && item.distanceKm > radiusKm) {
+      const dietaryTags = item.dietaryTags.map((tag) => tag.trim().toLowerCase().replace(/-/g, "_"));
+      if (selectedCategory !== "all" && !dietaryTags.includes(selectedCategory) &&
+        !(selectedCategory === "vegetarian" && dietaryTags.includes("vegan"))) {
         return false;
       }
-
-      // 2. Category filter
-      if (selectedCategory !== "all") {
-        if (selectedCategory === "halal") {
-          const hasHalal = item.tags.some((t) =>
-            t.label.toLowerCase().includes("halal")
-          );
-          if (!hasHalal && item.category !== "halal") return false;
-        } else if (selectedCategory === "vegetarian") {
-          const hasVeg = item.tags.some((t) =>
-            t.label.toLowerCase().includes("vegan") ||
-            t.label.toLowerCase().includes("vegetarian")
-          );
-          if (!hasVeg && item.category !== "vegetarian") return false;
-        } else if (selectedCategory === "bebas_gluten") {
-          const hasGlutenFree = item.tags.some((t) =>
-            t.label.toLowerCase().includes("bebas gluten") ||
-            t.label.toLowerCase().includes("aman")
-          );
-          if (!hasGlutenFree) return false;
-        } else if (item.category !== selectedCategory) {
-          return false;
-        }
-      }
-
-      // 3. Search query filter
-      if (searchQuery.trim() !== "") {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = item.title.toLowerCase().includes(query);
-        const matchesDonor = item.donorCode.toLowerCase().includes(query);
-        const matchesLocation = item.location?.toLowerCase().includes(query) ?? false;
-        const matchesTag = item.tags.some((t) =>
-          t.label.toLowerCase().includes(query)
-        );
-        if (!matchesTitle && !matchesDonor && !matchesLocation && !matchesTag) {
-          return false;
-        }
-      }
-
-      return true;
+      return !query || [item.title, item.donorCode, ...item.tags.map((tag) => tag.label)]
+        .some((value) => value.toLowerCase().includes(query));
     }).sort((a, b) => {
-      if (sortBy === "distance") {
-        return (a.distanceKm || 0) - (b.distanceKm || 0);
+      const aValue = sortBy === "portions" ? a.portionsCount : Date.parse(a.safeUntil || "");
+      const bValue = sortBy === "portions" ? b.portionsCount : Date.parse(b.safeUntil || "");
+      const aKnown = aValue !== undefined && Number.isFinite(aValue);
+      const bKnown = bValue !== undefined && Number.isFinite(bValue);
+      if (aKnown !== bKnown) return aKnown ? -1 : 1;
+      if (aKnown && bKnown && aValue !== bValue) {
+        return sortBy === "portions" ? bValue - aValue : aValue - bValue;
       }
-      return 0;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
     });
-  }, [timedListings, searchQuery, radiusKm, selectedCategory, sortBy]);
+  }, [timedListings, searchQuery, selectedCategory, sortBy]);
 
   const claimBusy = !!claimDestination || Object.values(claimStates).some((state) => state.status === "pending");
   const { title, sortLabelPrefix, sortOptions, emptyMessage, resetFilterText } =
@@ -577,14 +563,15 @@ export function SurplusFeedSection() {
             <span className="text-slate-500 font-medium">{sortLabelPrefix}</span>
             <select
               aria-label="Urutkan listing surplus"
+              aria-describedby="rescue-sort-help"
               value={sortBy}
               onChange={(e) =>
                 setSortBy(e.target.value as "distance" | "expiry" | "portions")
               }
-              className="bg-transparent font-bold text-neutral-900 outline-none cursor-pointer pr-1"
+              className="bg-transparent font-bold text-neutral-900 rounded outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer pr-1"
             >
               {sortOptions.map((opt) => (
-                <option key={opt.id} value={opt.id}>
+                <option key={opt.id} value={opt.id} disabled={opt.id === "distance"}>
                   {opt.label}
                 </option>
               ))}
@@ -592,6 +579,10 @@ export function SurplusFeedSection() {
           </div>
         </div>
       </div>
+
+      <p id="rescue-sort-help" className="mb-4 text-xs text-slate-600 leading-relaxed">
+        Urutan jarak dinonaktifkan karena sumber geolokasi belum tersedia. Batas konsumsi diurutkan paling awal, porsi dari terbanyak; nilai tidak tersedia di akhir dan nilai sama diurutkan berdasarkan ID listing.
+      </p>
 
       {/* SECTION CONTENT: Left 2-Column Food Cards Grid + Right Side Menu Cards */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -634,11 +625,8 @@ export function SurplusFeedSection() {
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                }}
-                className="mt-3 text-xs text-primary font-bold hover:underline"
+                onClick={resetFilters}
+                className="mt-3 text-xs text-primary font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {resetFilterText}
               </button>

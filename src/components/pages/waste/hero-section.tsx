@@ -18,7 +18,6 @@ export const WASTE_HERO_CONTENT = {
     },
     newPickup: {
       label: "Input Penjemputan Limbah Baru",
-      href: "/waste/new",
     },
   },
 };
@@ -63,14 +62,17 @@ export function HeroSection() {
 
             {/* Button 2: Input Penjemputan Limbah Baru (Primary Green) */}
             <Button
-              asChild
+              type="button"
+              disabled
+              aria-describedby="waste-pickup-unavailable"
               className="w-full sm:w-auto bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-xs gap-2 transition-colors justify-center"
             >
-              <Link href={buttons.newPickup.href}>
-                <PlusCircle className="w-4 h-4 text-primary-foreground shrink-0" />
-                <span>{buttons.newPickup.label}</span>
-              </Link>
+              <PlusCircle className="w-4 h-4 text-primary-foreground shrink-0" />
+              <span>{buttons.newPickup.label}</span>
             </Button>
+            <p id="waste-pickup-unavailable" className="text-xs text-muted-foreground">
+              Pendaftaran penjemputan limbah baru belum tersedia.
+            </p>
           </div>
         </div>
       </div>

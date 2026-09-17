@@ -15,7 +15,7 @@ export const WASTE_HISTORY_DATA = {
   header: {
     title: "Riwayat Batch Penjemputan Limbah Organik",
     subtitle:
-      "Audit trail manifest digital, transparansi GHG Scope 3, dan sertifikat biokonversi terbitan mitra.",
+      "Data demonstrasi — contoh batch dan status pengolahan, bukan penjemputan langsung atau sertifikat terverifikasi.",
     filterButton: "Filter Kategori",
     exportButton: "Export CSV",
   },
@@ -47,7 +47,6 @@ export const WASTE_HISTORY_DATA = {
         dotColor: "bg-primary",
         text: "Dalam Inkubasi Larva (Hari 4)",
       },
-      certificateUrl: "#",
     },
     {
       id: "ORG-20250522-03",
@@ -66,7 +65,6 @@ export const WASTE_HISTORY_DATA = {
         dotColor: "bg-primary",
         text: "Dalam Inkubasi Larva (Hari 5)",
       },
-      certificateUrl: "#",
     },
     {
       id: "ORG-20250520-02",
@@ -85,7 +83,6 @@ export const WASTE_HISTORY_DATA = {
         hasCheck: true,
         text: "Selesai Panen Kasgot & Larva",
       },
-      certificateUrl: "#",
     },
     {
       id: "ORG-20250518-05",
@@ -104,17 +101,9 @@ export const WASTE_HISTORY_DATA = {
         hasCheck: true,
         text: "Selesai Biofuel Conversion",
       },
-      certificateUrl: "#",
     },
   ],
-  footer: {
-    summaryText: "Menampilkan 4 dari 62 batch limbah terverifikasi Q2 2025",
-    pagination: {
-      prevText: "Sebelumnya",
-      nextText: "Selanjutnya",
-      pages: [1, 2, 3],
-    },
-  },
+  pageSize: 2,
 };
 
 /* =========================================================================
@@ -122,8 +111,18 @@ export const WASTE_HISTORY_DATA = {
    ========================================================================= */
 
 export function HistorySection() {
-  const { header, tableHeaders, rows, footer } = WASTE_HISTORY_DATA;
+  const { header, tableHeaders, rows, pageSize } = WASTE_HISTORY_DATA;
+  const [category, setCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const categories = Array.from(new Set(rows.map((row) => row.category)));
+  const filteredRows = rows.filter(
+    (row) => category === "all" || row.category === category,
+  );
+  const total = filteredRows.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, currentPage), pageCount);
+  const start = (page - 1) * pageSize;
+  const visibleRows = filteredRows.slice(start, start + pageSize);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -139,18 +138,30 @@ export function HistorySection() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <div className="flex flex-wrap items-end gap-2.5 self-start md:self-auto">
+            <label className="flex flex-col gap-1 text-xs font-headline font-semibold">
+              <span className="inline-flex items-center gap-1.5">
+                <Filter aria-hidden="true" className="w-3.5 h-3.5 text-muted-foreground" />
+                {header.filterButton}
+              </span>
+              <select
+                value={category}
+                onChange={(event) => {
+                  setCategory(event.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full max-w-[240px] border border-border bg-background text-foreground rounded-xl h-9 px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="all">Semua kategori</option>
+                {categories.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
-              className="border-border text-foreground hover:bg-muted font-headline font-semibold text-xs rounded-xl h-9 px-3.5 gap-1.5"
-            >
-              <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>{header.filterButton}</span>
-            </Button>
-            <Button
-              type="button"
+              disabled
+              aria-describedby="waste-history-unavailable"
               variant="outline"
               size="sm"
               className="border-border text-foreground hover:bg-muted font-headline font-semibold text-xs rounded-xl h-9 px-3.5 gap-1.5"
@@ -161,14 +172,18 @@ export function HistorySection() {
           </div>
         </div>
 
-        {/* Table Container */}
+        <p id="waste-history-unavailable" className="mt-4 text-xs text-muted-foreground">
+          Ekspor CSV dan sertifikat PDF tidak tersedia untuk data demonstrasi.
+        </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
+            <caption className="sr-only">Data demonstrasi — riwayat batch sesuai kategori</caption>
             <thead>
               <tr className="border-b border-border/80">
                 {tableHeaders.map((col) => (
                   <th
                     key={col.key}
+                    scope="col"
                     className="py-3 px-3 text-[11px] font-bold font-headline text-muted-foreground uppercase tracking-wider first:pl-0 last:pr-0"
                   >
                     {col.label}
@@ -177,7 +192,14 @@ export function HistorySection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
-              {rows.map((row) => (
+              {visibleRows.length === 0 && (
+                <tr>
+                  <td colSpan={tableHeaders.length} className="py-8 text-center text-muted-foreground">
+                    Tidak ada batch demonstrasi untuk kategori ini.
+                  </td>
+                </tr>
+              )}
+              {visibleRows.map((row) => (
                 <tr
                   key={row.id}
                   className="hover:bg-muted/20 transition-colors"
@@ -242,13 +264,13 @@ export function HistorySection() {
 
                   {/* SERTIFIKAT PDF */}
                   <td className="py-4 px-3 last:pr-0 whitespace-nowrap">
-                    <a
-                      href={row.certificateUrl}
-                      className="inline-flex items-center gap-1 text-destructive hover:opacity-80 transition-opacity font-bold font-headline text-xs group"
+                    <span
+                      aria-describedby="waste-history-unavailable"
+                      className="inline-flex items-center gap-1 text-muted-foreground font-bold font-headline text-xs"
                     >
-                      <FileText className="w-4 h-4 text-destructive shrink-0 transition-transform group-hover:scale-110" />
-                      <span>PDF</span>
-                    </a>
+                      <FileText aria-hidden="true" className="w-4 h-4 shrink-0" />
+                      <span>PDF tidak tersedia</span>
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -258,12 +280,11 @@ export function HistorySection() {
 
         {/* Reusable Table Pagination */}
         <TablePagination
-          currentPage={currentPage}
-          pages={footer.pagination.pages}
-          summaryText={footer.summaryText}
-          onPageChange={(page) => setCurrentPage(page)}
-          prevLabel={footer.pagination.prevText}
-          nextLabel={footer.pagination.nextText}
+          currentPage={page}
+          pages={total ? Array.from({ length: pageCount }, (_, index) => index + 1) : []}
+          lastPage={pageCount}
+          summaryText={`Menampilkan ${total ? start + 1 : 0}–${start + visibleRows.length} dari ${total} batch demonstrasi sesuai filter.`}
+          onPageChange={(nextPage) => setCurrentPage(Math.min(Math.max(1, nextPage), pageCount))}
         />
       </Card>
     </section>

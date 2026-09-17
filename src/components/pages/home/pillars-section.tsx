@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Utensils, Recycle, BarChart3, ArrowRight, ShieldCheck, Scale, Award } from "lucide-react";
+import { Utensils, Recycle, BarChart3, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -61,8 +61,8 @@ export const CIRCULAR_FLOW_CONTENT = {
       ],
       icon: BarChart3,
       action: {
-        label: "Lihat Dashboard ESG",
-        href: "/dashboard/esg",
+        label: "Lihat Dashboard Dampak",
+        href: "/dashboard",
       },
     },
   ],

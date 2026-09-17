@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   ArrowDownToLine,
   Banknote,
@@ -11,7 +11,6 @@ import {
   Droplet,
   Coffee,
   Info,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -22,8 +21,8 @@ import { Button } from "@/components/ui/button";
 export const WALLET_PAYOUT_DATA = {
   payoutForm: {
     title: "Tarik Saldo Insentif ke Rekening Perusahaan",
-    gatewayBadge: "BI-FAST 24/7 Enabled",
-    accountsLabel: "Pilih Rekening Bank Mitra Terdaftar",
+    gatewayBadge: "Demo — Payout Belum Tersedia",
+    accountsLabel: "Contoh Rekening Bank (Demo)",
     accounts: [
       {
         id: "mandiri",
@@ -53,11 +52,11 @@ export const WALLET_PAYOUT_DATA = {
     refLabel: "Catatan Referensi Internal (ERP/SAP)",
     defaultRefNote: "PAYOUT-REVERSE-TIP-MAY25",
     perks: {
-      adminFee: "Bebas Biaya Admin (Corporate Tier A)",
-      estimation: "Estimasi: Instan (< 60 detik via BI-FAST)",
+      adminFee: "Biaya admin belum ditetapkan",
+      estimation: "Waktu pencairan belum tersedia",
     },
     authorizationNotice:
-      "Otorisasi dual-signature diverifikasi oleh Tim Keuangan PT Boga Sejahtera.",
+      "Payout belum terhubung ke layanan pembayaran. Tidak ada transfer atau verifikasi rekening yang dilakukan.",
     submitButtonText: "Konfirmasi & Payout Sekarang",
   },
   tariffIndex: {
@@ -112,28 +111,6 @@ export const WALLET_PAYOUT_DATA = {
 export function PayoutSection() {
   const { payoutForm, tariffIndex } = WALLET_PAYOUT_DATA;
 
-  // Form states
-  const [selectedAccountId, setSelectedAccountId] = useState("mandiri");
-  const [withdrawAmount, setWithdrawAmount] = useState(
-    payoutForm.defaultAmount
-  );
-  const [refNote, setRefNote] = useState(payoutForm.defaultRefNote);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [payoutSuccess, setPayoutSuccess] = useState(false);
-
-  const handleMaxWithdraw = () => {
-    setWithdrawAmount("14.850.000");
-  };
-
-  const handleConfirmPayout = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setPayoutSuccess(true);
-      setTimeout(() => setPayoutSuccess(false), 4000);
-    }, 1000);
-  };
-
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -158,14 +135,17 @@ export function PayoutSection() {
             </div>
 
             {/* 3 Bank Account Cards Selector */}
-            <fieldset>
+            <p id="payout-unavailable" className="text-xs text-muted-foreground">
+              Payout, penarikan maksimal, dan perubahan rekening belum tersedia. Rekening, nominal, dan referensi berikut hanya contoh demo, bukan saldo atau rekening terverifikasi.
+            </p>
+            <fieldset disabled aria-describedby="payout-unavailable">
               <legend className="text-xs font-bold text-foreground font-headline block mb-2.5">
                 {payoutForm.accountsLabel}
               </legend>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {payoutForm.accounts.map((acc) => {
-                  const isSelected = selectedAccountId === acc.id;
+                  const isSelected = acc.isPrimary;
 
                   return (
                     <div
@@ -181,10 +161,9 @@ export function PayoutSection() {
                         type="radio"
                         name="payout-account"
                         value={acc.id}
-                        checked={isSelected}
-                        onChange={() => setSelectedAccountId(acc.id)}
-                        aria-describedby={`payout-account-details-${acc.id}`}
-                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        defaultChecked={isSelected}
+                        aria-describedby={`payout-account-details-${acc.id} payout-unavailable`}
+                        className="absolute inset-0 h-full w-full cursor-not-allowed opacity-0"
                       />
                       {/* Radio Circle */}
                       <div className="mt-0.5 shrink-0">
@@ -233,8 +212,9 @@ export function PayoutSection() {
                   </label>
                   <button
                     type="button"
-                    onClick={handleMaxWithdraw}
-                    className="text-[11px] font-bold text-primary hover:underline font-headline"
+                    disabled
+                    aria-describedby="payout-unavailable"
+                    className="text-[11px] font-bold text-primary font-headline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {payoutForm.maxWithdrawLabel}
                   </button>
@@ -246,8 +226,9 @@ export function PayoutSection() {
                   <input
                     id="payout-amount"
                     type="text"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    value={payoutForm.defaultAmount}
+                    disabled
+                    aria-describedby="payout-unavailable"
                     className="field pl-10 pr-3.5 py-2.5 text-sm sm:text-base font-extrabold font-mono text-foreground"
                   />
                 </div>
@@ -261,8 +242,9 @@ export function PayoutSection() {
                 <input
                   id="payout-reference"
                   type="text"
-                  value={refNote}
-                  onChange={(e) => setRefNote(e.target.value)}
+                  value={payoutForm.defaultRefNote}
+                  disabled
+                  aria-describedby="payout-unavailable"
                   className="field px-3.5 py-2.5 text-xs sm:text-sm font-mono text-foreground"
                 />
               </div>
@@ -288,18 +270,12 @@ export function PayoutSection() {
 
               <Button
                 type="button"
-                disabled={isProcessing}
-                onClick={handleConfirmPayout}
+                disabled
+                aria-describedby="payout-unavailable"
                 className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl py-3 px-6 h-12 gap-2 shadow-xs shrink-0"
               >
                 <Lock className="w-4 h-4" />
-                <span>
-                  {isProcessing
-                    ? "Memproses..."
-                    : payoutSuccess
-                    ? "Payout Berhasil!"
-                    : payoutForm.submitButtonText}
-                </span>
+                <span>{payoutForm.submitButtonText}</span>
               </Button>
             </div>
           </div>
@@ -381,13 +357,18 @@ export function PayoutSection() {
                 <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 <span>{tariffIndex.footer.benchmarkText}</span>
               </div>
-              <a
-                href={tariffIndex.footer.slaUrl}
-                className="font-bold text-foreground hover:text-primary font-headline transition-colors flex items-center gap-0.5"
+              <button
+                type="button"
+                disabled
+                aria-describedby="wallet-sla-unavailable"
+                className="font-bold text-foreground font-headline flex items-center gap-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{tariffIndex.footer.slaLinkText}</span>
-              </a>
+              </button>
             </div>
+            <p id="wallet-sla-unavailable" className="text-xs text-muted-foreground">
+              Dokumen ketentuan SLA mutu belum tersedia.
+            </p>
           </div>
         </div>
       </div>

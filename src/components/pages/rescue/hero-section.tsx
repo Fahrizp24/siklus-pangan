@@ -1,124 +1,55 @@
 "use client";
 
 import React from "react";
-import {
-  Search,
-  Navigation,
-  CheckSquare,
-  Square,
-  LayoutGrid,
-  CheckCircle2,
-  Leaf,
-  ShieldCheck,
-  UtensilsCrossed,
-  Croissant,
-  Package,
-} from "lucide-react";
+import { Search, Navigation, Square, LayoutGrid, Leaf, UtensilsCrossed } from "lucide-react";
 import { FilterPills, FilterPillOption } from "@/components/ui/filter-pills";
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 
-/* =========================================================================
-   CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
-   ========================================================================= */
-
 export const RADAR_HERO_CONTENT = {
   title: "Radar Penyelamatan Surplus Pangan Aktif",
-  description:
-    "Memantau surplus pangan segar berstandar BPOM & ISO 14044 di radius 5.0 km Anda. Setiap listing dilindungi Anonimitas Donatur Terenkripsi (#00X) untuk menjaga privasi korporat serta mencegah kerumunan fisik di lokasi penjemputan.",
-  searchPlaceholder:
-    "Cari jenis hidangan, kandungan alergen, atau ID anonim (misal: #084)...",
-  radiusZoneLabel: "Bangkalan & UTM",
+  description: "Temukan surplus pangan berdasarkan judul, kode donatur pada listing, tag diet, dan alergen yang tercatat. Tag berasal dari informasi donatur, bukan bukti verifikasi halal atau jaminan bebas alergen.",
+  searchPlaceholder: "Cari hidangan, tag diet, alergen, atau kode donatur…",
   beneficiaryOnlyLabel: "Khusus Kuota Beneficiary",
 };
 
 export const RADAR_CATEGORY_OPTIONS: FilterPillOption[] = [
-  {
-    id: "all",
-    label: "Semua Kategori",
-    count: 14,
-    icon: LayoutGrid,
-  },
-  {
-    id: "halal",
-    label: "Halal Terverifikasi MUI",
-    icon: CheckCircle2,
-  },
-  {
-    id: "vegetarian",
-    label: "Vegetarian",
-    icon: Leaf,
-  },
-  {
-    id: "bebas_gluten",
-    label: "Bebas Gluten / Alergen Aman",
-    icon: ShieldCheck,
-  },
-  {
-    id: "hotel_catering",
-    label: "Hotel & Catering",
-    icon: UtensilsCrossed,
-  },
-  {
-    id: "bakery",
-    label: "Bakery & Pastry",
-    icon: Croissant,
-  },
-  {
-    id: "nasi_kotak",
-    label: "Nasi Kotak & Bento",
-    icon: Package,
-  },
+  { id: "all", label: "Semua Listing", icon: LayoutGrid },
+  { id: "halal", label: "Tag Halal (Donatur)", icon: UtensilsCrossed },
+  { id: "vegetarian", label: "Tag Vegetarian / Vegan", icon: Leaf },
+  { id: "bebas_gluten", label: "Tag Bebas Gluten", icon: UtensilsCrossed },
 ];
-
-/* =========================================================================
-   COMPONENT IMPLEMENTATION
-   ========================================================================= */
 
 export function HeroSection() {
   const {
     searchQuery,
     setSearchQuery,
     radiusKm,
-    setRadiusKm,
-    isBeneficiaryOnly,
-    setIsBeneficiaryOnly,
     selectedCategory,
     setSelectedCategory,
+    resetFilters,
   } = useRescueFilter();
-
-  const {
-    title,
-    description,
-    searchPlaceholder,
-    radiusZoneLabel,
-    beneficiaryOnlyLabel,
-  } = RADAR_HERO_CONTENT;
+  const { title, description, searchPlaceholder, beneficiaryOnlyLabel } = RADAR_HERO_CONTENT;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        {/* ROW 1: Header */}
         <div className="pb-6 border-b border-slate-100">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-neutral-900 font-headline tracking-tight leading-tight">
             {title}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-body leading-relaxed mt-3 max-w-4xl">
-            {description.split("Anonimitas Donatur Terenkripsi (#00X)")[0]}
-            <strong className="text-neutral-900 font-semibold">
-              Anonimitas Donatur Terenkripsi (#00X)
-            </strong>
-            {description.split("Anonimitas Donatur Terenkripsi (#00X)")[1]}
+            {description}
           </p>
         </div>
 
-        {/* ROW 2: Search Box & Radar Radius Filter */}
         <div className="pt-6 space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Search Input Bar */}
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
-                type="text"
+                type="search"
+                aria-label="Cari judul, kode donatur, tag diet, atau alergen"
+                aria-describedby="rescue-search-help"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
@@ -126,48 +57,42 @@ export function HeroSection() {
               />
             </div>
 
-            {/* Radius Slider Selector */}
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs text-neutral-700 font-body shadow-2xs shrink-0">
-              <Navigation className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="font-medium whitespace-nowrap">
-                Radius: <strong className="text-neutral-900 font-bold">{radiusKm} km</strong>
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-500 text-[11px] whitespace-nowrap">
-                {radiusZoneLabel}
-              </span>
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500 font-body shadow-2xs shrink-0">
+              <Navigation aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+              <span className="font-medium whitespace-nowrap">Radius tidak tersedia</span>
               <input
                 type="range"
                 min="1"
                 max="20"
                 step="0.5"
                 value={radiusKm}
-                onChange={(e) => setRadiusKm(parseFloat(e.target.value))}
-                className="w-20 sm:w-24 h-1.5 accent-primary bg-slate-200 rounded-lg cursor-pointer ml-1"
+                disabled
+                aria-label="Radius pencarian (tidak tersedia)"
+                aria-describedby="rescue-location-help"
+                aria-valuetext="Tidak tersedia tanpa sumber geolokasi"
+                className="w-20 sm:w-24 h-1.5 bg-slate-200 rounded-lg cursor-not-allowed ml-1"
               />
             </div>
 
-            {/* Beneficiary Quota Toggle Button */}
             <button
               type="button"
-              onClick={() => setIsBeneficiaryOnly(!isBeneficiaryOnly)}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shadow-2xs select-none ${
-                isBeneficiaryOnly
-                  ? "border-primary/40 bg-emerald-50/50 text-neutral-900"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-              }`}
+              disabled
+              aria-pressed={false}
+              aria-describedby="rescue-beneficiary-help"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 text-xs sm:text-sm font-semibold whitespace-nowrap shadow-2xs cursor-not-allowed"
             >
-              {isBeneficiaryOnly ? (
-                <CheckSquare className="w-4 h-4 text-primary shrink-0" />
-              ) : (
-                <Square className="w-4 h-4 text-slate-400 shrink-0" />
-              )}
+              <Square aria-hidden="true" className="w-4 h-4 shrink-0" />
               <span>{beneficiaryOnlyLabel}</span>
             </button>
           </div>
 
-          {/* Filter Category Pills */}
-          <div className="pt-1">
+          <div className="space-y-1 text-xs text-slate-600 leading-relaxed">
+            <p id="rescue-location-help">Radius dan urutan jarak dinonaktifkan karena sumber geolokasi belum tersedia. Listing tanpa lokasi atau jarak tetap ditampilkan.</p>
+            <p id="rescue-beneficiary-help">Filter khusus beneficiary belum tersedia karena data listing belum memiliki penanda kuota beneficiary.</p>
+            <p id="rescue-search-help">Pencarian tidak mencakup lokasi karena data lokasi belum tersedia. Pilih Semua Listing untuk menyertakan listing tanpa tag diet.</p>
+          </div>
+
+          <div role="group" aria-label="Filter berdasarkan tag diet donatur" className="pt-1">
             <FilterPills
               options={RADAR_CATEGORY_OPTIONS}
               selectedId={selectedCategory}
@@ -175,6 +100,13 @@ export function HeroSection() {
               variant="outline"
             />
           </div>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="text-xs text-primary font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Reset Filter
+          </button>
         </div>
       </div>
     </section>

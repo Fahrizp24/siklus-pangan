@@ -23,7 +23,7 @@ export const WALLET_LEDGER_DATA = {
   header: {
     title: "Buku Besar Transaksi & Rekonsiliasi",
     subtitle:
-      "Semua mutasi kredit reverse tipping fee dan debit logistik tercatat pada immutable cryptographic hash audit trail.",
+      "Data demonstrasi — contoh mutasi kredit dan debit, bukan transaksi langsung atau bukti rekonsiliasi terverifikasi.",
     tabs: [
       { id: "all", label: "Semua Transaksi" },
       { id: "waste_incentive", label: "Insentif Limbah (BSF)" },
@@ -64,7 +64,6 @@ export const WALLET_LEDGER_DATA = {
       receipt: {
         type: "pdf",
         label: "PDF",
-        href: "#",
       },
     },
     {
@@ -89,7 +88,6 @@ export const WALLET_LEDGER_DATA = {
       receipt: {
         type: "pdf",
         label: "PDF",
-        href: "#",
       },
     },
     {
@@ -114,7 +112,6 @@ export const WALLET_LEDGER_DATA = {
       receipt: {
         type: "pdf",
         label: "PDF",
-        href: "#",
       },
     },
     {
@@ -139,7 +136,6 @@ export const WALLET_LEDGER_DATA = {
       receipt: {
         type: "pdf",
         label: "PDF",
-        href: "#",
       },
     },
     {
@@ -168,15 +164,7 @@ export const WALLET_LEDGER_DATA = {
       },
     },
   ],
-  footer: {
-    summaryText: "Menampilkan 5 dari 128 total transaksi rekonsiliasi tahun berjalan.",
-    pagination: {
-      prevText: "Sebelumnya",
-      nextText: "Selanjutnya",
-      pages: [1, 2, 3],
-      lastPage: 13,
-    },
-  },
+  pageSize: 2,
 };
 
 /* =========================================================================
@@ -184,15 +172,17 @@ export const WALLET_LEDGER_DATA = {
    ========================================================================= */
 
 export function LedgerSection() {
-  const { header, tableHeaders, transactions, footer } = WALLET_LEDGER_DATA;
+  const { header, tableHeaders, transactions, pageSize } = WALLET_LEDGER_DATA;
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Filter transactions according to selected tab
-  const filteredTransactions = transactions.filter((tx) => {
-    if (activeTab === "all") return true;
-    return tx.type === activeTab;
-  });
+  const filteredTransactions = transactions.filter(
+    (tx) => activeTab === "all" || tx.type === activeTab,
+  );
+  const total = filteredTransactions.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, currentPage), pageCount);
+  const start = (page - 1) * pageSize;
+  const visibleTransactions = filteredTransactions.slice(start, start + pageSize);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -216,7 +206,11 @@ export function LedgerSection() {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id)}
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-headline font-semibold transition-all ${
                     isSelected
                       ? "bg-card text-foreground shadow-xs font-bold"
@@ -230,14 +224,18 @@ export function LedgerSection() {
           </div>
         </div>
 
-        {/* Responsive Table */}
+        <p id="wallet-ledger-unavailable" className="mt-4 text-xs text-muted-foreground">
+          Kuitansi PDF dan verifikasi tidak tersedia untuk data demonstrasi; hash dan status hanya contoh.
+        </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
+            <caption className="sr-only">Data demonstrasi — buku besar transaksi sesuai filter</caption>
             <thead>
               <tr className="border-b border-border/80">
                 {tableHeaders.map((col) => (
                   <th
                     key={col.key}
+                    scope="col"
                     className="py-3 px-3 text-[11px] font-bold font-headline text-muted-foreground uppercase tracking-wider first:pl-0 last:pr-0"
                   >
                     {col.label}
@@ -246,7 +244,14 @@ export function LedgerSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
-              {filteredTransactions.map((tx) => {
+              {visibleTransactions.length === 0 && (
+                <tr>
+                  <td colSpan={tableHeaders.length} className="py-8 text-center text-muted-foreground">
+                    Tidak ada transaksi demonstrasi untuk filter ini.
+                  </td>
+                </tr>
+              )}
+              {visibleTransactions.map((tx) => {
                 const TypeIcon = tx.typeBadge.icon;
 
                 return (
@@ -320,6 +325,8 @@ export function LedgerSection() {
                       {tx.receipt.type === "pdf" ? (
                         <Button
                           type="button"
+                          disabled
+                          aria-describedby="wallet-ledger-unavailable"
                           variant="outline"
                           size="sm"
                           className="h-8 px-2.5 rounded-lg border-border text-foreground hover:bg-muted font-bold font-headline text-xs gap-1"
@@ -330,6 +337,8 @@ export function LedgerSection() {
                       ) : (
                         <Button
                           type="button"
+                          disabled
+                          aria-describedby="wallet-ledger-unavailable"
                           variant="outline"
                           size="sm"
                           className="h-8 px-2.5 rounded-lg border-border text-muted-foreground hover:bg-muted font-medium font-headline text-xs gap-1"
@@ -348,13 +357,11 @@ export function LedgerSection() {
 
         {/* Reusable Table Pagination */}
         <TablePagination
-          currentPage={currentPage}
-          pages={footer.pagination.pages}
-          lastPage={footer.pagination.lastPage}
-          summaryText={footer.summaryText}
-          onPageChange={(page) => setCurrentPage(page)}
-          prevLabel={footer.pagination.prevText}
-          nextLabel={footer.pagination.nextText}
+          currentPage={page}
+          pages={total ? Array.from({ length: pageCount }, (_, index) => index + 1) : []}
+          lastPage={pageCount}
+          summaryText={`Menampilkan ${total ? start + 1 : 0}–${start + visibleTransactions.length} dari ${total} transaksi demonstrasi sesuai filter.`}
+          onPageChange={(nextPage) => setCurrentPage(Math.min(Math.max(1, nextPage), pageCount))}
         />
       </Card>
     </section>

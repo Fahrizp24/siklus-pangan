@@ -145,17 +145,20 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               {/* Notification Button */}
               <button
                 type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors relative"
+                disabled
+                aria-describedby="navbar-actions-unavailable"
+                className="p-2 rounded-lg text-neutral disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Notifikasi"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
               </button>
 
               {/* Preferences / Filter Button */}
               <button
                 type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors"
+                disabled
+                aria-describedby="navbar-actions-unavailable"
+                className="p-2 rounded-lg text-neutral disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Filter dan Pengaturan"
               >
                 <SlidersHorizontal className="h-5 w-5" />
@@ -238,6 +241,12 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           </button>
         </div>
       </div>
+
+      {currentUser && (
+        <p id="navbar-actions-unavailable" className="mx-auto max-w-7xl px-4 pb-2 text-xs text-muted-foreground sm:px-6 lg:px-8">
+          Notifikasi, filter, dan pengaturan belum tersedia.
+        </p>
+      )}
 
       {/* Mobile Collapsible Navigation Drawer */}
         <div

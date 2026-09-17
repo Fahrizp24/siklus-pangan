@@ -48,6 +48,8 @@ export function HeroSection() {
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
             <Button
               type="button"
+              disabled
+              aria-describedby="wallet-reports-unavailable"
               variant="outline"
               className="border-border text-foreground hover:bg-muted font-headline font-semibold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-2xs"
             >
@@ -57,6 +59,8 @@ export function HeroSection() {
 
             <Button
               type="button"
+              disabled
+              aria-describedby="wallet-reports-unavailable"
               variant="outline"
               className="border-border text-foreground hover:bg-muted font-headline font-semibold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-2xs"
             >
@@ -65,6 +69,9 @@ export function HeroSection() {
             </Button>
           </div>
         </div>
+        <p id="wallet-reports-unavailable" className="mt-3 text-xs text-muted-foreground">
+          Ekspor laporan fiskal dan audit log GHG belum tersedia.
+        </p>
       </div>
     </section>
   );

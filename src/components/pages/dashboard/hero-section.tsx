@@ -64,6 +64,8 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0 self-start lg:self-center w-full sm:w-auto lg:w-72">
             <Button
               type="button"
+              disabled
+              aria-describedby="dashboard-reports-unavailable"
               variant="outline"
               className="w-full border-border text-foreground hover:bg-muted font-headline font-semibold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-2xs justify-center"
             >
@@ -73,6 +75,8 @@ export function HeroSection() {
 
             <Button
               type="button"
+              disabled
+              aria-describedby="dashboard-reports-unavailable"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-xs justify-center"
             >
               <Award className="w-4 h-4" />
@@ -80,6 +84,9 @@ export function HeroSection() {
             </Button>
           </div>
         </div>
+        <p id="dashboard-reports-unavailable" className="mt-3 text-xs text-muted-foreground">
+          Ekspor laporan audit ESG dan unduh sertifikat karbon belum tersedia.
+        </p>
       </div>
     </section>
   );

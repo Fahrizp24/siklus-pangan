@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   GitFork,
   Navigation,
@@ -10,7 +10,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DisputeModal } from "@/components/scanner/dispute-modal";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -51,19 +50,9 @@ export const CLAIM_ACTIONS_CONTENT = {
 
 export function ClaimActionsSection() {
   const { logisticsInfo, buttons, footerPolicy } = CLAIM_ACTIONS_CONTENT;
-  const [showDisputeModal, setShowDisputeModal] = useState(false);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      {/* Modal Dispute Escalation */}
-      {showDisputeModal && (
-        <DisputeModal
-          listingId="2a02ea19-32b6-43ac-b4d2-71c2eeead97b"
-          foodTitle="Gourmet Bento Box Korporat (#CLM-89210-BTO)"
-          onClose={() => setShowDisputeModal(false)}
-        />
-      )}
-
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         {/* Top Content Row: Logistics Notice (Left) & Action Buttons (Right) */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -103,6 +92,9 @@ export function ClaimActionsSection() {
 
               {/* 2. Unduh Bukti Klaim PDF (Navy Secondary) */}
               <Button
+                type="button"
+                disabled
+                aria-describedby="claims-actions-unavailable"
                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors"
               >
                 <Download className="w-4 h-4" />
@@ -113,7 +105,8 @@ export function ClaimActionsSection() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowDisputeModal(true)}
+                disabled
+                aria-describedby="claims-dispute-unavailable"
                 className="border-border text-foreground hover:bg-muted font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors"
               >
                 <HelpCircle className="w-4 h-4 text-destructive" />
@@ -123,6 +116,9 @@ export function ClaimActionsSection() {
 
             {/* Bottom Row: Batalkan Klaim (Destructive Outline, Aligned Right) */}
             <Button
+              type="button"
+              disabled
+              aria-describedby="claims-actions-unavailable"
               variant="outline"
               className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors self-end"
             >
@@ -132,6 +128,12 @@ export function ClaimActionsSection() {
           </div>
         </div>
 
+        <p id="claims-actions-unavailable" className="mt-3 text-xs text-muted-foreground">
+          Unduh bukti klaim dan pembatalan klaim belum tersedia.
+        </p>
+        <p id="claims-dispute-unavailable" className="mt-2 text-xs text-muted-foreground">
+          Bantuan / sengketa belum tersedia: target listing klaim Anda belum terhubung. Tidak ada laporan yang dikirim.
+        </p>
 
         {/* Bottom Policy & Timestamp Footer Row */}
         <div className="border-t border-border/70 pt-4 mt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">

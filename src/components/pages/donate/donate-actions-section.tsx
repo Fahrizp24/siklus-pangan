@@ -21,7 +21,6 @@ export const DONATE_ACTIONS_CONTENT = {
   saveDraftButtonText: "Simpan Draf Batch",
   verifyClaimButtonText: "Pindai QR Penerima (Serah Terima)",
   publishButtonText: "Terbitkan ke Live Radar (/rescue)",
-  publishSuccessText: "Listing Berhasil Diterbitkan!",
 };
 
 /* =========================================================================
@@ -41,11 +40,7 @@ export function DonateActionsSection({
     saveDraftButtonText,
     verifyClaimButtonText,
     publishButtonText,
-    publishSuccessText,
   } = DONATE_ACTIONS_CONTENT;
-
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
   const [handoverBanner, setHandoverBanner] = useState<{ success: boolean; message: string } | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -80,22 +75,6 @@ export function DonateActionsSection({
   const handleHandoverDialogChange = (open: boolean) => {
     if (handoverLockRef.current) return;
     setShowDonorQrScanner(open);
-  };
-
-  const handlePublishClick = () => {
-    if (onPublish) {
-      onPublish();
-      return;
-    }
-
-    setIsPublishing(true);
-    setTimeout(() => {
-      setIsPublishing(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        window.location.href = "/rescue";
-      }, 1200);
-    }, 800);
   };
 
   return (
@@ -159,6 +138,8 @@ export function DonateActionsSection({
             type="button"
             variant="outline"
             onClick={onSaveDraft}
+            disabled={!onSaveDraft}
+            aria-describedby={!onSaveDraft ? "donate-draft-unavailable" : undefined}
             className="border-border text-foreground hover:bg-muted font-headline font-bold text-xs sm:text-sm rounded-xl px-5 py-3 shadow-2xs transition-colors"
           >
             {saveDraftButtonText}
@@ -184,24 +165,25 @@ export function DonateActionsSection({
         {/* Right Side: Primary Publish Button */}
         <Button
           type="button"
-          onClick={handlePublishClick}
-          disabled={isPublishing || isSuccess}
-          aria-busy={isPublishing}
+          onClick={() => onPublish?.()}
+          disabled={!onPublish}
+          aria-describedby={!onPublish ? "donate-publish-unavailable" : undefined}
           className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-6 py-3 shadow-sm gap-2 transition-colors shrink-0 disabled:opacity-75"
         >
-          {isSuccess ? (
-            <>
-              <CheckCircle2 className="w-4 h-4 text-white" />
-              <span>{publishSuccessText}</span>
-            </>
-          ) : (
-            <>
-              <ArrowUpToLine className="w-4 h-4 stroke-[2.5]" />
-              <span>{publishButtonText}</span>
-            </>
-          )}
+          <ArrowUpToLine className="w-4 h-4 stroke-[2.5]" />
+          <span>{publishButtonText}</span>
         </Button>
       </div>
+      {!onSaveDraft && (
+        <p id="donate-draft-unavailable" className="mt-3 text-xs text-muted-foreground">
+          Simpan draf belum tersedia: penyimpanan belum terhubung.
+        </p>
+      )}
+      {!onPublish && (
+        <p id="donate-publish-unavailable" className="mt-3 text-xs text-muted-foreground">
+          Terbitkan listing belum tersedia: formulir belum terhubung ke penerbitan.
+        </p>
+      )}
     </section>
     </Dialog>
   );

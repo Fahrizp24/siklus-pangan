@@ -163,13 +163,16 @@ try {
     ['dashboard/stat-section', 'StatSection', ['REDUKSI EMISI GRK', '+18.4% YoY', 'Breakdown Emisi per Scope']],
     ['waste/stat-section', 'StatSection', ['Total Limbah Dialihkan', 'Protein pakan ternak bernilai tinggi', 'Subsidi sirkular otomatis']],
     ['wallet/pocket-section', 'PocketSection', ['Saldo Aktif Dapat Ditarik', 'Dari 84.200 kg limbah organik', 'Tersertifikasi IDXCarbon']],
-    ['dashboard/audit-log-section', 'AuditLogSection', ['Log Audit Verifikasi Karbon & Sertifikat Digital', 'SKP-CR-2025-0581', 'SKP-CR-2025-0422']],
+    ['dashboard/audit-log-section', 'AuditLogSection', ['Log Audit Verifikasi Karbon & Sertifikat Digital', 'SKP-CR-2025-0581', 'Data demonstrasi']],
   ];
   for (const [file, exported, expected] of sections) {
     check(`Static SSR ${file}: real imports and rendered content`, () => {
       const html = render(load(`@/components/pages/${file}`)[exported]);
       assert.match(html, /<section\b/);
       for (const value of expected) assert(text(html).includes(value), `${file} missing rendered text: ${value}`);
+      if (file === 'dashboard/audit-log-section') {
+        assert(!text(html).includes('SKP-CR-2025-0422'), 'Second-page audit row must not render on page one');
+      }
       assert.match(html, /<svg\b/);
     });
   }

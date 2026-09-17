@@ -13,6 +13,7 @@ export interface RescueFilterState {
   setSelectedCategory: (cat: string) => void;
   sortBy: "distance" | "expiry" | "portions";
   setSortBy: (sort: "distance" | "expiry" | "portions") => void;
+  resetFilters: () => void;
 }
 
 const RescueFilterContext = createContext<RescueFilterState | undefined>(undefined);
@@ -22,7 +23,7 @@ export function RescueFilterProvider({ children }: { children: ReactNode }) {
   const [radiusKm, setRadiusKm] = useState<number>(10);
   const [isBeneficiaryOnly, setIsBeneficiaryOnly] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"distance" | "expiry" | "portions">("distance");
+  const [sortBy, setSortBy] = useState<"distance" | "expiry" | "portions">("expiry");
 
   return (
     <RescueFilterContext.Provider
@@ -36,7 +37,14 @@ export function RescueFilterProvider({ children }: { children: ReactNode }) {
         selectedCategory,
         setSelectedCategory,
         sortBy,
-        setSortBy,
+        setSortBy: (sort) => setSortBy(sort === "distance" ? "expiry" : sort),
+        resetFilters: () => {
+          setSearchQuery("");
+          setRadiusKm(10);
+          setIsBeneficiaryOnly(false);
+          setSelectedCategory("all");
+          setSortBy("expiry");
+        },
       }}
     >
       {children}
