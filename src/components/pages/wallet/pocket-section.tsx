@@ -1,14 +1,17 @@
-"use client";
-
 import React from "react";
 import { Landmark, Recycle, Cloud, Hourglass } from "lucide-react";
-import { MetricStatCard } from "@/components/ui/metric-stat-card";
+import { MetricStatCard, type MetricStatCardProps } from "@/components/ui/metric-stat-card";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
    ========================================================================= */
 
-export const WALLET_POCKET_DATA = [
+type WalletPocketItem = Omit<MetricStatCardProps, "value"> & {
+  id: string;
+  amount: string;
+};
+
+export const WALLET_POCKET_DATA: WalletPocketItem[] = [
   {
     id: "active_balance",
     label: "Saldo Aktif Dapat Ditarik",
@@ -97,8 +100,8 @@ export function PocketSection() {
             icon={item.icon}
             iconStyle={item.iconStyle}
             iconCustomLabel={item.iconCustomLabel}
-            footerLeft={item.footerLeft as any}
-            footerRight={item.footerRight as any}
+            footerLeft={item.footerLeft}
+            footerRight={item.footerRight}
           />
         ))}
       </div>

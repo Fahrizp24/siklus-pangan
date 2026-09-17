@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export function RoutePlaceholder({ title, description }: { title: string; description: string }) {
   return (
-    <AppShell>
-      <main className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center p-6">
+    <AppShell mainId="main-content">
+      <main id="main-content" tabIndex={-1} className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center p-6">
         <section className="glass-panel w-full rounded-2xl p-8 text-center shadow-sm">
           <Construction className="mx-auto mb-4 h-10 w-10 text-primary" />
           <p className="text-sm font-semibold text-primary font-label">Route aktif</p>

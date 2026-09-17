@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FilterPills } from "@/components/ui/filter-pills";
 import { SurplusFoodCard, SurplusFoodCardData } from "@/components/ui/surplus-food-card";
 
@@ -141,27 +142,21 @@ export function FeaturesSection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         {/* Tab Navigation Header with Semantic ARIA */}
-        <div
-          role="tablist"
+        <TabsList
           aria-label="Fitur Utama SiklusPangan"
-          className="flex items-center gap-4 sm:gap-6 border-b border-border/80 overflow-x-auto no-scrollbar"
+          className="flex h-auto justify-start rounded-none bg-transparent p-0 items-center gap-4 sm:gap-6 border-b border-border/80 overflow-x-auto no-scrollbar"
         >
           {SHOWCASE_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
 
             return (
-              <button
+              <TabsTrigger
                 key={tab.id}
-                role="tab"
-                id={`tab-${tab.id}`}
-                aria-selected={isActive}
-                aria-controls={`panel-${tab.id}`}
-                tabIndex={isActive ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-2 pb-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                value={tab.id}
+                className={`inline-flex items-center gap-2 rounded-none pt-0 pb-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none ${
                   isActive
                     ? "text-primary font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -179,21 +174,18 @@ export function FeaturesSection() {
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                   />
                 )}
-              </button>
+              </TabsTrigger>
             );
           })}
-        </div>
+        </TabsList>
 
         {/* Tab Content Panels */}
         <div className="mt-6 sm:mt-8">
           <AnimatePresence mode="wait">
             {/* TAB 1: RADAR RESCUE SHOWCASE */}
             {activeTab === "radar" && (
+              <TabsContent key="tab-panel-radar" value="radar" asChild forceMount className="mt-0">
               <motion.div
-                key="tab-panel-radar"
-                id="panel-radar"
-                role="tabpanel"
-                aria-labelledby="tab-radar"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -244,15 +236,13 @@ export function FeaturesSection() {
                   </Button>
                 </div>
               </motion.div>
+              </TabsContent>
             )}
 
             {/* TAB 2: DONASI PANGAN & AI VISION */}
             {activeTab === "ai_vision" && (
+              <TabsContent key="tab-panel-ai_vision" value="ai_vision" asChild forceMount className="mt-0">
               <motion.div
-                key="tab-panel-ai_vision"
-                id="panel-ai_vision"
-                role="tabpanel"
-                aria-labelledby="tab-ai_vision"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -404,15 +394,13 @@ export function FeaturesSection() {
                   </Button>
                 </div>
               </motion.div>
+              </TabsContent>
             )}
 
             {/* TAB 3: WASTE SCALE & BSF SIMULATOR */}
             {activeTab === "waste_scale" && (
+              <TabsContent key="tab-panel-waste" value="waste_scale" asChild forceMount className="mt-0">
               <motion.div
-                key="tab-panel-waste"
-                id="panel-waste_scale"
-                role="tabpanel"
-                aria-labelledby="tab-waste_scale"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -520,10 +508,11 @@ export function FeaturesSection() {
                   </Button>
                 </div>
               </motion.div>
+              </TabsContent>
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </Tabs>
     </section>
   );
 }

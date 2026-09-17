@@ -133,6 +133,7 @@ export function QrReader({
             variant="ghost"
             size="sm"
             onClick={onClose}
+            aria-label="Tutup pemindai kode QR"
             className="rounded-full w-8 h-8 p-0 text-muted-foreground hover:text-foreground"
           >
             ✕
@@ -160,7 +161,7 @@ export function QrReader({
               {/* Laser Scanning Line Animation */}
               <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse absolute top-1/2 -translate-y-1/2" />
             </div>
-            <span className="mt-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur text-[11px] font-mono text-primary border border-primary/20">
+            <span role="status" className="mt-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur text-[11px] font-mono text-white border border-primary/20">
               Mendeteksi QR Code Otomatis...
             </span>
           </div>
@@ -168,7 +169,7 @@ export function QrReader({
 
         {/* Fallback jika kamera error atau izin ditolak */}
         {cameraError && (
-          <div className="p-6 text-center text-white flex flex-col items-center justify-center gap-3">
+          <div role="alert" className="p-6 text-center text-white flex flex-col items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-full bg-destructive/20 text-destructive border border-destructive/30 flex items-center justify-center">
               <CameraOff className="w-6 h-6" />
             </div>
@@ -180,7 +181,7 @@ export function QrReader({
 
         {/* Notifikasi jika sukses scan */}
         {scannedResult && (
-          <div className="absolute inset-0 bg-primary/95 text-primary-foreground flex flex-col items-center justify-center p-6 gap-3 animate-in fade-in zoom-in">
+          <div role="status" className="absolute inset-0 bg-primary/95 text-primary-foreground flex flex-col items-center justify-center p-6 gap-3 animate-in fade-in zoom-in">
             <CheckCircle2 className="w-12 h-12 text-primary-foreground" />
             <h4 className="font-headline font-bold text-base">
               QR Code Terverifikasi!
@@ -216,10 +217,12 @@ export function QrReader({
           <Button
             type="submit"
             disabled={!manualCode.trim() || isProcessing}
+            aria-label="Verifikasi"
+            aria-busy={isProcessing}
             className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-4 py-2"
           >
             {isProcessing ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
             ) : (
               "Verifikasi"
             )}

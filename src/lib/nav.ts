@@ -10,6 +10,10 @@ export interface FooterSection {
   links: NavItem[];
 }
 
+export function isNavItemActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+}
+
 export const MAIN_NAV: NavItem[] = [
   { label: "Beranda", href: "/" },
   { label: "Live Radar", href: "/rescue" },
@@ -26,28 +30,13 @@ export const FOOTER_SECTIONS: FooterSection[] = [
       { label: "Donasi Pangan B2B", href: "/donate" },
       { label: "Konversi Biogas & Kompos", href: "/waste" },
       { label: "Dompet Sirkular Karbon", href: "/wallet" },
-      { label: "Kalkulator Emisi Scope 3", href: "/dashboard" },
+      { label: "Dashboard Dampak", href: "/dashboard" },
     ],
   },
   {
-    title: "KEPATUHAN & SERTIFIKASI",
+    title: "AKTIVITAS PANGAN",
     links: [
-      { label: "Standar Keamanan ISO 27001", href: "/compliance/iso-27001" },
-      { label: "ISO 14044 Life Cycle Assessment", href: "/compliance/iso-14044" },
-      { label: "Protokol Gas Rumah Kaca (GHG)", href: "/compliance/ghg" },
-      { label: "Regulasi BPOM Pangan Olahan", href: "/compliance/bpom" },
-      { label: "Sertifikasi Halal LPOM MUI", href: "/compliance/halal" },
-    ],
-  },
-  {
-    title: "PERUSAHAAN",
-    links: [
-      { label: "Kebijakan Privasi", href: "/privacy" },
-      { label: "Ketentuan Layanan", href: "/terms" },
-      { label: "ESG Compliance & Metrik", href: "/dashboard" },
-      { label: "Sertifikasi Karbon", href: "/wallet" },
-      { label: "Pusat Bantuan", href: "/help" },
-      { label: "API Mitra B2B", href: "/api-docs" },
+      { label: "Klaim Pangan", href: "/claims" },
     ],
   },
 ];

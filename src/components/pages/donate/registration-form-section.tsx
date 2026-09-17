@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import {
   Camera,
@@ -21,6 +21,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FoodVlmScanner } from "@/components/scanner/food-vlm-scanner";
 import { createFoodListing } from "@/actions/food";
 import { calculateFoodExpiry } from "@/lib/rules/expiry";
@@ -171,6 +172,7 @@ export function RegistrationFormSection() {
 
   // AI Scanner & Vision State
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const scannerTriggerRef = useRef<HTMLButtonElement>(null);
   const [foodImageUrl, setFoodImageUrl] = useState(visualInspection.image.url);
   const [detectedComponentsList, setDetectedComponentsList] = useState<string[]>(
     visualInspection.detectedComponents
@@ -252,14 +254,19 @@ export function RegistrationFormSection() {
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Modal Pemindai VLM Kamera Gemini */}
-      {showScannerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <FoodVlmScanner
-            onScanComplete={handleScanComplete}
-            onClose={() => setShowScannerModal(false)}
-          />
-        </div>
-      )}
+      <Dialog open={showScannerModal} onOpenChange={setShowScannerModal}>
+        <DialogContent
+          className="w-[calc(100%-2rem)] max-w-xl max-h-[90dvh] overflow-y-auto rounded-3xl p-0 pt-8 gap-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            scannerTriggerRef.current?.focus();
+          }}
+        >
+          <DialogTitle className="sr-only">Pemindai Visual Gemini VLM</DialogTitle>
+          <DialogDescription className="sr-only">Identifikasi menu, porsi, dan bahan dari foto hidangan.</DialogDescription>
+          {showScannerModal && <FoodVlmScanner onScanComplete={handleScanComplete} />}
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* =================================================================
@@ -282,6 +289,8 @@ export function RegistrationFormSection() {
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
+                  ref={scannerTriggerRef}
+                  aria-haspopup="dialog"
                   onClick={() => setShowScannerModal(true)}
                   className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-3 py-1.5 shadow-2xs gap-1.5"
                 >
@@ -397,10 +406,11 @@ export function RegistrationFormSection() {
               <div className="mt-5 space-y-4">
                 {/* Field 1: Menu Title */}
                 <div>
-                  <label className="text-xs font-bold text-foreground font-headline block">
+                  <label htmlFor="donate-menu-title" className="text-xs font-bold text-foreground font-headline block">
                     Nama Menu Listing (Dapat Disesuaikan)
                   </label>
                   <input
+                    id="donate-menu-title"
                     type="text"
                     value={menuTitle}
                     onChange={(e) => setMenuTitle(e.target.value)}
@@ -412,11 +422,12 @@ export function RegistrationFormSection() {
                 {/* Field 2 & 3: Portions & Category */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-foreground font-headline block">
+                    <label htmlFor="donate-portions" className="text-xs font-bold text-foreground font-headline block">
                       Jumlah Porsi Aktual (Pack/Box)
                     </label>
                     <div className="relative mt-1.5">
                       <input
+                        id="donate-portions"
                         type="number"
                         min="1"
                         value={portions}
@@ -431,10 +442,11 @@ export function RegistrationFormSection() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-foreground font-headline block">
+                    <label htmlFor="donate-category" className="text-xs font-bold text-foreground font-headline block">
                       Kategori Hidangan
                     </label>
                     <select
+                      id="donate-category"
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="field mt-1.5 text-xs sm:text-sm font-semibold text-foreground py-2.5"
@@ -450,33 +462,25 @@ export function RegistrationFormSection() {
 
                 {/* Checkboxes: Halal & Packaging */}
                 <div className="pt-2 space-y-2.5">
-                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
-                    <button
-                      type="button"
-                      onClick={() => setIsHalalCertified(!isHalalCertified)}
-                      className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ${
-                        isHalalCertified
-                          ? "bg-primary text-white"
-                          : "border border-border bg-card"
-                      }`}
-                    >
-                      {isHalalCertified && <Check className="w-3 h-3 stroke-[3]" />}
-                    </button>
+                  <label htmlFor="donate-halal" className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
+                    <input
+                      id="donate-halal"
+                      type="checkbox"
+                      checked={isHalalCertified}
+                      onChange={(event) => setIsHalalCertified(event.target.checked)}
+                      className="w-4 h-4 shrink-0 accent-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    />
                     <span>{humanVerification.checkboxes.halal}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
-                    <button
-                      type="button"
-                      onClick={() => setIsPackagingSealed(!isPackagingSealed)}
-                      className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ${
-                        isPackagingSealed
-                          ? "bg-primary text-white"
-                          : "border border-border bg-card"
-                      }`}
-                    >
-                      {isPackagingSealed && <Check className="w-3 h-3 stroke-[3]" />}
-                    </button>
+                  <label htmlFor="donate-packaging" className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
+                    <input
+                      id="donate-packaging"
+                      type="checkbox"
+                      checked={isPackagingSealed}
+                      onChange={(event) => setIsPackagingSealed(event.target.checked)}
+                      className="w-4 h-4 shrink-0 accent-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    />
                     <span>{humanVerification.checkboxes.packaging}</span>
                   </label>
                 </div>
@@ -501,9 +505,9 @@ export function RegistrationFormSection() {
               {/* Cooking Time & Packaging Spec Inputs */}
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-foreground font-headline block">
+                  <p className="text-xs font-bold text-foreground font-headline block">
                     Waktu Selesai Masak (Cooking Completion)
-                  </label>
+                  </p>
                   <div className="mt-1.5 p-2.5 rounded-xl border border-border bg-muted/30 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span className="font-mono font-bold text-xs sm:text-sm text-foreground">
@@ -516,9 +520,9 @@ export function RegistrationFormSection() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-foreground font-headline block">
+                  <p className="text-xs font-bold text-foreground font-headline block">
                     Spesifikasi Kemasan
-                  </label>
+                  </p>
                   <div className="mt-1.5 p-2.5 rounded-xl border border-border bg-muted/30">
                     <span className="text-xs sm:text-sm font-semibold text-foreground truncate block">
                       {thermalParameters.packagingSpec}
@@ -531,21 +535,30 @@ export function RegistrationFormSection() {
               </div>
 
               {/* Protocol Radio Options */}
-              <div className="mt-6 pt-5 border-t border-border/70">
-                <label className="text-xs font-bold text-foreground font-headline block mb-3">
+              <div role="group" aria-labelledby="donate-thermal-label" className="mt-6 pt-5 border-t border-border/70">
+                <p id="donate-thermal-label" className="text-xs font-bold text-foreground font-headline block mb-3">
                   {thermalParameters.radioLabel}
-                </label>
+                </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* Option 1: Cold Chain */}
                   <div
-                    onClick={() => setThermalProtocol("cold_chain")}
-                    className={`p-4 rounded-2xl cursor-pointer transition-all border ${
+                    className={`relative p-4 rounded-2xl cursor-pointer transition-all border focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
                       isColdChain
                         ? "border-2 border-primary bg-card shadow-xs"
                         : "border-border bg-card/60 hover:bg-card"
                     }`}
                   >
+                    <input
+                      id="donate-thermal-cold"
+                      type="radio"
+                      name="donate-thermal"
+                      value="cold_chain"
+                      checked={isColdChain}
+                      onChange={() => setThermalProtocol("cold_chain")}
+                      aria-describedby="donate-thermal-cold-description"
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
                         <div
@@ -561,10 +574,10 @@ export function RegistrationFormSection() {
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-foreground font-headline">
+                        <label htmlFor="donate-thermal-cold" className="block text-xs font-bold text-foreground font-headline">
                           {thermalParameters.options.coldChain.title}
-                        </h4>
-                        <p className="text-[11px] text-muted-foreground font-body leading-relaxed mt-1">
+                        </label>
+                        <p id="donate-thermal-cold-description" className="text-[11px] text-muted-foreground font-body leading-relaxed mt-1">
                           {thermalParameters.options.coldChain.description}
                         </p>
                       </div>
@@ -573,13 +586,22 @@ export function RegistrationFormSection() {
 
                   {/* Option 2: Room Temp */}
                   <div
-                    onClick={() => setThermalProtocol("room_temp")}
-                    className={`p-4 rounded-2xl cursor-pointer transition-all border ${
+                    className={`relative p-4 rounded-2xl cursor-pointer transition-all border focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
                       !isColdChain
                         ? "border-2 border-primary bg-card shadow-xs"
                         : "border-border bg-card/60 hover:bg-card"
                     }`}
                   >
+                    <input
+                      id="donate-thermal-room"
+                      type="radio"
+                      name="donate-thermal"
+                      value="room_temp"
+                      checked={!isColdChain}
+                      onChange={() => setThermalProtocol("room_temp")}
+                      aria-describedby="donate-thermal-room-description"
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
                         <div
@@ -595,10 +617,10 @@ export function RegistrationFormSection() {
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-foreground font-headline">
+                        <label htmlFor="donate-thermal-room" className="block text-xs font-bold text-foreground font-headline">
                           {thermalParameters.options.roomTemp.title}
-                        </h4>
-                        <p className="text-[11px] text-muted-foreground font-body leading-relaxed mt-1">
+                        </label>
+                        <p id="donate-thermal-room-description" className="text-[11px] text-muted-foreground font-body leading-relaxed mt-1">
                           {thermalParameters.options.roomTemp.description}
                         </p>
                       </div>
@@ -804,33 +826,25 @@ export function RegistrationFormSection() {
 
               {/* Legal Clauses Checkboxes */}
               <div className="mt-4 space-y-3.5">
-                <label className="flex items-start gap-3 cursor-pointer text-xs leading-relaxed text-muted-foreground select-none">
-                  <button
-                    type="button"
-                    onClick={() => setIsClause1Checked(!isClause1Checked)}
-                    className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 mt-0.5 ${
-                      isClause1Checked
-                        ? "bg-primary text-white"
-                        : "border border-border bg-card"
-                    }`}
-                  >
-                    {isClause1Checked && <Check className="w-3 h-3 stroke-[3]" />}
-                  </button>
+                <label htmlFor="donate-clause-1" className="flex items-start gap-3 cursor-pointer text-xs leading-relaxed text-muted-foreground select-none">
+                  <input
+                    id="donate-clause-1"
+                    type="checkbox"
+                    checked={isClause1Checked}
+                    onChange={(event) => setIsClause1Checked(event.target.checked)}
+                    className="w-4 h-4 shrink-0 mt-0.5 accent-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  />
                   <span>{legalCompliance.clauses[0].text}</span>
                 </label>
 
-                <label className="flex items-start gap-3 cursor-pointer text-xs leading-relaxed text-muted-foreground select-none">
-                  <button
-                    type="button"
-                    onClick={() => setIsClause2Checked(!isClause2Checked)}
-                    className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 mt-0.5 ${
-                      isClause2Checked
-                        ? "bg-primary text-white"
-                        : "border border-border bg-card"
-                    }`}
-                  >
-                    {isClause2Checked && <Check className="w-3 h-3 stroke-[3]" />}
-                  </button>
+                <label htmlFor="donate-clause-2" className="flex items-start gap-3 cursor-pointer text-xs leading-relaxed text-muted-foreground select-none">
+                  <input
+                    id="donate-clause-2"
+                    type="checkbox"
+                    checked={isClause2Checked}
+                    onChange={(event) => setIsClause2Checked(event.target.checked)}
+                    className="w-4 h-4 shrink-0 mt-0.5 accent-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  />
                   <span>{legalCompliance.clauses[1].text}</span>
                 </label>
               </div>

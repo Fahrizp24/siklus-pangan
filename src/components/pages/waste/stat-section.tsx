@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Recycle, Bug, Sprout, Leaf, Wallet, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";

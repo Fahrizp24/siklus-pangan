@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { type LucideIcon, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -114,6 +112,7 @@ export function MetricStatCard({
             </span>
           ) : (
             <span className="text-muted-foreground truncate block">
+              {footerLeft.text}
               {footerLeft.prefix}
               {footerLeft.boldText && (
                 <strong className="text-foreground font-bold font-headline">

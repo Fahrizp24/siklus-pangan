@@ -39,11 +39,12 @@ export function TablePagination({
         <p className="text-muted-foreground font-body">{summaryText}</p>
       )}
 
-      <div className="flex items-center gap-1 self-center sm:self-auto">
+      <nav aria-label="Navigasi halaman" className="flex items-center gap-1 self-center sm:self-auto">
         <Button
           type="button"
           variant="outline"
           size="sm"
+          aria-label={prevLabel}
           disabled={currentPage <= 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           className="h-8 px-2.5 border-border text-muted-foreground hover:bg-muted font-body text-xs rounded-lg"
@@ -58,6 +59,8 @@ export function TablePagination({
             <button
               key={pageNum}
               type="button"
+              aria-label={`Halaman ${pageNum}`}
+              aria-current={isActive ? "page" : undefined}
               onClick={() => onPageChange(pageNum)}
               className={cn(
                 "w-8 h-8 rounded-lg text-xs font-bold font-mono transition-colors flex items-center justify-center",
@@ -76,6 +79,8 @@ export function TablePagination({
             <span className="px-1 text-muted-foreground font-mono">...</span>
             <button
               type="button"
+              aria-label={`Halaman ${lastPage}`}
+              aria-current={currentPage === lastPage ? "page" : undefined}
               onClick={() => onPageChange(lastPage)}
               className={cn(
                 "w-8 h-8 rounded-lg text-xs font-bold font-mono transition-colors flex items-center justify-center",
@@ -93,6 +98,7 @@ export function TablePagination({
           type="button"
           variant="outline"
           size="sm"
+          aria-label={nextLabel}
           disabled={currentPage >= maxPage}
           onClick={() => onPageChange(Math.min(maxPage, currentPage + 1))}
           className="h-8 px-2.5 border-border text-muted-foreground hover:bg-muted font-body text-xs rounded-lg"
@@ -100,7 +106,7 @@ export function TablePagination({
           <span className="hidden sm:inline">{nextLabel}</span>
           <ChevronRight className="w-3.5 h-3.5 sm:hidden" />
         </Button>
-      </div>
+      </nav>
     </div>
   );
 }

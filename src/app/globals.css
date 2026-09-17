@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Brand Design Tokens (Light Mode Only) */
-    --primary: 127 100% 33.3%; /* #00AA13 */
+    --primary: 127 100% 23%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 221 69% 14.1%; /* #0B1B3D */
@@ -44,17 +44,17 @@
 
     --border: 214 20% 90%;
     --input: 214 20% 90%;
-    --ring: 127 100% 33.3%;
+    --ring: var(--primary);
 
     /* Sidebar Tokens */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 212 26% 11.2%;
-    --sidebar-primary: 127 100% 33.3%;
+    --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 127 60% 95%;
     --sidebar-accent-foreground: 127 100% 25%;
     --sidebar-border: 214 20% 90%;
-    --sidebar-ring: 127 100% 33.3%;
+    --sidebar-ring: var(--primary);
 
     --radius: 0.75rem;
   }
@@ -67,6 +67,67 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  @keyframes enter {
+    from {
+      opacity: var(--enter-opacity, 1);
+      transform: translate3d(0, var(--enter-translate-y, 0), 0) scale(var(--enter-scale, 1));
+    }
+  }
+
+  .animate-in {
+    --enter-opacity: 1;
+    --enter-translate-y: 0;
+    --enter-scale: 1;
+    animation-name: enter;
+    animation-duration: 150ms;
+    animation-timing-function: ease-out;
+  }
+
+  .fade-in,
+  .fade-in-0 {
+    --enter-opacity: 0;
+  }
+
+  .zoom-in {
+    --enter-scale: 0;
+  }
+
+  .slide-in-from-top-2 {
+    --enter-translate-y: -0.5rem;
+  }
+
+  .animate-in.duration-150 {
+    animation-duration: 150ms;
+  }
+
+  .animate-in.duration-200 {
+    animation-duration: 200ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  main:has(> section > div > h1) > section :is(.rounded-3xl, .rounded-2xl, [role="tabpanel"])[style*="opacity"]:not([hidden], [hidden] *, [aria-hidden="true"], [aria-hidden="true"] *, [data-state="inactive"], [data-state="inactive"] *) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  main:has(> section > div > h1) [role="tab"][data-state="active"] > div[style]:not([aria-hidden="true"], [aria-hidden="true"] *) {
+    transform: none !important;
   }
 }
 
@@ -83,7 +144,7 @@
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #00AA13 0%, #005A10 50%, #0B1B3D 100%);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #005A10 50%, #0B1B3D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

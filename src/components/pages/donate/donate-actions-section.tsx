@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import { ArrowUpToLine, CheckCircle2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { QrReader } from "@/components/scanner/qr-reader";
 import { collectFoodClaim } from "@/actions/transactions";
 
@@ -73,23 +80,27 @@ export function DonateActionsSection({
   };
 
   return (
+    <Dialog open={showDonorQrScanner} onOpenChange={setShowDonorQrScanner}>
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Modal QR Reader untuk Donatur memindai token penerima */}
       {showDonorQrScanner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-3xl p-0 pt-10 gap-0">
+          <DialogTitle className="sr-only">Pindai QR Penerima Manfaat</DialogTitle>
+          <DialogDescription className="sr-only">
+            Posisikan kamera ke kode QR klaim pada ponsel penerima untuk konfirmasi serah terima
+          </DialogDescription>
           <QrReader
             title="Pindai QR Penerima Manfaat"
             subtitle="Posisikan kamera ke kode QR klaim pada ponsel penerima untuk konfirmasi serah terima"
             placeholderOtp="892104"
             onScanSuccess={handleScanClaimSuccess}
-            onClose={() => setShowDonorQrScanner(false)}
           />
-        </div>
+        </DialogContent>
       )}
 
       {/* Banner Sukses Serah Terima */}
       {handoverBanner && (
-        <div className="mb-4 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+        <div role="status" className="mb-4 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
             <span>{handoverBanner}</span>
@@ -118,15 +129,16 @@ export function DonateActionsSection({
           </Button>
 
           {/* 2. Pindai QR Penerima Manfaat (Serah Terima Dapur Donatur) */}
-          <Button
-            type="button"
-            onClick={() => setShowDonorQrScanner(true)}
-            variant="outline"
-            className="border-primary/40 text-primary hover:bg-primary/10 font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-3 shadow-2xs gap-2 transition-colors"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>{verifyClaimButtonText}</span>
-          </Button>
+          <DialogTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-primary/40 text-primary hover:bg-primary/10 font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-3 shadow-2xs gap-2 transition-colors"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>{verifyClaimButtonText}</span>
+            </Button>
+          </DialogTrigger>
         </div>
 
 
@@ -136,6 +148,7 @@ export function DonateActionsSection({
           type="button"
           onClick={handlePublishClick}
           disabled={isPublishing || isSuccess}
+          aria-busy={isPublishing}
           className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-6 py-3 shadow-sm gap-2 transition-colors shrink-0 disabled:opacity-75"
         >
           {isSuccess ? (
@@ -152,5 +165,6 @@ export function DonateActionsSection({
         </Button>
       </div>
     </section>
+    </Dialog>
   );
 }

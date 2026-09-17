@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MAIN_NAV } from "@/lib/nav";
+import { MAIN_NAV, isNavItemActive } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import logoText from "@/assets/logo-text.webp";
@@ -93,12 +93,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
 
   const navItems = MAIN_NAV;
 
-  const isItemActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-    return pathname.startsWith(href);
-  };
+  const isItemActive = (href: string) => isNavItemActive(pathname, href);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 backdrop-blur-md">
@@ -114,13 +109,14 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         </Link>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 h-full">
+        <nav aria-label="Navigasi utama" className="hidden md:flex items-center gap-8 h-full">
           {navItems.map((item) => {
             const active = isItemActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "relative flex items-center gap-1.5 h-full text-sm transition-all font-headline",
                   active
@@ -167,6 +163,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               {/* User Profile Card (Clickable to /dashboard) */}
               <Link
                 href="/dashboard"
+                aria-current={isItemActive("/dashboard") ? "page" : undefined}
                 className={cn(
                   "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
                   pathname === "/dashboard" && "bg-accent/60"
@@ -226,9 +223,12 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           {/* Mobile Menu Toggle Button */}
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            id="mobile-navigation-toggle"
+            onClick={() => setMobileMenuOpen((open) => !open)}
             className="md:hidden p-2 rounded-lg text-neutral hover:bg-muted transition-colors ml-1"
-            aria-label="Menu Navigasi"
+            aria-label={mobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -236,12 +236,22 @@ export function Navbar({ user: initialUser }: NavbarProps) {
       </div>
 
       {/* Mobile Collapsible Navigation Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border/80 bg-white px-4 py-4 shadow-lg animate-in slide-in-from-top-2 duration-150">
+        <div
+          id="mobile-navigation"
+          hidden={!mobileMenuOpen}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setMobileMenuOpen(false);
+              document.getElementById("mobile-navigation-toggle")?.focus();
+            }
+          }}
+          className="md:hidden border-t border-border/80 bg-white px-4 py-4 shadow-lg animate-in slide-in-from-top-2 duration-150"
+        >
           {currentUser ? (
             /* Mobile Logged In Section */
             <Link
               href="/dashboard"
+              aria-current={isItemActive("/dashboard") ? "page" : undefined}
               onClick={() => setMobileMenuOpen(false)}
               className="mb-4 flex items-center justify-between border-b border-border/60 pb-3 group"
             >
@@ -305,13 +315,14 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           )}
 
           {/* Mobile Nav Links */}
-          <nav className="flex flex-col space-y-1">
+          <nav aria-label="Navigasi seluler" className="flex flex-col space-y-1">
             {navItems.map((item) => {
               const active = isItemActive(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-headline transition-colors",
@@ -329,7 +340,6 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             })}
           </nav>
         </div>
-      )}
     </header>
   );
 }

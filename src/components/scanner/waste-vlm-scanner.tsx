@@ -171,6 +171,7 @@ export function WasteVlmScanner({
             variant="ghost"
             size="sm"
             onClick={onClose}
+            aria-label="Tutup pemindai limbah"
             className="rounded-full w-8 h-8 p-0 text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4" />
@@ -228,7 +229,7 @@ export function WasteVlmScanner({
             />
 
             {isScanning && (
-              <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 text-white p-4">
+              <div role="status" className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 text-white p-4">
                 <RefreshCw className="w-8 h-8 text-primary animate-spin" />
                 <div className="text-center bg-black/70 px-4 py-2 rounded-xl backdrop-blur border border-white/10">
                   <p className="text-xs font-headline font-bold text-white">
@@ -261,7 +262,7 @@ export function WasteVlmScanner({
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="mt-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2.5">
+        <div role="alert" className="mt-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2.5">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -271,7 +272,7 @@ export function WasteVlmScanner({
       {inspectionResult && (
         <div className="mt-5 space-y-4">
           {isOfflineFallback && (
-            <div className="px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[11px] flex items-center gap-1.5">
+            <div role="status" className="px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[11px] flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
               <span>
                 <strong>Mode Simulasi/Offline:</strong> Verifikasi kemurnian menggunakan fixture deterministik.
@@ -279,7 +280,7 @@ export function WasteVlmScanner({
             </div>
           )}
 
-          <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
+          <div role="status" className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
             {/* Purity Badge */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

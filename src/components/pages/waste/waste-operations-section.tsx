@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import {
   Package,
@@ -19,6 +19,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { WasteVlmScanner } from "@/components/scanner/waste-vlm-scanner";
 import { QrReader } from "@/components/scanner/qr-reader";
 import { createWasteBatch, processWasteHandover } from "@/actions/transactions";
@@ -161,6 +162,8 @@ export function WasteOperationsSection() {
     manifestRegistration.defaultWeightKg
   );
   const [showWasteScanner, setShowWasteScanner] = useState(false);
+  const wasteScannerTriggerRef = useRef<HTMLButtonElement>(null);
+  const handoverTriggerRef = useRef<HTMLButtonElement>(null);
   const [showHandoverQrReader, setShowHandoverQrReader] = useState(false);
   const [wasteImageUrl, setWasteImageUrl] = useState(aiVisionInspection.imageUrl);
   const [isOrganicPure, setIsOrganicPure] = useState(true);
@@ -200,27 +203,39 @@ export function WasteOperationsSection() {
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Modal Pemindai Limbah VLM */}
-      {showWasteScanner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <WasteVlmScanner
-            onInspectionComplete={handleInspectionComplete}
-            onClose={() => setShowWasteScanner(false)}
-          />
-        </div>
-      )}
+      <Dialog open={showWasteScanner} onOpenChange={setShowWasteScanner}>
+        <DialogContent
+          className="w-[calc(100%-2rem)] max-w-xl max-h-[90dvh] overflow-y-auto rounded-3xl p-0 pt-8 gap-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            wasteScannerTriggerRef.current?.focus();
+          }}
+        >
+          <DialogTitle className="sr-only">Inspeksi Kemurnian Limbah VLM</DialogTitle>
+          <DialogDescription className="sr-only">Identifikasi kontaminan dan alokasi biokonversi dari foto limbah.</DialogDescription>
+          {showWasteScanner && <WasteVlmScanner onInspectionComplete={handleInspectionComplete} />}
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Pemindai QR Handover Armada */}
-      {showHandoverQrReader && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <QrReader
+      <Dialog open={showHandoverQrReader} onOpenChange={setShowHandoverQrReader}>
+        <DialogContent
+          className="w-[calc(100%-2rem)] max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl p-0 pt-8 gap-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            handoverTriggerRef.current?.focus();
+          }}
+        >
+          <DialogTitle className="sr-only">Pindai QR Serah Terima Limbah</DialogTitle>
+          <DialogDescription className="sr-only">Mitra Pengolah BSF / Driver memindai manifest limbah donatur.</DialogDescription>
+          {showHandoverQrReader && <QrReader
             title="Pindai QR Serah Terima Limbah"
             subtitle="Mitra Pengolah BSF / Driver memindai manifest limbah donatur"
             placeholderOtp="SKP8841ORG"
             onScanSuccess={handleHandoverScanSuccess}
-            onClose={() => setShowHandoverQrReader(false)}
-          />
-        </div>
-      )}
+          />}
+        </DialogContent>
+      </Dialog>
 
       {/* Banner Konfirmasi Sukses Handover */}
       {handoverSuccessMsg && (
@@ -269,10 +284,10 @@ export function WasteOperationsSection() {
             </div>
 
             {/* 2x2 Category Selector */}
-            <div className="mt-5">
-              <label className="text-xs font-bold text-foreground font-headline block mb-3">
+            <fieldset className="mt-5">
+              <legend className="text-xs font-bold text-foreground font-headline block mb-3">
                 {manifestRegistration.categoriesLabel}
-              </label>
+              </legend>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {manifestRegistration.categories.map((cat) => {
@@ -281,15 +296,24 @@ export function WasteOperationsSection() {
                   return (
                     <div
                       key={cat.id}
-                      onClick={() => setSelectedCategoryId(cat.id)}
-                      className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${
+                      className={`relative p-3.5 rounded-2xl cursor-pointer transition-all border focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
                         isSelected
                           ? "border-2 border-primary bg-card shadow-xs"
                           : "border-border bg-card hover:bg-muted/30"
                       }`}
                     >
+                      <input
+                        id={`waste-category-${cat.id}`}
+                        type="radio"
+                        name="waste-category"
+                        value={cat.id}
+                        checked={isSelected}
+                        onChange={() => setSelectedCategoryId(cat.id)}
+                        aria-describedby={`waste-category-description-${cat.id}`}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      />
                       <div className="flex items-start gap-2.5">
-                        <div className="mt-0.5 shrink-0">
+                        <div aria-hidden="true" className="mt-0.5 shrink-0">
                           <div
                             className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                               isSelected
@@ -303,10 +327,10 @@ export function WasteOperationsSection() {
                           </div>
                         </div>
                         <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-foreground font-headline truncate">
+                          <label htmlFor={`waste-category-${cat.id}`} className="block text-xs font-bold text-foreground font-headline truncate">
                             {cat.title}
-                          </h4>
-                          <p className="text-[11px] text-muted-foreground font-body leading-tight mt-0.5 truncate">
+                          </label>
+                          <p id={`waste-category-description-${cat.id}`} className="text-[11px] text-muted-foreground font-body leading-tight mt-0.5 truncate">
                             {cat.subtitle}
                           </p>
                         </div>
@@ -315,17 +339,18 @@ export function WasteOperationsSection() {
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
 
             {/* Bottom Row: Weight Input & Sorting Status */}
             <div className="mt-6 pt-5 border-t border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
               {/* Left: Net Weight */}
               <div>
-                <label className="text-xs font-bold text-foreground font-headline block">
+                <label htmlFor="waste-weight" className="text-xs font-bold text-foreground font-headline block">
                   {manifestRegistration.weightLabel}
                 </label>
                 <div className="relative mt-1.5">
                   <input
+                    id="waste-weight"
                     type="number"
                     min="1"
                     value={weightKg}
@@ -343,9 +368,9 @@ export function WasteOperationsSection() {
 
               {/* Right: Source Sorting Status */}
               <div>
-                <label className="text-xs font-bold text-foreground font-headline block">
+                <p className="text-xs font-bold text-foreground font-headline block">
                   {manifestRegistration.sortingStatusLabel}
-                </label>
+                </p>
                 <div className="mt-1.5 p-2.5 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary" />
@@ -384,6 +409,8 @@ export function WasteOperationsSection() {
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
+                  ref={wasteScannerTriggerRef}
+                  aria-haspopup="dialog"
                   onClick={() => setShowWasteScanner(true)}
                   className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-3 py-1.5 shadow-2xs gap-1.5"
                 >
@@ -662,6 +689,8 @@ export function WasteOperationsSection() {
             {/* Tombol Pindai QR Serah Terima untuk Driver / Processor */}
             <Button
               type="button"
+              ref={handoverTriggerRef}
+              aria-haspopup="dialog"
               onClick={() => setShowHandoverQrReader(true)}
               className="mt-3 w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl py-2.5 gap-2 shadow-2xs transition-colors"
             >

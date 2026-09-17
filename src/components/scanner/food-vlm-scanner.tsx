@@ -140,6 +140,7 @@ export function FoodVlmScanner({
             variant="ghost"
             size="sm"
             onClick={onClose}
+            aria-label="Tutup pemindai foto makanan"
             className="rounded-full w-8 h-8 p-0 text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4" />
@@ -198,7 +199,7 @@ export function FoodVlmScanner({
 
             {/* Scanning Overlay Effect */}
             {isScanning && (
-              <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 text-white p-4">
+              <div role="status" className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 text-white p-4">
                 <RefreshCw className="w-8 h-8 text-primary animate-spin" />
                 <div className="text-center bg-black/70 px-4 py-2 rounded-xl backdrop-blur border border-white/10">
                   <p className="text-xs font-headline font-bold text-white">
@@ -232,7 +233,7 @@ export function FoodVlmScanner({
 
       {/* Error Notice */}
       {errorMessage && (
-        <div className="mt-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2.5">
+        <div role="alert" className="mt-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2.5">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -242,7 +243,7 @@ export function FoodVlmScanner({
       {scanResult && (
         <div className="mt-5 space-y-4">
           {isOfflineFallback && (
-            <div className="px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[11px] flex items-center gap-1.5">
+            <div role="status" className="px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-[11px] flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
               <span>
                 <strong>Mode Simulasi/Offline:</strong> Analisis menggunakan fixture deterministik standar BPOM.
@@ -250,7 +251,7 @@ export function FoodVlmScanner({
             </div>
           )}
 
-          <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
+          <div role="status" className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-headline block">

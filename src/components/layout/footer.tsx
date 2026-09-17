@@ -1,6 +1,3 @@
-"use client";
-
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FOOTER_SECTIONS, FOOTER_INFO } from "@/lib/nav";
@@ -40,7 +37,7 @@ export function Footer() {
           </div>
 
           {/* Right Columns: Navigation Links */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-8">
             {FOOTER_SECTIONS.map((section) => (
               <div key={section.title} className="flex flex-col">
                 <h4 className="font-headline text-xs font-bold tracking-wider text-secondary uppercase mb-4">

@@ -50,6 +50,7 @@ export function FilterPills({
           <button
             key={option.id}
             type="button"
+            aria-pressed={isSelected}
             onClick={() => onSelect(option.id)}
             className={cn(
               "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary",
@@ -76,7 +77,7 @@ export function FilterPills({
             {option.count !== undefined && (
               <span
                 className={cn(
-                  "ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold",
+                  "ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold",
                   isSelected
                     ? variant === "outline"
                       ? "bg-primary/10 text-primary"

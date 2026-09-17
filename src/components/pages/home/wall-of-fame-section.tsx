@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, CheckCircle2, ArrowUpRight } from "lucide-react";

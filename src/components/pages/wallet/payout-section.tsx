@@ -158,10 +158,10 @@ export function PayoutSection() {
             </div>
 
             {/* 3 Bank Account Cards Selector */}
-            <div>
-              <label className="text-xs font-bold text-foreground font-headline block mb-2.5">
+            <fieldset>
+              <legend className="text-xs font-bold text-foreground font-headline block mb-2.5">
                 {payoutForm.accountsLabel}
-              </label>
+              </legend>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {payoutForm.accounts.map((acc) => {
@@ -170,13 +170,22 @@ export function PayoutSection() {
                   return (
                     <div
                       key={acc.id}
-                      onClick={() => setSelectedAccountId(acc.id)}
-                      className={`p-3.5 rounded-2xl cursor-pointer transition-all border flex items-start gap-2.5 ${
+                      className={`relative p-3.5 rounded-2xl cursor-pointer transition-all border flex items-start gap-2.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
                         isSelected
                           ? "border-2 border-primary bg-card shadow-xs"
                           : "border-border bg-card hover:bg-muted/30"
                       }`}
                     >
+                      <input
+                        id={`payout-account-${acc.id}`}
+                        type="radio"
+                        name="payout-account"
+                        value={acc.id}
+                        checked={isSelected}
+                        onChange={() => setSelectedAccountId(acc.id)}
+                        aria-describedby={`payout-account-details-${acc.id}`}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      />
                       {/* Radio Circle */}
                       <div className="mt-0.5 shrink-0">
                         <div
@@ -194,10 +203,10 @@ export function PayoutSection() {
 
                       {/* Bank Details */}
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-foreground font-headline truncate">
+                        <label htmlFor={`payout-account-${acc.id}`} className="block text-xs font-bold text-foreground font-headline truncate">
                           {acc.bankName}
-                        </h4>
-                        <p className="text-[11px] font-mono text-muted-foreground mt-0.5 truncate">
+                        </label>
+                        <p id={`payout-account-details-${acc.id}`} className="text-[11px] font-mono text-muted-foreground mt-0.5 truncate">
                           {acc.accountNumber}
                         </p>
                         <span
@@ -212,14 +221,14 @@ export function PayoutSection() {
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
 
             {/* Nominal Penarikan & Ref Note (2 Columns) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
               {/* Left: Amount Input */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-foreground font-headline">
+                  <label htmlFor="payout-amount" className="text-xs font-bold text-foreground font-headline">
                     {payoutForm.amountLabel}
                   </label>
                   <button
@@ -235,6 +244,7 @@ export function PayoutSection() {
                     Rp
                   </span>
                   <input
+                    id="payout-amount"
                     type="text"
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -245,10 +255,11 @@ export function PayoutSection() {
 
               {/* Right: Ref Note Input */}
               <div>
-                <label className="text-xs font-bold text-foreground font-headline block mb-1.5">
+                <label htmlFor="payout-reference" className="text-xs font-bold text-foreground font-headline block mb-1.5">
                   {payoutForm.refLabel}
                 </label>
                 <input
+                  id="payout-reference"
                   type="text"
                   value={refNote}
                   onChange={(e) => setRefNote(e.target.value)}

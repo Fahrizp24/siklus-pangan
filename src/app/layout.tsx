@@ -16,7 +16,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SiklusPangan — Zero Organic Waste Platform",
+  title: {
+    default: "SiklusPangan — Zero Organic Waste Platform",
+    template: "%s | SiklusPangan",
+  },
   description: "Platform Rantai Pasok Sirkular Pangan & Biokonversi Limbah Organik (TCC 2026 UTM)",
 };
 

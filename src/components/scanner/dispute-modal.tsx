@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   AlertTriangle,
   Camera,
@@ -10,9 +10,14 @@ import {
   RefreshCw,
   ShieldAlert,
   Upload,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { submitDisputeStrike } from "@/actions/transactions";
 
 interface DisputeModalProps {
@@ -28,6 +33,7 @@ export function DisputeModal({
   onClose,
   onSuccess,
 }: DisputeModalProps) {
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const [reason, setReason] = useState<string>("");
   const [photoProof, setPhotoProof] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -84,40 +90,38 @@ export function DisputeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-lg bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden relative">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-5 right-5 text-muted-foreground hover:text-foreground p-1 rounded-full hover:bg-muted transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* Header */}
-        <div className="flex items-start gap-3.5 pr-8">
-          <div className="w-10 h-10 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-lg max-h-[calc(100dvh-2rem)] rounded-3xl p-6 sm:p-7 overflow-y-auto"
+        onOpenAutoFocus={() => {
+          returnFocusRef.current = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+        }}
+        onCloseAutoFocus={(event) => {
+          if (returnFocusRef.current?.isConnected) {
+            event.preventDefault();
+            returnFocusRef.current.focus();
+          }
+        }}
+      >
+        <DialogTitle className="font-headline font-bold text-base sm:text-lg text-foreground flex items-start gap-3.5 pr-8">
+          <span className="w-10 h-10 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0">
             <ShieldAlert className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-headline font-bold text-base sm:text-lg text-foreground">
-              Laporan Kualitas Pangan & Sengketa
-            </h3>
-            <p className="text-xs text-muted-foreground font-body mt-0.5">
-              Three-Strike Dispute Escalation System (HACCP & Good Samaritan)
-            </p>
-          </div>
-        </div>
+          </span>
+          Laporan Kualitas Pangan & Sengketa
+        </DialogTitle>
+        <DialogDescription className="text-xs text-muted-foreground font-body -mt-2">
+          Three-Strike Dispute Escalation System (HACCP & Good Samaritan)
+        </DialogDescription>
 
-        {/* Success View */}
         {successResult ? (
           <div className="mt-6 space-y-4 text-center">
             <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary mx-auto flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <div>
+            <div role="status">
               <h4 className="font-headline font-bold text-base text-foreground">
                 Laporan Sengketa Berhasil Diajukan
               </h4>
@@ -154,8 +158,7 @@ export function DisputeModal({
             </Button>
           </div>
         ) : (
-          /* Form View */
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-2 space-y-4">
             <div className="p-3 rounded-xl bg-muted/30 border border-border/70 text-xs text-muted-foreground">
               <span className="font-headline font-bold text-foreground block">
                 Target Hidangan: {foodTitle}
@@ -183,18 +186,19 @@ export function DisputeModal({
 
             {/* Photo Proof Upload */}
             <div>
-              <label className="text-xs font-bold text-foreground font-headline block mb-1.5">
+              <label htmlFor="dispute-photo" className="text-xs font-bold text-foreground font-headline block mb-1.5">
                 Bukti Foto Organoleptik (Opsional):
               </label>
               <div className="flex items-center gap-3">
-                <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted border border-border text-foreground hover:bg-muted/80 text-xs font-bold font-headline transition-colors">
+                <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted border border-border text-foreground hover:bg-muted/80 text-xs font-bold font-headline transition-colors focus-within:ring-2 focus-within:ring-primary">
                   <Camera className="w-4 h-4 text-primary" />
                   <span>Unggah Foto</span>
                   <input
+                    id="dispute-photo"
                     type="file"
                     accept="image/*"
                     onChange={handlePhotoUpload}
-                    className="hidden"
+                    className="sr-only"
                   />
                 </label>
                 {photoProof && (
@@ -214,7 +218,11 @@ export function DisputeModal({
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs"
+              >
                 {errorMsg}
               </div>
             )}
@@ -232,10 +240,15 @@ export function DisputeModal({
               <Button
                 type="submit"
                 disabled={isSubmitting || !reason.trim()}
+                aria-label="Kirim Laporan Sengketa"
+                aria-busy={isSubmitting}
                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-headline font-bold text-xs rounded-xl px-4 py-2 gap-1.5 shadow-sm"
               >
                 {isSubmitting ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
+                    <span>Kirim Laporan Sengketa</span>
+                  </>
                 ) : (
                   "Kirim Laporan Sengketa"
                 )}
@@ -243,7 +256,7 @@ export function DisputeModal({
             </div>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
