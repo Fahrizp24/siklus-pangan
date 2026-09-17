@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { calculateFoodExpiry } from "@/lib/rules/expiry";
 
 const listingSchema = z.object({
@@ -16,40 +15,14 @@ const listingSchema = z.object({
   handling_notes: z.string().trim().max(2000).optional(),
 }).strict();
 
-const DEFAULT_DONOR_ID = "6dee3ea9-691a-49b3-8c7f-9b8feab49a02"; // Katering Selera Nusantara
+const listingIdSchema = z.string().uuid().length(36);
 
-/**
- * Server Action: Publikasi Donasi Pangan Surplus
- * Terhubung langsung ke tabel food_listings di Supabase dengan kalkulasi batas aman deterministik BPOM
- */
 export async function createFoodListing(input: unknown): Promise<{
   success: boolean; data?: { id: string }; error?: string;
 }> {
-  const parsed = listingSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: "Data makanan tidak valid." };
-
   try {
-    const client = await createClient();
-    const { data: { user } } = await client.auth.getUser();
-
-    let donorId = DEFAULT_DONOR_ID;
-    let useAdmin = false;
-
-    if (user) {
-      const { data: profile } = await client
-        .from("profiles")
-        .select("role, is_banned")
-        .eq("id", user.id)
-        .single();
-
-      if (profile && profile.role === "donor" && !profile.is_banned) {
-        donorId = user.id;
-      } else {
-        useAdmin = true;
-      }
-    } else {
-      useAdmin = true;
-    }
+    const parsed = listingSchema.safeParse(input);
+    if (!parsed.success) return { success: false, error: "Data makanan tidak valid." };
 
     const food = parsed.data;
     const now = Date.now();
@@ -67,32 +40,54 @@ export async function createFoodListing(input: unknown): Promise<{
       return { success: false, error: "Makanan sudah melewati batas aman konsumsi." };
     }
 
-    const db = useAdmin ? createAdminClient() : client;
+    const client = await createClient();
+    const { data: authData, error: authError } = await client.auth.getUser();
+    const user = authData?.user;
+    if (authError || !user) {
+      return { success: false, error: "Anda harus masuk sebagai donatur untuk membuat listing." };
+    }
 
-    const { data, error } = await db.from("food_listings").insert({
-      title: food.title,
-      image_url: food.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
-      portions: food.portions,
-      remaining_portions: food.portions,
-      storage_method: food.storage_method,
-      risky_ingredients: food.risky_ingredients,
-      dietary_tags: food.dietary_tags,
-      cooked_at: food.cooked_at,
-      safe_until: expiry.safeUntil.toISOString(),
-      handling_notes: [expiry.handlingRecommendations, food.handling_notes].filter(Boolean).join("\n"),
-      donor_id: donorId,
-      food_condition: "safe_for_consumption",
-      status: "active",
-    }).select("id").single();
+    const { data: profile, error: profileError } = await client
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("id", user.id)
+      .single();
 
-    if (error || !data) {
-      console.error("[createFoodListing error]:", error);
+    if (profileError || !profile) {
+      return { success: false, error: "Profil donatur tidak ditemukan." };
+    }
+
+    if (profile.role !== "donor" || profile.is_banned !== false) {
+      return { success: false, error: "Hanya donatur aktif yang dapat mempublikasi donasi." };
+    }
+
+    const { data, error } = await client
+      .from("food_listings")
+      .insert({
+        title: food.title,
+        image_url: food.image_url ?? null,
+        portions: food.portions,
+        remaining_portions: food.portions,
+        storage_method: food.storage_method,
+        risky_ingredients: food.risky_ingredients,
+        dietary_tags: food.dietary_tags,
+        cooked_at: food.cooked_at,
+        safe_until: expiry.safeUntil.toISOString(),
+        handling_notes: [expiry.handlingRecommendations, food.handling_notes].filter(Boolean).join("\n"),
+        donor_id: user.id,
+        food_condition: "safe_for_consumption",
+        status: "active",
+      })
+      .select("id")
+      .single();
+
+    const id = listingIdSchema.safeParse(data?.id);
+    if (error || !id.success) {
       return { success: false, error: "Gagal menyimpan listing makanan ke database." };
     }
 
-    return { success: true, data: { id: data.id } };
-  } catch (err: any) {
-    console.error("[createFoodListing catch]:", err);
-    return { success: false, error: err?.message || "Permintaan gagal. Periksa koneksi basis data." };
+    return { success: true, data: { id: id.data } };
+  } catch {
+    return { success: false, error: "Permintaan gagal. Periksa koneksi basis data." };
   }
 }
