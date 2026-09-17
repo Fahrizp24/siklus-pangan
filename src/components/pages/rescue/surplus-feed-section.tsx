@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   SlidersHorizontal,
   Utensils,
@@ -13,6 +14,7 @@ import {
   SurplusFoodCard,
   SurplusFoodCardData,
   SurplusFoodTag,
+  SurplusFoodClaimState,
 } from "@/components/ui/surplus-food-card";
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 
@@ -80,6 +82,7 @@ export const PICKUP_PROTOCOL_CONTENT = {
 
 export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
   {
+    isDemo: true,
     id: "surplus-084",
     donorCode: "Donatur Anonim #084",
     location: "Renon, Denpasar (1.2 km)",
@@ -106,6 +109,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "hotel_catering",
   },
   {
+    isDemo: true,
     id: "surplus-022",
     donorCode: "Donatur Anonim #022",
     location: "Sanur, Denpasar (2.4 km)",
@@ -132,6 +136,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "bakery",
   },
   {
+    isDemo: true,
     id: "surplus-109",
     donorCode: "Donatur Anonim #109",
     location: "Panjer / Renon (3.1 km)",
@@ -158,6 +163,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "nasi_kotak",
   },
   {
+    isDemo: true,
     id: "surplus-061",
     donorCode: "Donatur Anonim #061",
     location: "Seminyak / Kuta (4.5 km)",
@@ -216,6 +222,7 @@ function BeneficiaryCapacityCard() {
           </div>
           <h3 className="font-headline font-bold text-base text-neutral-900">
             {title}
+            <span className="ml-2 inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">Data Demo</span>
           </h3>
         </div>
 
@@ -253,11 +260,12 @@ function BeneficiaryCapacityCard() {
       {/* Action Buttons */}
       <div className="mt-5 grid grid-cols-2 gap-2.5">
         <Button
+          asChild
           variant="outline"
           size="sm"
           className="w-full text-xs font-semibold rounded-xl border-slate-200 text-neutral-800 hover:bg-slate-50 shadow-2xs"
         >
-          {historyButtonText}
+          <Link href="/claims">{historyButtonText}</Link>
         </Button>
         <Button
           variant="outline"
@@ -331,23 +339,49 @@ export function SurplusFeedSection() {
   } = useRescueFilter();
 
   const router = useRouter();
-  const [claimedId, setClaimedId] = useState<string | null>(null);
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(SURPLUS_FEED_LISTINGS);
+  const [claimStates, setClaimStates] = useState<Record<string, SurplusFoodClaimState>>({});
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>([]);
+  const [feedStatus, setFeedStatus] = useState<"loading" | "success" | "error">("loading");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const pendingClaim = React.useRef<string | null>(null);
+  const [claimDestination, setClaimDestination] = useState<string | null>(null);
+  const mounted = React.useRef(false);
 
-  // Ambil data live dari view Postgres public.food_radar di Supabase
   React.useEffect(() => {
+    mounted.current = true;
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => {
+      mounted.current = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!claimDestination) return;
+    const timer = setTimeout(() => router.push(claimDestination), 1200);
+    return () => clearTimeout(timer);
+  }, [claimDestination, router]);
+
+  const reloadFeed = () => {
+    setFeedStatus("loading");
+    setReloadKey((value) => value + 1);
+  };
+
+  React.useEffect(() => {
+    let cancelled = false;
     async function loadLiveRadar() {
       try {
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
         const { data, error } = await supabase.from("food_radar").select("*");
-        if (!error && data && data.length > 0) {
-          const mapped: SurplusFoodCardData[] = data.map((row: any, idx: number) => {
-            const diffMs = new Date(row.safe_until).getTime() - Date.now();
-            const hoursLeft = Math.max(0, Math.floor(diffMs / (3600 * 1000)));
-            const minsLeft = Math.max(0, Math.floor((diffMs % (3600 * 1000)) / (60 * 1000)));
-            const remainingTime = `${String(hoursLeft).padStart(2, "0")}j ${String(minsLeft).padStart(2, "0")}m`;
-
+        if (cancelled) return;
+        if (error || !data) {
+          setLiveListings([]);
+          setFeedStatus("error");
+          return;
+        }
+        const mapped: SurplusFoodCardData[] = data.map((row, idx) => {
             const tags: SurplusFoodTag[] = [];
             if (row.dietary_tags?.includes("halal")) tags.push({ label: "Halal Terverifikasi", colorScheme: "green" });
             if (row.dietary_tags?.includes("vegetarian")) tags.push({ label: "Vegetarian", colorScheme: "green" });
@@ -362,8 +396,8 @@ export function SurplusFeedSection() {
               location: "Renon, Denpasar (1.2 km)",
               distanceKm: 1.2 + idx * 0.4,
               imageUrl: row.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
-              remainingTime,
-              isUrgentBadge: hoursLeft < 2,
+              remainingTime: "",
+              safeUntil: row.safe_until || "",
               title: row.title,
               portionsCount: row.remaining_portions,
               portionsRemainingText: `${row.remaining_portions} Porsi Tersisa`,
@@ -375,62 +409,98 @@ export function SurplusFeedSection() {
                 iconType: row.storage_method === "refrigerated" ? "cold_chain" : "default",
               },
             };
-          });
-          setLiveListings(mapped);
+        });
+        setLiveListings(mapped);
+        setNow(Date.now());
+        setFeedStatus("success");
+      } catch {
+        if (!cancelled) {
+          setLiveListings([]);
+          setFeedStatus("error");
         }
-      } catch (err) {
-        console.warn("Using initial listings:", err);
       }
     }
-    loadLiveRadar();
-  }, []);
+    void loadLiveRadar();
+    return () => { cancelled = true; };
+  }, [reloadKey]);
 
   const handleClaimFood = async (id: string) => {
-    setClaimedId(id);
-    try {
-      // Panggil Server Action claimFoodToken: stok porsi langsung berkurang di Supabase!
-      const { claimFoodToken } = await import("@/actions/transactions");
-      const res = await claimFoodToken({ listing_id: id, portions: 1 });
-
-      // Perbarui tampilan porsi secara live
-      setLiveListings((prev) =>
-        prev.map((item) => {
-          if (item.id === id) {
-            const current = item.portionsCount || 1;
-            const updated = Math.max(0, current - 1);
-            return {
-              ...item,
-              portionsCount: updated,
-              portionsRemainingText: `${updated} Porsi Tersisa`,
-            };
-          }
-          return item;
-        })
-      );
-
-      if (res.success && res.data) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "siklus_active_claim",
-            JSON.stringify({
-              claimId: res.data.id,
-              qrToken: res.data.qr_token,
-              listingId: id,
-            })
-          );
-        }
-        router.push(`/claims?claimId=${res.data.id}&token=${res.data.qr_token}`);
-      } else {
-        router.push("/claims");
-      }
-    } catch {
-      router.push("/claims");
+    const listing = liveListings.find((item) => item.id === id);
+    if (pendingClaim.current || claimDestination || feedStatus !== "success" || !listing ||
+      listing.isDemo || claimStates[id]?.status === "success" || claimStates[id]?.status === "uncertain" ||
+      (listing.portionsCount ?? 0) <= 0) return;
+    const deadline = Date.parse(listing.safeUntil || "");
+    if (!Number.isFinite(deadline) || deadline <= Date.now()) {
+      setNow(Date.now());
+      return;
     }
+
+    pendingClaim.current = id;
+    setClaimStates((prev) => ({ ...prev, [id]: { status: "pending" } }));
+    const uncertainMessage = "Status klaim belum dapat dipastikan. Klaim atau pengurangan porsi mungkin sudah tercatat. Pengiriman ulang dinonaktifkan untuk mencegah klaim ganda. Periksa Histori Klaim untuk mencocokkan hasilnya.";
+    let res;
+    try {
+      const { claimFoodToken } = await import("@/actions/transactions");
+      res = await claimFoodToken({ listing_id: id, portions: 1 });
+    } catch {
+      pendingClaim.current = null;
+      if (mounted.current) {
+        setClaimStates((prev) => ({
+          ...prev,
+          [id]: { status: "uncertain", message: uncertainMessage },
+        }));
+      }
+      return;
+    }
+    if (!mounted.current) return;
+    if (!res?.success || !res.data?.id || !res.data.qr_token) {
+      pendingClaim.current = null;
+      setClaimStates((prev) => ({
+        ...prev,
+        [id]: { status: "uncertain", message: uncertainMessage },
+      }));
+      return;
+    }
+
+    setLiveListings((prev) => prev.map((item) => {
+      if (item.id !== id) return item;
+      const updated = Math.max(0, (item.portionsCount ?? 0) - 1);
+      return { ...item, portionsCount: updated, portionsRemainingText: `${updated} Porsi Tersisa` };
+    }));
+    let message = "Klaim berhasil. Membuka halaman klaim…";
+    try {
+      localStorage.setItem("siklus_active_claim", JSON.stringify({
+        claimId: res.data.id,
+        qrToken: res.data.qr_token,
+        listingId: id,
+      }));
+    } catch {
+      message = "Klaim berhasil, tetapi token tidak tersimpan di perangkat. Membuka halaman klaim…";
+    }
+    setClaimStates((prev) => ({ ...prev, [id]: { status: "success", message } }));
+    setClaimDestination(`/claims?claimId=${encodeURIComponent(res.data.id)}&token=${encodeURIComponent(res.data.qr_token)}`);
   };
+
+  const timedListings = useMemo(() => liveListings.map((item) => {
+    if (item.safeUntil === undefined) return item;
+    const deadline = Date.parse(item.safeUntil);
+    if (!Number.isFinite(deadline)) {
+      return { ...item, remainingTime: "Batas waktu tidak tersedia", isExpired: true };
+    }
+    const diffMs = Math.max(0, deadline - now);
+    const hours = Math.floor(diffMs / 3_600_000);
+    const minutes = Math.floor((diffMs % 3_600_000) / 60_000);
+    return {
+      ...item,
+      remainingTime: `${String(hours).padStart(2, "0")}j ${String(minutes).padStart(2, "0")}m`,
+      isUrgentBadge: diffMs < 7_200_000,
+      isExpired: deadline <= now,
+    };
+  }), [liveListings, now]);
 
   // Filter listings reactively based on context state
   const filteredListings = useMemo(() => {
-    return liveListings.filter((item) => {
+    return timedListings.filter((item) => {
       // 1. Radius distance filter
       if (item.distanceKm !== undefined && item.distanceKm > radiusKm) {
         return false;
@@ -481,9 +551,10 @@ export function SurplusFeedSection() {
       }
       return 0;
     });
-  }, [liveListings, searchQuery, radiusKm, selectedCategory, sortBy]);
+  }, [timedListings, searchQuery, radiusKm, selectedCategory, sortBy]);
 
-  const { title, badgeText, sortLabelPrefix, sortOptions, emptyMessage, resetFilterText } =
+  const claimBusy = !!claimDestination || Object.values(claimStates).some((state) => state.status === "pending");
+  const { title, sortLabelPrefix, sortOptions, emptyMessage, resetFilterText } =
     FEED_HEADER_CONTENT;
 
   return (
@@ -495,7 +566,7 @@ export function SurplusFeedSection() {
             {title}
           </h2>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs">
-            {badgeText}
+            {feedStatus === "loading" ? "Memuat…" : feedStatus === "error" ? "Gagal dimuat" : `${filteredListings.length} Listing`}
           </span>
         </div>
 
@@ -505,6 +576,7 @@ export function SurplusFeedSection() {
             <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="text-slate-500 font-medium">{sortLabelPrefix}</span>
             <select
+              aria-label="Urutkan listing surplus"
               value={sortBy}
               onChange={(e) =>
                 setSortBy(e.target.value as "distance" | "expiry" | "portions")
@@ -525,13 +597,29 @@ export function SurplusFeedSection() {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* LEFT COLUMN: Food Cards Grid (2 Columns) */}
         <div className="flex-1 w-full">
-          {filteredListings.length > 0 ? (
+          {feedStatus === "loading" ? (
+            <div role="status" aria-live="polite" aria-busy="true" className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+              <div aria-hidden="true" className="mx-auto mb-3 h-6 w-6 animate-spin motion-reduce:animate-none rounded-full border-2 border-slate-200 border-t-primary" />
+              <p className="text-sm font-semibold text-neutral-800">Memuat listing surplus…</p>
+            </div>
+          ) : feedStatus === "error" ? (
+            <div className="rounded-2xl border border-rose-200 bg-white p-10 text-center">
+              <p role="alert" className="text-sm font-semibold text-rose-700">Listing surplus gagal dimuat. Silakan coba lagi.</p>
+              <Button type="button" variant="outline" className="mt-3" onClick={reloadFeed}>Coba Lagi</Button>
+            </div>
+          ) : liveListings.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <p role="status" className="text-sm font-semibold text-neutral-800">Belum ada listing surplus tersedia.</p>
+              <Button type="button" variant="outline" className="mt-3" onClick={reloadFeed}>Muat Ulang</Button>
+            </div>
+          ) : filteredListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {filteredListings.map((card) => (
                 <SurplusFoodCard
                   key={card.id}
                   card={card}
-                  isClaimed={claimedId === card.id}
+                  claimState={claimStates[card.id] ?? { status: "idle" }}
+                  claimDisabled={claimBusy}
                   onClaim={handleClaimFood}
                 />
               ))}

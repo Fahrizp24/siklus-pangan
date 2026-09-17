@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DietaryTag, DietaryTagColorScheme } from "@/components/ui/dietary-tag";
@@ -44,11 +45,23 @@ export interface SurplusFoodCardData {
   costInfo?: SurplusFoodCostInfo;
   category?: string;
   distanceKm?: number;
+  safeUntil?: string;
+  isExpired?: boolean;
+  isDemo?: boolean;
 }
+
+export type SurplusFoodClaimState =
+  | { status: "idle" }
+  | { status: "pending" }
+  | { status: "success"; message?: string }
+  | { status: "uncertain"; message: string }
+  | { status: "error"; message: string };
 
 export interface SurplusFoodCardProps {
   card: SurplusFoodCardData;
   isClaimed?: boolean;
+  claimState?: SurplusFoodClaimState;
+  claimDisabled?: boolean;
   onClaim?: (cardId: string) => void;
   className?: string;
 }
@@ -56,10 +69,23 @@ export interface SurplusFoodCardProps {
 export function SurplusFoodCard({
   card,
   isClaimed = false,
+  claimState = { status: "idle" },
+  claimDisabled = false,
   onClaim,
   className,
 }: SurplusFoodCardProps) {
-  // Format portions string
+  const feedbackId = React.useId();
+  const pending = claimState.status === "pending";
+  const uncertain = claimState.status === "uncertain";
+  const claimed = isClaimed || claimState.status === "success";
+  const expired = card.isExpired || (card.safeUntil !== undefined &&
+    (!Number.isFinite(Date.parse(card.safeUntil)) || Date.parse(card.safeUntil) <= Date.now()));
+  const unavailable = card.portionsCount !== undefined && card.portionsCount <= 0;
+  const disabled = claimDisabled || pending || uncertain || claimed || unavailable || expired || card.isDemo;
+  const actionLabel = claimed ? "Terklaim!" : pending ? "Memproses klaim…" : uncertain
+    ? "Status Belum Pasti" : card.isDemo
+    ? "Data Demo" : expired ? "Kedaluwarsa" : unavailable ? "Porsi Habis"
+    : claimState.status === "error" ? "Coba Lagi" : "Klaim Jatah";
   const portionsLabel =
     card.portionsRemainingText ||
     (card.portionsCount !== undefined
@@ -76,7 +102,14 @@ export function SurplusFoodCard({
       <div>
         {/* Top Header Row: Donor Anonymous Badge (Left) + Expiry Time Badge (Right) */}
         <div className="p-4 sm:p-5 pb-3 flex items-center justify-between gap-3">
-          <AnonDonorBadge donorCode={card.donorCode} />
+          <div className="flex flex-wrap items-center gap-2">
+            <AnonDonorBadge donorCode={card.donorCode} />
+            {card.isDemo && (
+              <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                Data Demo
+              </span>
+            )}
+          </div>
 
           <div className="shrink-0">
             <ExpiryTimeBadge
@@ -147,18 +180,49 @@ export function SurplusFoodCard({
 
         <Button
           size="sm"
-          disabled={isClaimed}
-          onClick={() => onClaim?.(card.id)}
+          type="button"
+          disabled={disabled}
+          aria-busy={pending}
+          aria-label={`${actionLabel}: ${card.title}`}
+          aria-describedby={claimState.status !== "idle" ? feedbackId : undefined}
+          onClick={() => {
+            if (disabled || (card.safeUntil !== undefined &&
+              (!Number.isFinite(Date.parse(card.safeUntil)) || Date.parse(card.safeUntil) <= Date.now()))) return;
+            onClaim?.(card.id);
+          }}
           className={cn(
             "rounded-xl px-3.5 sm:px-4 py-2 font-semibold text-xs shadow-xs gap-1.5 transition-all",
-            isClaimed
+            disabled
               ? "bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed"
               : "bg-primary hover:bg-primary/90 text-white"
           )}
         >
-          <QrCode className="w-3.5 h-3.5 shrink-0" />
-          <span>{isClaimed ? "Terklaim!" : "Klaim Jatah"}</span>
+          <QrCode aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+          <span>{actionLabel}</span>
         </Button>
+      </div>
+      <div
+        id={feedbackId}
+        role={claimState.status === "error" ? "alert" : "status"}
+        aria-live={claimState.status === "error" ? "assertive" : "polite"}
+        aria-atomic="true"
+        className={cn(
+          "px-4 sm:px-5 text-xs",
+          claimState.status !== "idle" && "pb-4",
+          claimState.status === "error" ? "text-rose-700" : "text-slate-600"
+        )}
+      >
+        {claimState.status === "pending" && "Sedang memproses klaim. Mohon tunggu."}
+        {claimState.status === "error" && claimState.message}
+        {claimState.status === "uncertain" && (
+          <>
+            <p>{claimState.message}</p>
+            <Link href="/claims" className="mt-2 inline-block font-semibold text-primary underline underline-offset-4">
+              Periksa Histori Klaim
+            </Link>
+          </>
+        )}
+        {claimState.status === "success" && (claimState.message || "Klaim berhasil. Membuka halaman klaim…")}
       </div>
     </div>
   );

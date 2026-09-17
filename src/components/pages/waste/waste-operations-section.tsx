@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import Image from "next/image";
 import {
   Package,
+  AlertTriangle,
   ScanSearch,
   Truck,
   Scale,
@@ -170,6 +171,9 @@ export function WasteOperationsSection() {
   const [detectedContaminants, setDetectedContaminants] = useState<string[]>([]);
   const [optimalProcessor, setOptimalProcessor] = useState<string>("bsf_maggot");
   const [handoverSuccessMsg, setHandoverSuccessMsg] = useState<string | null>(null);
+  const [handoverErrorMsg, setHandoverErrorMsg] = useState<string | null>(null);
+  const [isHandoverProcessing, setIsHandoverProcessing] = useState(false);
+  const handoverLockRef = useRef(false);
 
   const totalIncentive = weightKg * mutationScaleLog.incentive.ratePerKg;
 
@@ -184,19 +188,38 @@ export function WasteOperationsSection() {
     setShowWasteScanner(false);
   };
 
+  const handleHandoverDialogChange = (open: boolean) => {
+    if (handoverLockRef.current) return;
+    setShowHandoverQrReader(open);
+  };
+
   const handleHandoverScanSuccess = async (token: string) => {
-    setShowHandoverQrReader(false);
+    if (handoverLockRef.current) {
+      return { success: false, error: "Serah terima sedang diproses. Tunggu konfirmasi sebelum mencoba lagi." };
+    }
+    handoverLockRef.current = true;
+    setIsHandoverProcessing(true);
+    setHandoverSuccessMsg(null);
+    setHandoverErrorMsg(null);
     try {
       const res = await processWasteHandover({ token });
       if (res.success && res.data) {
         setHandoverSuccessMsg(
           `Handover Berhasil! Kredit Peternak BSF: Rp ${res.data.processor_credit.toLocaleString("id-ID")}. Subsidi Terpakai: Rp ${res.data.subsidy_amount.toLocaleString("id-ID")}.`
         );
-      } else {
-        setHandoverSuccessMsg("Token serah terima terverifikasi valid!");
+        setShowHandoverQrReader(false);
+        return { success: true };
       }
+      const error = res.error ?? "Serah terima gagal diproses. Periksa token dan coba lagi.";
+      setHandoverErrorMsg(error);
+      return { success: false, error };
     } catch {
-      setHandoverSuccessMsg("Serah terima berhasil diverifikasi!");
+      const error = "Terjadi kesalahan saat memproses serah terima. Coba lagi.";
+      setHandoverErrorMsg(error);
+      return { success: false, error };
+    } finally {
+      handoverLockRef.current = false;
+      setIsHandoverProcessing(false);
     }
   };
 
@@ -218,7 +241,7 @@ export function WasteOperationsSection() {
       </Dialog>
 
       {/* Modal Pemindai QR Handover Armada */}
-      <Dialog open={showHandoverQrReader} onOpenChange={setShowHandoverQrReader}>
+      <Dialog open={showHandoverQrReader} onOpenChange={handleHandoverDialogChange}>
         <DialogContent
           className="w-[calc(100%-2rem)] max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl p-0 pt-8 gap-0"
           onCloseAutoFocus={(event) => {
@@ -239,9 +262,9 @@ export function WasteOperationsSection() {
 
       {/* Banner Konfirmasi Sukses Handover */}
       {handoverSuccessMsg && (
-        <div className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+        <div role="status" className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
             <span>{handoverSuccessMsg}</span>
           </div>
           <button
@@ -250,6 +273,28 @@ export function WasteOperationsSection() {
             className="text-xs font-mono hover:underline"
           >
             Tutup
+          </button>
+        </div>
+      )}
+
+      {handoverErrorMsg && (
+        <div role="alert" className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/25 text-destructive text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" aria-hidden="true" />
+            <span>{handoverErrorMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (handoverLockRef.current) return;
+              setHandoverErrorMsg(null);
+              handleHandoverDialogChange(true);
+            }}
+            disabled={isHandoverProcessing}
+            aria-busy={isHandoverProcessing}
+            className="text-xs font-mono underline underline-offset-2 shrink-0"
+          >
+            Coba lagi
           </button>
         </div>
       )}
@@ -691,7 +736,9 @@ export function WasteOperationsSection() {
               type="button"
               ref={handoverTriggerRef}
               aria-haspopup="dialog"
-              onClick={() => setShowHandoverQrReader(true)}
+              onClick={() => handleHandoverDialogChange(true)}
+              disabled={isHandoverProcessing}
+              aria-busy={isHandoverProcessing}
               className="mt-3 w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl py-2.5 gap-2 shadow-2xs transition-colors"
             >
               <QrCode className="w-4 h-4" />

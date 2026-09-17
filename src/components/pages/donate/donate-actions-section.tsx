@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowUpToLine, CheckCircle2, QrCode } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { AlertCircle, ArrowUpToLine, CheckCircle2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,20 +47,39 @@ export function DonateActionsSection({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
-  const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
+  const [handoverBanner, setHandoverBanner] = useState<{ success: boolean; message: string } | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const handoverLockRef = useRef(false);
 
   const handleScanClaimSuccess = async (token: string) => {
-    setShowDonorQrScanner(false);
+    if (handoverLockRef.current) {
+      return { success: false, error: "Verifikasi sedang diproses. Tunggu konfirmasi sebelum mencoba lagi." };
+    }
+    handoverLockRef.current = true;
+    setIsVerifying(true);
+    setHandoverBanner(null);
     try {
       const res = await collectFoodClaim({ token });
       if (res.success) {
-        setHandoverBanner("Serah terima makanan terkonfirmasi & berhasil dicatat di ledger!");
+        setHandoverBanner({ success: true, message: "Serah terima makanan terkonfirmasi!" });
+        setShowDonorQrScanner(false);
       } else {
-        setHandoverBanner("Token penerima terverifikasi valid (simulasi serah terima)!");
+        setHandoverBanner({ success: false, message: res.error || "Verifikasi serah terima gagal. Silakan coba lagi." });
       }
+      return res;
     } catch {
-      setHandoverBanner("Serah terima berhasil diverifikasi!");
+      const error = "Verifikasi serah terima gagal. Silakan coba lagi.";
+      setHandoverBanner({ success: false, message: error });
+      return { success: false, error };
+    } finally {
+      handoverLockRef.current = false;
+      setIsVerifying(false);
     }
+  };
+
+  const handleHandoverDialogChange = (open: boolean) => {
+    if (handoverLockRef.current) return;
+    setShowDonorQrScanner(open);
   };
 
   const handlePublishClick = () => {
@@ -80,7 +99,7 @@ export function DonateActionsSection({
   };
 
   return (
-    <Dialog open={showDonorQrScanner} onOpenChange={setShowDonorQrScanner}>
+    <Dialog open={showDonorQrScanner} onOpenChange={handleHandoverDialogChange}>
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Modal QR Reader untuk Donatur memindai token penerima */}
       {showDonorQrScanner && (
@@ -98,13 +117,30 @@ export function DonateActionsSection({
         </DialogContent>
       )}
 
-      {/* Banner Sukses Serah Terima */}
       {handoverBanner && (
-        <div role="status" className="mb-4 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+        <div
+          role={handoverBanner.success ? "status" : "alert"}
+          className={`mb-4 p-4 rounded-2xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in ${handoverBanner.success ? "bg-primary/10 border-primary/25 text-primary" : "bg-destructive/10 border-destructive/25 text-destructive"}`}
+        >
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{handoverBanner}</span>
+            {handoverBanner.success ? <CheckCircle2 className="w-5 h-5" aria-hidden="true" /> : <AlertCircle className="w-5 h-5" aria-hidden="true" />}
+            <span>{handoverBanner.message}</span>
           </div>
+          {!handoverBanner.success && (
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isVerifying}
+              aria-busy={isVerifying}
+              onClick={() => {
+                if (handoverLockRef.current) return;
+                setHandoverBanner(null);
+                setShowDonorQrScanner(true);
+              }}
+            >
+              Coba lagi
+            </Button>
+          )}
           <button
             type="button"
             onClick={() => setHandoverBanner(null)}
@@ -133,6 +169,8 @@ export function DonateActionsSection({
             <Button
               type="button"
               variant="outline"
+              disabled={isVerifying}
+              aria-busy={isVerifying}
               className="border-primary/40 text-primary hover:bg-primary/10 font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-3 shadow-2xs gap-2 transition-colors"
             >
               <QrCode className="w-4 h-4" />

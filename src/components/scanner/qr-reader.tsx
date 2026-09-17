@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Camera,
   CameraOff,
   QrCode,
   AlertCircle,
@@ -13,8 +12,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+type VerificationResult = void | boolean | { success: boolean; error?: string };
+
 interface QrReaderProps {
-  onScanSuccess: (decodedText: string) => void;
+  onScanSuccess: (decodedText: string) => VerificationResult | Promise<VerificationResult>;
   onClose?: () => void;
   title?: string;
   subtitle?: string;
@@ -33,12 +34,61 @@ export function QrReader({
   const [manualCode, setManualCode] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [scannedResult, setScannedResult] = useState<string | null>(null);
+  const [verificationState, setVerificationState] = useState<"idle" | "read" | "verified" | "invalid">("idle");
+  const [verificationError, setVerificationError] = useState<string | null>(null);
 
-  const scannerRef = useRef<any>(null);
+  const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
+  const scanLockedRef = useRef(false);
+  const pausedRef = useRef(false);
+  const mountedRef = useRef(false);
+  const onScanSuccessRef = useRef(onScanSuccess);
   const readerElementId = "siklus-html5-qr-reader";
 
   useEffect(() => {
+    onScanSuccessRef.current = onScanSuccess;
+  }, [onScanSuccess]);
+
+  const verifyCode = useCallback(async (code: string, displayCode = code) => {
+    if (scanLockedRef.current) return;
+    scanLockedRef.current = true;
+    setScannedResult(displayCode);
+    setVerificationState("read");
+    setVerificationError(null);
+    setIsProcessing(true);
+    setIsScanning(false);
+
+    try {
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.pause(true);
+        pausedRef.current = true;
+      }
+    } catch {}
+
+    try {
+      const result = await Promise.resolve(onScanSuccessRef.current(code));
+      if (!mountedRef.current) return;
+      if (result === true || (result && result.success)) {
+        setVerificationState("verified");
+      } else {
+        setVerificationState("invalid");
+        setVerificationError(
+          result && typeof result === "object" && result.error
+            ? result.error
+            : "Verifikasi belum berhasil dikonfirmasi. Silakan coba lagi."
+        );
+      }
+    } catch {
+      if (!mountedRef.current) return;
+      setVerificationState("invalid");
+      setVerificationError("Verifikasi gagal. Silakan coba lagi.");
+    } finally {
+      if (mountedRef.current) setIsProcessing(false);
+    }
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
+    mountedRef.current = true;
 
     async function initScanner() {
       try {
@@ -58,18 +108,19 @@ export function QrReader({
           { facingMode: "environment" },
           config,
           (decodedText: string) => {
-            if (isMounted) {
-              setScannedResult(decodedText);
-              setIsScanning(false);
-              html5QrCode.stop().catch(() => {});
-              onScanSuccess(decodedText);
-            }
+            if (isMounted) void verifyCode(decodedText);
           },
           () => {
             // Frame scanning error (ignore frame misses)
           }
         );
-      } catch (err: any) {
+        if (!isMounted) {
+          await html5QrCode.stop().catch(() => {});
+        } else if (scanLockedRef.current) {
+          html5QrCode.pause(true);
+          pausedRef.current = true;
+        }
+      } catch (err: unknown) {
         console.warn("Kamera tidak dapat diakses atau diblokir:", err);
         if (isMounted) {
           setCameraError(
@@ -84,30 +135,43 @@ export function QrReader({
 
     return () => {
       isMounted = false;
+      mountedRef.current = false;
       if (scannerRef.current) {
         try {
-          if (scannerRef.current.isScanning) {
+          if (scannerRef.current.isScanning || pausedRef.current) {
             scannerRef.current.stop().catch(() => {});
           }
+          pausedRef.current = false;
         } catch {
           // ignore cleanup errors
         }
       }
     };
-  }, [onScanSuccess]);
+  }, [verifyCode]);
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleRetry = () => {
+    if (isProcessing) return;
+    scanLockedRef.current = false;
+    setScannedResult(null);
+    setVerificationState("idle");
+    setVerificationError(null);
+    try {
+      if (pausedRef.current) {
+        scannerRef.current?.resume();
+        pausedRef.current = false;
+        setIsScanning(true);
+      }
+    } catch {
+      setCameraError("Kamera tidak dapat dilanjutkan. Masukkan kode verifikasi secara manual.");
+    }
+  };
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!manualCode.trim()) return;
+    if (!manualCode.trim() || isProcessing) return;
 
-    // Bersihkan format (hilangkan spasi & dash jika perlu)
     const cleaned = manualCode.trim().replace(/[\s-]/g, "");
-    setIsProcessing(true);
-    setScannedResult(manualCode.trim());
-    setTimeout(() => {
-      setIsProcessing(false);
-      onScanSuccess(cleaned || manualCode.trim());
-    }, 400);
+    await verifyCode(cleaned || manualCode.trim(), manualCode.trim());
   };
 
   return (
@@ -179,16 +243,41 @@ export function QrReader({
           </div>
         )}
 
-        {/* Notifikasi jika sukses scan */}
         {scannedResult && (
-          <div role="status" className="absolute inset-0 bg-primary/95 text-primary-foreground flex flex-col items-center justify-center p-6 gap-3 animate-in fade-in zoom-in">
-            <CheckCircle2 className="w-12 h-12 text-primary-foreground" />
-            <h4 className="font-headline font-bold text-base">
-              QR Code Terverifikasi!
+          <div
+            role={verificationState === "invalid" ? "alert" : "status"}
+            aria-busy={isProcessing}
+            className={`absolute inset-0 flex flex-col items-center justify-center p-6 gap-3 animate-in fade-in zoom-in ${
+              verificationState === "verified"
+                ? "bg-primary/95 text-primary-foreground"
+                : verificationState === "invalid"
+                  ? "bg-background text-destructive"
+                  : "bg-background text-foreground"
+            }`}
+          >
+            {verificationState === "verified" ? (
+              <CheckCircle2 className="w-12 h-12" aria-hidden="true" />
+            ) : verificationState === "invalid" ? (
+              <AlertCircle className="w-12 h-12" aria-hidden="true" />
+            ) : (
+              <RefreshCw className="w-12 h-12 animate-spin" aria-hidden="true" />
+            )}
+            <h4 className="font-headline font-bold text-base text-center">
+              {verificationState === "verified"
+                ? "QR Code Terverifikasi!"
+                : verificationState === "invalid"
+                  ? "Kode belum terverifikasi"
+                  : "Kode terbaca, memverifikasi..."}
             </h4>
-            <span className="font-mono text-xs bg-black/20 px-3 py-1 rounded-lg">
+            {verificationError && <p className="text-xs text-center">{verificationError}</p>}
+            <span className="font-mono text-xs bg-black/20 px-3 py-1 rounded-lg break-all">
               {scannedResult}
             </span>
+            {verificationState === "invalid" && (
+              <Button type="button" variant="destructive" onClick={handleRetry} disabled={isProcessing}>
+                Coba lagi
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -210,13 +299,14 @@ export function QrReader({
             id="manual-otp-input"
             type="text"
             value={manualCode}
+            disabled={verificationState !== "idle"}
             onChange={(e) => setManualCode(e.target.value)}
             placeholder={placeholderOtp}
             className="flex-1 bg-muted/50 border border-border rounded-xl px-3.5 py-2 text-xs sm:text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
           />
           <Button
             type="submit"
-            disabled={!manualCode.trim() || isProcessing}
+            disabled={!manualCode.trim() || verificationState !== "idle"}
             aria-label="Verifikasi"
             aria-busy={isProcessing}
             className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-4 py-2"
