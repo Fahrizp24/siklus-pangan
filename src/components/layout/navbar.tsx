@@ -34,6 +34,10 @@ export function Navbar({ user: initialUser }: NavbarProps) {
   const [currentUser, setCurrentUser] = useState<NavbarUser | null>(initialUser ?? null);
 
   useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (initialUser !== undefined) {
       setCurrentUser(initialUser);
       return;

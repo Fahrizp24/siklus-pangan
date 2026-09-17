@@ -1,4 +1,4 @@
-import SignupPage from "@/app/signup/page";
+import SignupForm from "@/components/auth/signup-form";
 
 export const metadata = {
   title: "Daftar Akun | SiklusPangan",
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function RegisterPage() {
-  return <SignupPage />;
+  return <SignupForm />;
 }
