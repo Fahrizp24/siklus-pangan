@@ -30,6 +30,7 @@ const client = {
 };
 const { createFoodListing } = load('src/actions/food.ts', {
   '@/lib/supabase/server': { createClient: async () => client },
+  '@/lib/supabase/admin': { createAdminClient: () => client },
   '@/lib/rules/expiry': load('src/lib/rules/expiry.ts'),
 });
 const valid = () => ({ title: ' Nasi santan ', portions: 10,

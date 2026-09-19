@@ -80,7 +80,7 @@ export const PICKUP_PROTOCOL_CONTENT = {
 
 export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
   {
-    id: "surplus-084",
+    id: "2a02ea19-32b6-43ac-b4d2-71c2eeead97b",
     donorCode: "Donatur Anonim #084",
     location: "Renon, Denpasar (1.2 km)",
     distanceKm: 1.2,
@@ -93,6 +93,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
       iconType: "cold_chain",
     },
     title: "Premium Chicken Teriyaki Bento & Na...",
+    portionsCount: 35,
     portionsRemainingText: "35 Porsi Tersisa",
     batchInfo: "Batch Produksi: 10:15 WITA",
     tags: [
@@ -106,7 +107,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "hotel_catering",
   },
   {
-    id: "surplus-022",
+    id: "4c39b812-76fa-45b0-9ef2-5f60e9d1a89c",
     donorCode: "Donatur Anonim #022",
     location: "Sanur, Denpasar (2.4 km)",
     distanceKm: 2.4,
@@ -119,6 +120,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
       iconType: "hotel",
     },
     title: "Artisan Croissant, Danishes &...",
+    portionsCount: 60,
     portionsRemainingText: "60 Paket Tersisa",
     batchInfo: "Batch: Bake 06:30 WITA",
     tags: [
@@ -132,7 +134,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "bakery",
   },
   {
-    id: "surplus-109",
+    id: "7e18ab44-245c-4d8e-9081-35688bca8791",
     donorCode: "Donatur Anonim #109",
     location: "Panjer / Renon (3.1 km)",
     distanceKm: 3.1,
@@ -145,6 +147,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
       iconType: "halal",
     },
     title: "Nasi Kotak Semur Daging & Tumis...",
+    portionsCount: 48,
     portionsRemainingText: "48 Box Tersisa",
     batchInfo: "Corporate Summit Untouched Surplus",
     tags: [
@@ -158,7 +161,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
     category: "nasi_kotak",
   },
   {
-    id: "surplus-061",
+    id: "a2f643e1-8899-4c02-99be-710e2ad47c55",
     donorCode: "Donatur Anonim #061",
     location: "Seminyak / Kuta (4.5 km)",
     distanceKm: 4.5,
@@ -171,6 +174,7 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
       iconType: "vegan",
     },
     title: "Fresh Seasonal Fruit Platter & Salad...",
+    portionsCount: 22,
     portionsRemainingText: "22 Porsi Tersisa",
     batchInfo: "Chilled Sealed 2°C",
     tags: [
@@ -338,6 +342,46 @@ export function SurplusFeedSection() {
   React.useEffect(() => {
     async function loadLiveRadar() {
       try {
+        let newlyAdded: SurplusFoodCardData[] = [];
+        if (typeof window !== "undefined") {
+          const rawNew = localStorage.getItem("siklus_new_food_listing");
+          if (rawNew) {
+            try {
+              const parsed = JSON.parse(rawNew);
+              newlyAdded.push({
+                id: parsed.id,
+                donorCode: `Donatur Baru #${parsed.id.slice(0, 4).toUpperCase()}`,
+                location: "Renon, Denpasar (0.8 km)",
+                distanceKm: 0.8,
+                remainingTime: parsed.storageMethod === "refrigerated" ? "03j 45m" : "01j 50m",
+                isUrgentBadge: parsed.storageMethod !== "refrigerated",
+                imageUrl: parsed.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
+                imageBadge: {
+                  label: parsed.storageMethod === "refrigerated" ? "Cold Chain 4°C Terjaga" : "Kemasan Higienis",
+                  iconType: parsed.storageMethod === "refrigerated" ? "cold_chain" : "default",
+                },
+                title: parsed.title,
+                portionsCount: parsed.portions,
+                portionsRemainingText: `${parsed.portions} Porsi Tersisa`,
+                batchInfo: `Baru Saja Didaftarkan · ${parsed.category || "Katering"}`,
+                tags: (parsed.dietaryTags || ["halal"]).map((tag: string) => ({
+                  label: tag.toUpperCase(),
+                  colorScheme: "green" as const,
+                })),
+                costInfo: {
+                  topLabel: "Porsi Bebas Biaya",
+                  bottomLabel: "Penyelamatan Surplus Pangan",
+                },
+                category: parsed.category?.includes("bakery")
+                  ? "bakery"
+                  : parsed.category?.includes("vegan")
+                  ? "vegetarian"
+                  : "halal",
+              });
+            } catch {}
+          }
+        }
+
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
         const { data, error } = await supabase.from("food_radar").select("*");
@@ -376,7 +420,13 @@ export function SurplusFeedSection() {
               },
             };
           });
-          setLiveListings(mapped);
+
+          // Prepend newly added item if not present in DB mapped
+          const existingIds = new Set(mapped.map((m) => m.id));
+          const uniqueNew = newlyAdded.filter((n) => !existingIds.has(n.id));
+          setLiveListings([...uniqueNew, ...mapped]);
+        } else if (newlyAdded.length > 0) {
+          setLiveListings([...newlyAdded, ...SURPLUS_FEED_LISTINGS]);
         }
       } catch (err) {
         console.warn("Using initial listings:", err);
@@ -419,12 +469,34 @@ export function SurplusFeedSection() {
             })
           );
         }
-        router.push(`/claims?claimId=${res.data.id}&token=${res.data.qr_token}`);
+        router.push(`/claims?claimId=${res.data.id}&token=${res.data.qr_token}&listingId=${id}`);
       } else {
-        router.push("/claims");
+        const mockToken = "SP-" + Math.floor(100000 + Math.random() * 900000);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "siklus_active_claim",
+            JSON.stringify({
+              claimId: id,
+              qrToken: mockToken,
+              listingId: id,
+            })
+          );
+        }
+        router.push(`/claims?claimId=${id}&token=${mockToken}&listingId=${id}`);
       }
     } catch {
-      router.push("/claims");
+      const mockToken = "SP-" + Math.floor(100000 + Math.random() * 900000);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "siklus_active_claim",
+          JSON.stringify({
+            claimId: id,
+            qrToken: mockToken,
+            listingId: id,
+          })
+        );
+      }
+      router.push(`/claims?claimId=${id}&token=${mockToken}&listingId=${id}`);
     }
   };
 

@@ -61,7 +61,15 @@ export async function signIn(formData: FormData) {
     .single();
   if (profileError) return { success: false, error: "Profil akun belum siap" };
 
-  redirect(profile.role === "beneficiary" ? "/rescue" : "/");
+  if (profile.role === "beneficiary") {
+    redirect("/rescue");
+  } else if (profile.role === "admin") {
+    redirect("/admin");
+  } else if (profile.role === "processor") {
+    redirect("/waste");
+  } else {
+    redirect("/");
+  }
 }
 
 export async function signOut() {

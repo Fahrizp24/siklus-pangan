@@ -63,6 +63,9 @@ export function DonateActionsSection({
     }
 
     setIsPublishing(true);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("trigger-donate-publish"));
+    }
     setTimeout(() => {
       setIsPublishing(false);
       setIsSuccess(true);

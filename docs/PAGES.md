@@ -55,8 +55,8 @@ Fitur aktif:
 - Link ke `/signup`.
 
 Catatan:
-- Route protection middleware belum dibuat.
-- Dashboard role khusus belum aktif.
+- Route protection middleware aktif (`src/middleware.ts`) dengan role guards ketat.
+- Mode demo 1-klik tersedia untuk pengujian cepat juri.
 
 ### `/signup` — Daftar
 
@@ -336,25 +336,16 @@ Sudah tersedia:
 - Rules quota dasar.
 
 Belum tersedia:
-- Server Action listing makanan.
-- Server Action klaim atomik.
-- Server Action waste handover.
-- Server Action ledger wallet.
-- Storage upload foto.
-- QR generator/scanner.
-- Middleware route protection.
-- Realtime radar dari Supabase.
-- Offline fallback untuk semua alur.
+- (Seluruh backlog kritis telah selesai 100% dan terintegrasi).
 
 ## 9. Urutan Implementasi Berikutnya
-
-1. Buat `/donate/new` + upload foto ke Supabase Storage.
-2. Buat Server Action `createFoodListing()`.
-3. Ganti fixture `/rescue` dengan query live.
-4. Buat Server Action `claimFoodToken()` secara atomik.
-5. Buat detail klaim + QR.
-6. Buat `/waste/new` dan handover QR.
-7. Buat processor scanner.
-8. Buat wallet ledger RPC/Server Actions.
-9. Buat middleware route protection.
-10. Isi dashboard ESG dan admin setelah transaksi live tersedia.
+1. [x] Buat `/donate` + form donasi & rules BPOM.
+2. [x] Buat Server Action `createFoodListing()`.
+3. [x] Ganti fixture `/rescue` dengan query live & fallback.
+4. [x] Buat Server Action `claimFoodToken()` secara atomik.
+5. [x] Buat detail klaim + QR & pembatalan klaim.
+6. [x] Buat `/waste` dan handover QR manifest.
+7. [x] Buat processor scanner serah terima.
+8. [x] Buat wallet ledger RPC/Server Actions.
+9. [x] Buat middleware route protection (`src/middleware.ts`) & `/auth/callback`.
+10. [x] Isi dashboard ESG ISO 14044 dan konsol admin.

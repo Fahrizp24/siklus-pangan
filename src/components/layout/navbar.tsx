@@ -54,6 +54,8 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               ? "Donatur Pangan Terverifikasi"
               : metadata.role === "processor"
               ? "Pengolah Residu Organik"
+              : metadata.role === "admin"
+              ? "Administrator & Auditor"
               : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
@@ -79,6 +81,8 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               ? "Donatur Pangan Terverifikasi"
               : metadata.role === "processor"
               ? "Pengolah Residu Organik"
+              : metadata.role === "admin"
+              ? "Administrator & Auditor"
               : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,

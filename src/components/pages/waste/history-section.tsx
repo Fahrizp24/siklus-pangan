@@ -117,13 +117,34 @@ export const WASTE_HISTORY_DATA = {
   },
 };
 
+import { WasteBatchRecord, getWasteBatchesHistory } from "@/actions/waste";
+
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function HistorySection() {
-  const { header, tableHeaders, rows, footer } = WASTE_HISTORY_DATA;
+interface HistorySectionProps {
+  initialBatches?: WasteBatchRecord[];
+}
+
+export function HistorySection({ initialBatches }: HistorySectionProps) {
+  const { header, tableHeaders, rows: defaultRows, footer } = WASTE_HISTORY_DATA;
   const [currentPage, setCurrentPage] = useState(1);
+  const [batchRows, setBatchRows] = useState<any[]>(
+    initialBatches && initialBatches.length > 0 ? initialBatches : defaultRows
+  );
+
+  React.useEffect(() => {
+    if (!initialBatches || initialBatches.length === 0) {
+      getWasteBatchesHistory().then((data) => {
+        if (data && data.length > 0) {
+          setBatchRows(data);
+        }
+      });
+    }
+  }, [initialBatches]);
+
+  const rows = batchRows;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -242,13 +263,14 @@ export function HistorySection() {
 
                   {/* SERTIFIKAT PDF */}
                   <td className="py-4 px-3 last:pr-0 whitespace-nowrap">
-                    <a
-                      href={row.certificateUrl}
-                      className="inline-flex items-center gap-1 text-destructive hover:opacity-80 transition-opacity font-bold font-headline text-xs group"
+                    <button
+                      type="button"
+                      onClick={() => typeof window !== "undefined" && window.print()}
+                      className="inline-flex items-center gap-1 text-destructive hover:opacity-80 transition-opacity font-bold font-headline text-xs group cursor-pointer"
                     >
                       <FileText className="w-4 h-4 text-destructive shrink-0 transition-transform group-hover:scale-110" />
                       <span>PDF</span>
-                    </a>
+                    </button>
                   </td>
                 </tr>
               ))}

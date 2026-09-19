@@ -97,3 +97,60 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Micro-animations & Interactive Enhancements (RZL-15) */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px -2px rgba(0, 170, 19, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px 4px rgba(0, 170, 19, 0.4);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3.5s ease-in-out infinite;
+}
+
+.animate-subtle-float {
+  animation: subtleFloat 4s ease-in-out infinite;
+}
+
+.hover-card-elevate {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-card-elevate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(11, 27, 61, 0.1);
+}
+
+/* Print Rules for Clean PDF Certificate & Manifest Export */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #0b1b3d !important;
+  }
+  header, footer, nav, .no-print, [role="navigation"] {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
+}
+

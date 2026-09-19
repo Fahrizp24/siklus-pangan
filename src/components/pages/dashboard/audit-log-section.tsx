@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, Eye, Download, Lock } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
+import { EsgPdfTemplate, EsgCertificateData } from "@/components/reports/esg-pdf-template";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -91,9 +92,16 @@ export const AUDIT_LOG_DATA = {
 export function AuditLogSection() {
   const { header, tableHeaders, auditRows, footer } = AUDIT_LOG_DATA;
   const [activeTab, setActiveTab] = useState("q2_2025");
+  const [selectedCertificate, setSelectedCertificate] = useState<Partial<EsgCertificateData> | null>(null);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {selectedCertificate && (
+        <EsgPdfTemplate
+          data={selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
+        />
+      )}
       <Card className="p-6 sm:p-7">
         {/* Header Row: Title & Segmented Filter Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/70">
@@ -199,14 +207,30 @@ export function AuditLogSection() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                        onClick={() =>
+                          setSelectedCertificate({
+                            certificateNumber: row.certificateNumber,
+                            validPeriod: row.auditPeriod,
+                            auditor: `${row.auditorName} (${row.auditorDetail})`,
+                            ledgerHash: row.hashLedger,
+                          })
+                        }
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted cursor-pointer"
                         title="Pratinjau Sertifikat"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
-                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted"
+                        onClick={() =>
+                          setSelectedCertificate({
+                            certificateNumber: row.certificateNumber,
+                            validPeriod: row.auditPeriod,
+                            auditor: `${row.auditorName} (${row.auditorDetail})`,
+                            ledgerHash: row.hashLedger,
+                          })
+                        }
+                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted cursor-pointer"
                         title="Unduh Sertifikat PDF"
                       >
                         <Download className="w-4 h-4" />

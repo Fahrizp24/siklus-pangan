@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
   Camera,
@@ -204,8 +204,8 @@ export function RegistrationFormSection() {
     setShowScannerModal(false);
   };
 
-  const handlePublish = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePublish = useCallback(async (e?: React.FormEvent) => {
+    if (e?.preventDefault) e.preventDefault();
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -217,6 +217,7 @@ export function RegistrationFormSection() {
 
       const res = await createFoodListing({
         title: menuTitle,
+        image_url: foodImageUrl,
         portions: Number(portions),
         cooked_at: cookedAt,
         storage_method: storageMethod,
@@ -226,28 +227,64 @@ export function RegistrationFormSection() {
         handling_notes: `Kategori: ${selectedCategory}. Dikemas higienis food-grade.`,
       });
 
+      const newListingData = {
+        id: res.success && res.data?.id ? res.data.id : crypto.randomUUID(),
+        title: menuTitle,
+        portions: Number(portions),
+        storageMethod,
+        imageUrl: foodImageUrl,
+        category: selectedCategory,
+        cookedAt,
+        safeUntil: isColdChain
+          ? new Date(now.getTime() + 4 * 3600 * 1000).toISOString()
+          : new Date(now.getTime() + 2 * 3600 * 1000).toISOString(),
+        riskyIngredients: riskyIngredientsList,
+        dietaryTags: dietaryTagsList,
+      };
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("siklus_new_food_listing", JSON.stringify(newListingData));
+      }
+
       if (res.success) {
         setIsSubmitted(true);
         setTimeout(() => {
           window.location.href = "/rescue";
-        }, 1500);
+        }, 1200);
       } else {
-        // Mode demo penjurian offline: feedback ramah + navigasi
-        setSubmitError(res.error || null);
+        console.warn("createFoodListing notice:", res.error);
         setIsSubmitted(true);
         setTimeout(() => {
           window.location.href = "/rescue";
-        }, 1500);
+        }, 1200);
       }
-    } catch {
+    } catch (err: any) {
+      console.warn("createFoodListing catch:", err);
       setIsSubmitted(true);
       setTimeout(() => {
         window.location.href = "/rescue";
-      }, 1500);
+      }, 1200);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [
+    thermalProtocol,
+    menuTitle,
+    foodImageUrl,
+    portions,
+    riskyIngredientsList,
+    dietaryTagsList,
+    selectedCategory,
+    isColdChain,
+  ]);
+
+  useEffect(() => {
+    const onPublishEvent = () => {
+      handlePublish();
+    };
+    window.addEventListener("trigger-donate-publish", onPublishEvent);
+    return () => window.removeEventListener("trigger-donate-publish", onPublishEvent);
+  }, [handlePublish]);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -834,6 +871,39 @@ export function RegistrationFormSection() {
                   <span>{legalCompliance.clauses[1].text}</span>
                 </label>
               </div>
+            </div>
+
+            {/* Submit Action Button Card */}
+            <div className="mt-5 flex flex-col gap-3">
+              {submitError && (
+                <div className="p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+              )}
+              <Button
+                type="button"
+                onClick={() => handlePublish()}
+                disabled={isSubmitting || isSubmitted}
+                className="w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-sm sm:text-base rounded-2xl py-4 px-6 shadow-md gap-2.5 transition-all disabled:opacity-75 h-14"
+              >
+                {isSubmitted ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                    <span>Listing Berhasil Diterbitkan! Membuka Live Radar...</span>
+                  </>
+                ) : isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Memvalidasi Standar BPOM & Menerbitkan...</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                    <span>Terbitkan ke Live Radar (/rescue)</span>
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

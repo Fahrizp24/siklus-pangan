@@ -16,6 +16,8 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Donasi Pangan", href: "/donate" },
   { label: "Limbah Organik", href: "/waste" },
   { label: "Dompet Sirkular", href: "/wallet" },
+  { label: "Dashboard ESG", href: "/dashboard" },
+  { label: "Wall of Fame", href: "/leaderboard" },
 ];
 
 export const FOOTER_SECTIONS: FooterSection[] = [

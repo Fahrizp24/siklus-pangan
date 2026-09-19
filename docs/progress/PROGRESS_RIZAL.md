@@ -11,13 +11,13 @@
 ## 📊 Ringkasan Progress P2 (Rizal)
 
 ```
-Progress Rizal: [==================> ] 76%
+Progress Rizal: [====================] 100%
 - Foundation & Design Rules: 100% [DONE]
 - Phase 1 (Design System & App Shell): 100% [DONE]
 - Phase 2 (Live Surplus Radar & Registrasi): 100% [DONE]
-- Phase 3 (Biokonversi & QR UI):       0% [WAITING BACKEND - FHR-12 & 13]
-- Phase 4 (Dashboard ESG & PDF):       0% [TODO]
-- Phase 5 (Polishing & Pitch Deck):    0% [TODO]
+- Phase 3 (Biokonversi & QR UI):       100% [DONE & WIRED]
+- Phase 4 (Dashboard ESG & PDF):       100% [DONE & INTEGRATED]
+- Phase 5 (Polishing & Pitch Deck):    100% [DONE & READY]
 ```
 
 ---
@@ -96,24 +96,26 @@ Progress Rizal: [==================> ] 76%
 ### 📊 Phase 4: Wall of Fame, Dasbor ESG & Laporan PDF (Modul C)
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Fahri Phase 3** (Tabel & Transaction Ledger `financial_transactions` `FHR-13` selesai agar data metana $CH_4$, $CO_2e$, & Rupiah saved bisa ditarik dari database).  
-> - **Status Kerja:** 🟢 **Slicing UI & Komponen Dashboard ESG Selesai 100%** (Siap integrasi mutasi ledger saat Fahri siap).
+> - **Status Kerja:** 🟢 **COMPLETED 100%** (Dashboard ESG, Wall of Fame, Ledger, & Modal PDF Sertifikat Terintegrasi Penuh).
 
-- [ ] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/leaderboard/page.tsx`):
-  - Leaderboard donatur unggulan (Hotel, Restoran, Katering).
+- [x] **RZL-12:** Halaman Publik *Wall of Fame Donatur* (`src/app/leaderboard/page.tsx`):
+  - Leaderboard donatur unggulan (Hotel, Restoran, Katering) dengan podium interaktif 3 besar, tabel transparan reduksi pangan & karbon, dan metrik total dampak sirkular terverifikasi.
 - [x] **RZL-13:** Dasbor Analitik ESG & Reduksi Emisi (`src/app/dashboard/page.tsx`):
   - **Hero Section:** Sertifikasi ISO 14044 LCA & GHG Protocol Scope 3, Node ID SP-ID-JKT-8829, tombol ekspor laporan audit (PDF/XBRL) dan unduh sertifikat karbon.
   - **4 Kartu Metrik Stat:** Reduksi Emisi GRK (48.836 kg CO2e, +18.4% YoY), Metana CH4 Dicegah (3.368 kg CH4, Suwung & Bantar Gebang), Pangan Diselamatkan (142.850 Porsi, 28 Mitra Panti), Nilai Dampak S-ROI (Rp 1,42 Miliar, Rasio 1:4.8).
   - **Grafik & Analitik Scope:** Breakdown emisi Scope 1 (EV 7%), Scope 2 (Cold storage 17%), Scope 3 (Limbah & pangan 76%), Target Net-Zero 2030 (68%), Dual bar chart komparasi bulanan baseline TPA vs aktual tereduksi Jan-Mei 2025, rasio biokonversi BSF 64.5% & kasgot 35.5%.
   - **Matriks Dampak UN SDGs:** 4 kartu SDG resmi (SDG 2 Tanpa Kelaparan, SDG 12 Konsumsi & Produksi, SDG 13 Perubahan Iklim, SDG 17 Kemitraan Tujuan).
   - **Log Audit Verifikasi Karbon:** Tabel sertifikat digital terverifikasi (TÜV Rheinland & PT Sucofindo), hash blockchain ledger, tombol pratinjau & unduh PDF, security notice SHA-256 smart contract.
-- [ ] **RZL-14:** Desain Layout Cetak PDF Sertifikat ESG Digital untuk laporan CSR donatur (`src/components/reports/esg-pdf-template.tsx`).
+- [x] **RZL-14:** Desain Layout Cetak PDF Sertifikat ESG Digital untuk laporan CSR donatur (`src/components/reports/esg-pdf-template.tsx`):
+  - Modal interaktif berspesifikasi ISO 14044 & GHG Protocol Scope 3 Category 5 dengan metrik reduksi karbon, porsi pangan terselamatkan, volume limbah dialihkan, stempel auditor, hash ledger, dan integrasi cetak browser `window.print()`.
 
 ---
 
 ### 🎭 Phase 5: Polishing Visual & Materi Slide Pitching
 > 📌 **Prasyarat (Dependencies):**  
 > - **Membutuhkan:** **Seluruh Phase 1–4 Rizal & Fahri selesai di-merge**.  
-> - **Status Kerja:** 🔴 **Dikunci sampai seluruh fitur selesai**.
+> - **Status Kerja:** 🟢 **COMPLETED 100%**.
 
-- [ ] **RZL-15:** Penambahan micro-animations, hover effects, dan transisi smooth untuk *WOW effect* juri.
-- [ ] **RZL-16:** Penyusunan slide presentasi (*pitch deck*) TCC 2026 UTM & penyelarasan skenario live demo.
+- [x] **RZL-15:** Penambahan micro-animations, hover effects, subtle floating, pulse glow, dan transisi smooth untuk *WOW effect* juri di `src/app/globals.css`.
+- [x] **RZL-16:** Penyusunan slide presentasi (*pitch deck*) TCC 2026 UTM & penyelarasan skenario live demo 3 menit terperinci di `docs/PITCH_DECK.md`.
+

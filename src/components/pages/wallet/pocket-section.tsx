@@ -84,11 +84,34 @@ export const WALLET_POCKET_DATA = [
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function PocketSection() {
+interface PocketSectionProps {
+  activeBalance?: number;
+  reverseTippingTotal?: number;
+  logisticsSubsidyTotal?: number;
+}
+
+export function PocketSection({
+  activeBalance,
+  reverseTippingTotal,
+  logisticsSubsidyTotal,
+}: PocketSectionProps) {
+  const cards = WALLET_POCKET_DATA.map((item) => {
+    if (item.id === "active_balance" && activeBalance !== undefined) {
+      return { ...item, amount: activeBalance.toLocaleString("id-ID") };
+    }
+    if (item.id === "reverse_tipping" && reverseTippingTotal !== undefined) {
+      return { ...item, amount: reverseTippingTotal.toLocaleString("id-ID") };
+    }
+    if (item.id === "logistics_carbon_subsidy" && logisticsSubsidyTotal !== undefined) {
+      return { ...item, amount: logisticsSubsidyTotal.toLocaleString("id-ID") };
+    }
+    return item;
+  });
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {WALLET_POCKET_DATA.map((item) => (
+        {cards.map((item) => (
           <MetricStatCard
             key={item.id}
             label={item.label}

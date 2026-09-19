@@ -214,7 +214,7 @@ export function ClaimDetailsSection() {
 
         let query = supabase
           .from("food_claims")
-          .select("id, qr_token, portions_claimed, is_collected, collected_at, food_listings(title, image_url, safe_until)")
+          .select("id, qr_token, portions_claimed, is_collected, collected_at, listing_id, food_listings(title, image_url, safe_until)")
           .order("created_at", { ascending: false });
 
         if (tokenToFind) {
@@ -223,14 +223,27 @@ export function ClaimDetailsSection() {
 
         const { data, error } = await query.limit(1).single();
         if (!error && data) {
+          const foodTitle = (data.food_listings as any)?.title || dishSummary.dishTitle;
           setActiveClaim({
             id: data.id,
             token: data.qr_token,
-            title: (data.food_listings as any)?.title || dishSummary.dishTitle,
+            title: foodTitle,
             portions: data.portions_claimed || 1,
             isCollected: data.is_collected,
             collectedAt: data.collected_at,
           });
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              "siklus_active_claim",
+              JSON.stringify({
+                claimId: data.id,
+                qrToken: data.qr_token,
+                listingId: data.listing_id || "2a02ea19-32b6-43ac-b4d2-71c2eeead97b",
+                foodTitle: foodTitle,
+              })
+            );
+          }
         }
       } catch (err) {
         console.warn("Using default claim fixture:", err);

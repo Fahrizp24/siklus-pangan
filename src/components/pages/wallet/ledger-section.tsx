@@ -179,14 +179,37 @@ export const WALLET_LEDGER_DATA = {
   },
 };
 
+import { WalletTransactionRecord, getWalletData } from "@/actions/wallet";
+
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function LedgerSection() {
-  const { header, tableHeaders, transactions, footer } = WALLET_LEDGER_DATA;
+interface LedgerSectionProps {
+  initialTransactions?: WalletTransactionRecord[];
+}
+
+export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
+  const { header, tableHeaders, transactions: defaultTransactions, footer } = WALLET_LEDGER_DATA;
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [txList, setTxList] = useState<any[]>(
+    initialTransactions && initialTransactions.length > 0
+      ? initialTransactions
+      : defaultTransactions
+  );
+
+  React.useEffect(() => {
+    if (!initialTransactions || initialTransactions.length === 0) {
+      getWalletData().then((res) => {
+        if (res.transactions && res.transactions.length > 0) {
+          setTxList(res.transactions);
+        }
+      });
+    }
+  }, [initialTransactions]);
+
+  const transactions = txList;
 
   // Filter transactions according to selected tab
   const filteredTransactions = transactions.filter((tx) => {
@@ -320,9 +343,10 @@ export function LedgerSection() {
                       {tx.receipt.type === "pdf" ? (
                         <Button
                           type="button"
+                          onClick={() => typeof window !== "undefined" && window.print()}
                           variant="outline"
                           size="sm"
-                          className="h-8 px-2.5 rounded-lg border-border text-foreground hover:bg-muted font-bold font-headline text-xs gap-1"
+                          className="h-8 px-2.5 rounded-lg border-border text-foreground hover:bg-muted font-bold font-headline text-xs gap-1 cursor-pointer"
                         >
                           <Download className="w-3.5 h-3.5 text-muted-foreground" />
                           <span>PDF</span>

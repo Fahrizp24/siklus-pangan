@@ -50,11 +50,35 @@ export const HOME_STATS_DATA: StatItem[] = [
   },
 ];
 
-export function StatSection() {
+import { EsgDashboardMetrics } from "@/actions/dashboard";
+
+interface HomeStatSectionProps {
+  metrics?: EsgDashboardMetrics;
+}
+
+export function StatSection({ metrics }: HomeStatSectionProps) {
+  const stats = HOME_STATS_DATA.map((item) => {
+    if (!metrics) return item;
+    if (item.id === "rescued-food") {
+      return { ...item, value: metrics.mealsRescued.toLocaleString("id-ID") };
+    }
+    if (item.id === "diverted-waste") {
+      return { ...item, value: metrics.wasteDivertedKg.toLocaleString("id-ID") };
+    }
+    if (item.id === "co2-reduced") {
+      return { ...item, value: metrics.co2eReducedKg.toLocaleString("id-ID") };
+    }
+    if (item.id === "economic-value") {
+      const bVal = (metrics.economicValueIdr / 1000000000).toFixed(2).replace(".", ",");
+      return { ...item, value: `Rp ${bVal} M` };
+    }
+    return item;
+  });
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {HOME_STATS_DATA.map((stat, index) => {
+        {stats.map((stat, index) => {
           const Icon = stat.icon;
 
           return (

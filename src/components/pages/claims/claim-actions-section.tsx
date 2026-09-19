@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   GitFork,
   Navigation,
@@ -8,6 +8,7 @@ import {
   HelpCircle,
   XCircle,
   AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DisputeModal } from "@/components/scanner/dispute-modal";
@@ -52,16 +53,96 @@ export const CLAIM_ACTIONS_CONTENT = {
 export function ClaimActionsSection() {
   const { logisticsInfo, buttons, footerPolicy } = CLAIM_ACTIONS_CONTENT;
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
+  const [activeListingId, setActiveListingId] = useState("2a02ea19-32b6-43ac-b4d2-71c2eeead97b");
+  const [activeFoodTitle, setActiveFoodTitle] = useState("Gourmet Bento Box Korporat (#CLM-89210-BTO)");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlListingId = params.get("listingId");
+      if (urlListingId) {
+        setActiveListingId(urlListingId);
+      }
+
+      const saved = localStorage.getItem("siklus_active_claim");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.listingId) setActiveListingId(parsed.listingId);
+          if (parsed.foodTitle) setActiveFoodTitle(parsed.foodTitle);
+        } catch {}
+      }
+    }
+  }, []);
+
+  const handlePrintPdf = () => {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  };
+
+  const handleCancelClaim = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("siklus_active_claim");
+    }
+    setShowCancelModal(false);
+    setCancelSuccessMsg("Klaim berhasil dibatalkan. Kuota harian Anda telah dikembalikan.");
+    setTimeout(() => {
+      window.location.href = "/rescue";
+    }, 1200);
+  };
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Modal Dispute Escalation */}
       {showDisputeModal && (
         <DisputeModal
-          listingId="2a02ea19-32b6-43ac-b4d2-71c2eeead97b"
-          foodTitle="Gourmet Bento Box Korporat (#CLM-89210-BTO)"
+          listingId={activeListingId}
+          foodTitle={activeFoodTitle}
           onClose={() => setShowDisputeModal(false)}
         />
+      )}
+
+      {/* Modal Konfirmasi Pembatalan Klaim */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-destructive">
+              <XCircle className="w-6 h-6" />
+              <h3 className="font-bold text-base font-headline">Batalkan Tiket Klaim?</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Apakah Anda yakin ingin membatalkan klaim makanan ini? Porsi akan dikembalikan ke Live Radar untuk penerima lain dan kuota harian akun Anda dipulihkan.
+            </p>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCancelModal(false)}
+                className="rounded-xl text-xs"
+              >
+                Kembali
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCancelClaim}
+                className="bg-destructive hover:bg-destructive/90 text-white rounded-xl text-xs font-bold"
+              >
+                Ya, Batalkan Klaim
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Banner Feedback Pembatalan */}
+      {cancelSuccessMsg && (
+        <div className="mb-4 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span>{cancelSuccessMsg}</span>
+        </div>
       )}
 
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
@@ -100,10 +181,11 @@ export function ClaimActionsSection() {
                 </a>
               </Button>
 
-
               {/* 2. Unduh Bukti Klaim PDF (Navy Secondary) */}
               <Button
-                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors"
+                type="button"
+                onClick={handlePrintPdf}
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{buttons.downloadPdf.label}</span>
@@ -123,8 +205,10 @@ export function ClaimActionsSection() {
 
             {/* Bottom Row: Batalkan Klaim (Destructive Outline, Aligned Right) */}
             <Button
+              type="button"
+              onClick={() => setShowCancelModal(true)}
               variant="outline"
-              className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors self-end"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive font-headline font-bold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-2xs gap-2 transition-colors self-end cursor-pointer"
             >
               <XCircle className="w-4 h-4 text-destructive" />
               <span>{buttons.cancel.label}</span>

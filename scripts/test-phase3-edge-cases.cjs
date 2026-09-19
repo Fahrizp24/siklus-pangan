@@ -65,9 +65,13 @@ const transport = { createClient: async () => {
 const actions = {
   ...load('src/actions/food.ts', {
     '@/lib/supabase/server': transport,
+    '@/lib/supabase/admin': { createAdminClient: () => client },
     '@/lib/rules/expiry': load('src/lib/rules/expiry.ts'),
   }),
-  ...load('src/actions/transactions.ts', { '@/lib/supabase/server': transport }),
+  ...load('src/actions/transactions.ts', {
+    '@/lib/supabase/server': transport,
+    '@/lib/supabase/admin': { createAdminClient: () => client },
+  }),
 };
 const food = { title: 'Nasi', portions: 1, cooked_at: new Date(NOW).toISOString(),
   storage_method: 'room_temperature', risky_ingredients: [], dietary_tags: [] };
