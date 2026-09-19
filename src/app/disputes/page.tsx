@@ -4,11 +4,29 @@ import { getDisputesData } from "@/actions/disputes";
 import { DisputesHero } from "@/components/pages/disputes/disputes-hero";
 import { DisputesList } from "@/components/pages/disputes/disputes-list";
 import { DisputesPolicyCard } from "@/components/pages/disputes/disputes-policy-card";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DisputesPage() {
-  const summary = await getDisputesData();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let role = user?.user_metadata?.role;
+  if (!role && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    role = profile?.role;
+  }
+  const isDonor = role === "donor";
+
+  // If donor, only fetch donor's own dispute records
+  const summary = await getDisputesData(isDonor ? user?.id : undefined);
 
   return (
     <AppShell>

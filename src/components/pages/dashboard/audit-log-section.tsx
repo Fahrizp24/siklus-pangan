@@ -89,8 +89,26 @@ export const AUDIT_LOG_DATA = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function AuditLogSection() {
-  const { header, tableHeaders, auditRows, footer } = AUDIT_LOG_DATA;
+import { AuditRecord } from "@/actions/dashboard";
+
+interface AuditLogSectionProps {
+  auditRows?: AuditRecord[];
+  entityName?: string;
+  metrics?: {
+    co2eReducedKg?: number;
+    methanePreventedKg?: number;
+    mealsRescued?: number;
+    wasteDivertedKg?: number;
+  };
+}
+
+export function AuditLogSection({
+  auditRows: propAuditRows,
+  entityName,
+  metrics,
+}: AuditLogSectionProps) {
+  const { header, tableHeaders, auditRows: defaultRows, footer } = AUDIT_LOG_DATA;
+  const auditRows = propAuditRows && propAuditRows.length > 0 ? propAuditRows : defaultRows;
   const [activeTab, setActiveTab] = useState("q2_2025");
   const [selectedCertificate, setSelectedCertificate] = useState<Partial<EsgCertificateData> | null>(null);
 
@@ -213,6 +231,11 @@ export function AuditLogSection() {
                             validPeriod: row.auditPeriod,
                             auditor: `${row.auditorName} (${row.auditorDetail})`,
                             ledgerHash: row.hashLedger,
+                            entityName: entityName || "PT BOGA SEJAHTERA INDONESIA",
+                            co2eReducedKg: metrics?.co2eReducedKg || 48836,
+                            methanePreventedKg: metrics?.methanePreventedKg || 3368,
+                            mealsRescued: metrics?.mealsRescued || 142850,
+                            wasteDivertedKg: metrics?.wasteDivertedKg || 84200,
                           })
                         }
                         className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted cursor-pointer"
@@ -228,6 +251,11 @@ export function AuditLogSection() {
                             validPeriod: row.auditPeriod,
                             auditor: `${row.auditorName} (${row.auditorDetail})`,
                             ledgerHash: row.hashLedger,
+                            entityName: entityName || "PT BOGA SEJAHTERA INDONESIA",
+                            co2eReducedKg: metrics?.co2eReducedKg || 48836,
+                            methanePreventedKg: metrics?.methanePreventedKg || 3368,
+                            mealsRescued: metrics?.mealsRescued || 142850,
+                            wasteDivertedKg: metrics?.wasteDivertedKg || 84200,
                           })
                         }
                         className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted cursor-pointer"

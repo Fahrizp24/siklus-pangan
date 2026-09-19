@@ -134,6 +134,21 @@ export async function updateUserProfile(input: unknown): Promise<{ success: bool
       return { success: false, error: "Gagal memperbarui profil ke basis data." };
     }
 
+    // Sinkronkan juga ke auth user_metadata agar sesi dan navbar langsung terupdate
+    try {
+      await admin.auth.admin.updateUserById(parsed.data.id, {
+        user_metadata: {
+          display_name: parsed.data.display_name,
+          phone_number: parsed.data.phone_number,
+          address: parsed.data.address,
+          is_organization: parsed.data.is_organization,
+          organization_capacity: parsed.data.is_organization ? parsed.data.organization_capacity || 10 : null,
+        },
+      });
+    } catch (authErr) {
+      console.warn("[updateUserProfile metadata sync warning]:", authErr);
+    }
+
     revalidatePath("/profile");
     revalidatePath("/dashboard");
     return { success: true };

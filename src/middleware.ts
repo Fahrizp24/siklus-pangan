@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
     } else if (role === "processor") {
       url.pathname = "/waste";
     } else {
-      url.pathname = "/";
+      url.pathname = "/dashboard";
     }
     return NextResponse.redirect(url);
   }

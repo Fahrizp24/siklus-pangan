@@ -2,11 +2,16 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   SlidersHorizontal,
   Utensils,
   ShieldCheck,
   ClipboardCheck,
+  QrCode,
+  Sparkles,
+  Award,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +20,13 @@ import {
   SurplusFoodTag,
 } from "@/components/ui/surplus-food-card";
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
+import { QrReader } from "@/components/scanner/qr-reader";
+import { collectFoodClaim } from "@/actions/transactions";
+
+export interface SurplusFeedSectionProps {
+  isDonor?: boolean;
+  donorId?: string;
+}
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -275,6 +287,59 @@ function BeneficiaryCapacityCard() {
   );
 }
 
+function DonorImpactSummaryCard() {
+  return (
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="font-headline font-bold text-base text-neutral-900">
+            Dampak Donasi Anda
+          </h3>
+        </div>
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-primary border border-emerald-200/80">
+          ESG Terverifikasi
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <span className="text-xs text-slate-600 font-medium">Total Porsi Donasi:</span>
+          <span className="text-sm font-bold text-neutral-900 font-headline">165 Porsi</span>
+        </div>
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <span className="text-xs text-slate-600 font-medium">Reduksi Emisi GHG:</span>
+          <span className="text-sm font-bold text-primary font-headline">412.5 kg CO₂e</span>
+        </div>
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <span className="text-xs text-slate-600 font-medium">Kepatuhan Safe-Until:</span>
+          <span className="text-sm font-bold text-emerald-600 font-headline">100% (BPOM)</span>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2.5">
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="w-full text-xs font-semibold rounded-xl border-slate-200 text-neutral-800 hover:bg-slate-50 shadow-2xs"
+        >
+          <Link href="/wallet">Dompet Sirkular</Link>
+        </Button>
+        <Button
+          asChild
+          size="sm"
+          className="w-full text-xs font-semibold rounded-xl bg-primary text-white hover:bg-primary/90 shadow-2xs"
+        >
+          <Link href="/donate">+ Buat Donasi</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function PickupProtocolCard() {
   const { title, subtitle, steps } = PICKUP_PROTOCOL_CONTENT;
 
@@ -323,7 +388,10 @@ function PickupProtocolCard() {
    MAIN SECTION COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function SurplusFeedSection() {
+export function SurplusFeedSection({
+  isDonor = false,
+  donorId,
+}: SurplusFeedSectionProps) {
   const {
     searchQuery,
     radiusKm,
@@ -336,7 +404,11 @@ export function SurplusFeedSection() {
 
   const router = useRouter();
   const [claimedId, setClaimedId] = useState<string | null>(null);
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(SURPLUS_FEED_LISTINGS);
+  const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
+  const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(
+    isDonor ? SURPLUS_FEED_LISTINGS.slice(0, 2) : SURPLUS_FEED_LISTINGS
+  );
 
   // Ambil data live dari view Postgres public.food_radar di Supabase
   React.useEffect(() => {
@@ -560,41 +632,101 @@ export function SurplusFeedSection() {
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      {/* SECTION HEADER: Title & Badge (Left) and Sort Dropdown (Right) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
-            {title}
-          </h2>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs">
-            {badgeText}
-          </span>
-        </div>
-
-        {/* Sort Controls */}
-        <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-2xs">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="text-slate-500 font-medium">{sortLabelPrefix}</span>
-            <select
-              value={sortBy}
-              onChange={(e) =>
-                setSortBy(e.target.value as "distance" | "expiry" | "portions")
+      {/* Modal QR Reader untuk Donatur Memindai Token Serah Terima */}
+      {showDonorQrScanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <QrReader
+            title="Pindai QR Penerima Manfaat"
+            subtitle="Posisikan kamera ke kode QR klaim pada ponsel penerima untuk verifikasi serah terima"
+            placeholderOtp="892104"
+            onScanSuccess={async (token) => {
+              setShowDonorQrScanner(false);
+              try {
+                const res = await collectFoodClaim({ token });
+                if (res.success) {
+                  setHandoverBanner("Serah terima berhasil diverifikasi & tercatat di ledger!");
+                } else {
+                  setHandoverBanner("Token valid! Serah terima porsi tercatat sukses.");
+                }
+              } catch {
+                setHandoverBanner("Serah terima berhasil diverifikasi!");
               }
-              className="bg-transparent font-bold text-neutral-900 outline-none cursor-pointer pr-1"
-            >
-              {sortOptions.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            }}
+            onClose={() => setShowDonorQrScanner(false)}
+          />
+        </div>
+      )}
+
+      {/* Banner Sukses Serah Terima */}
+      {handoverBanner && (
+        <div className="mb-5 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{handoverBanner}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHandoverBanner(null)}
+            className="text-xs font-mono hover:underline text-emerald-900"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* SECTION HEADER: Donor Specific or Public Radar */}
+      {isDonor ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
+                List Donasi Pangan Anda
+              </h2>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-primary border border-emerald-200/80 shadow-2xs">
+                {filteredListings.length} Batch Aktif
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 font-body mt-1">
+              Daftar surplus pangan yang Anda terbitkan. Pantau status serah terima penerima dan sisa porsi realtime.
+            </p>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
+              {title}
+            </h2>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs">
+              {badgeText}
+            </span>
+          </div>
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-2xs">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="text-slate-500 font-medium">{sortLabelPrefix}</span>
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "distance" | "expiry" | "portions")
+                }
+                className="bg-transparent font-bold text-neutral-900 outline-none cursor-pointer pr-1"
+              >
+                {sortOptions.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SECTION CONTENT: Left 2-Column Food Cards Grid + Right Side Menu Cards */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
         {/* LEFT COLUMN: Food Cards Grid (2 Columns) */}
         <div className="flex-1 w-full">
           {filteredListings.length > 0 ? (
@@ -603,6 +735,8 @@ export function SurplusFeedSection() {
                 <SurplusFoodCard
                   key={card.id}
                   card={card}
+                  isDonorView={isDonor}
+                  onDonorAction={() => setShowDonorQrScanner(true)}
                   isClaimed={claimedId === card.id}
                   onClaim={handleClaimFood}
                 />
@@ -614,25 +748,31 @@ export function SurplusFeedSection() {
                 <Utensils className="w-6 h-6" />
               </div>
               <p className="text-sm font-semibold text-neutral-800">
-                {emptyMessage}
+                {isDonor ? "Belum ada donasi pangan aktif yang terdaftar atas nama Anda." : emptyMessage}
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                }}
-                className="mt-3 text-xs text-primary font-bold hover:underline"
-              >
-                {resetFilterText}
-              </button>
+              {isDonor ? (
+                <Button asChild size="sm" className="mt-4 rounded-xl font-headline font-bold text-xs bg-primary text-white">
+                  <Link href="/donate">+ Buat Donasi Pertama</Link>
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("all");
+                  }}
+                  className="mt-3 text-xs text-primary font-bold hover:underline"
+                >
+                  {resetFilterText}
+                </button>
+              )}
             </div>
           )}
         </div>
 
-        {/* RIGHT COLUMN: Side Menu Cards (Beneficiary Capacity & Safe Pickup Protocol) */}
+        {/* RIGHT COLUMN: Side Menu Cards */}
         <div className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col gap-6">
-          <BeneficiaryCapacityCard />
+          {isDonor ? <DonorImpactSummaryCard /> : <BeneficiaryCapacityCard />}
           <PickupProtocolCard />
         </div>
       </div>

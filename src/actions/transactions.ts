@@ -200,7 +200,7 @@ export async function collectFoodClaim(
 const wasteSchema = z.object({
   weight_kg: z.number().finite().positive().max(999999.99).multipleOf(0.01),
   target_category: z.enum(["bsf_maggot", "poultry_fish", "compost_biogas"]),
-  image_url: z.string().url().max(2048).regex(/^https?:\/\//).optional(),
+  image_url: z.string().optional().nullable(),
   billing_mode: z.enum(["prepaid", "monthly_invoice"]).default("prepaid"),
 }).strict();
 
@@ -215,15 +215,24 @@ export async function createWasteBatch(
 
   try {
     const admin = createAdminClient();
+    const client = await createClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+
+    const donorId = user?.id || "6dee3ea9-691a-49b3-8c7f-9b8feab49a02";
     const qrToken = crypto.randomBytes(16).toString("hex");
+
+    const rawImageUrl = p.data.image_url?.trim();
+    const imageUrlToSave = rawImageUrl && rawImageUrl.length > 0 ? rawImageUrl : null;
 
     const { data, error } = await admin
       .from("waste_batches")
       .insert({
-        donor_id: "6dee3ea9-691a-49b3-8c7f-9b8feab49a02", // Selera Nusantara
+        donor_id: donorId,
         weight_kg: p.data.weight_kg,
         target_category: p.data.target_category,
-        image_url: p.data.image_url || "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=700&q=80",
+        image_url: imageUrlToSave,
         billing_mode: p.data.billing_mode,
         rate_per_kg: 600,
         qr_handover_token: qrToken,

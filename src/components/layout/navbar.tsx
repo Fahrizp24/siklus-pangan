@@ -12,13 +12,14 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MAIN_NAV } from "@/lib/nav";
+import { MAIN_NAV, DONOR_NAV, BENEFICIARY_NAV, PROCESSOR_NAV } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import logoText from "@/assets/logo-text.webp";
 
 export interface NavbarUser {
   name: string;
+  role?: string;
   roleDescription: string;
   avatarUrl?: string;
   isVerified?: boolean;
@@ -40,21 +41,35 @@ export function Navbar({ user: initialUser }: NavbarProps) {
     }
 
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
       if (authUser) {
         const metadata = authUser.user_metadata || {};
+        let displayName = metadata.display_name;
+        let role = metadata.role || "donor";
+
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("display_name, role")
+            .eq("id", authUser.id)
+            .single();
+          if (prof?.display_name) displayName = prof.display_name;
+          if (prof?.role) role = prof.role;
+        } catch {}
+
         setCurrentUser({
           name:
-            metadata.display_name ||
+            displayName ||
             metadata.full_name ||
             authUser.email?.split("@")[0] ||
             "Pengguna",
+          role,
           roleDescription:
-            metadata.role === "donor"
+            role === "donor"
               ? "Donatur Pangan Terverifikasi"
-              : metadata.role === "processor"
+              : role === "processor"
               ? "Pengolah Residu Organik"
-              : metadata.role === "admin"
+              : role === "admin"
               ? "Administrator & Auditor"
               : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
@@ -67,21 +82,35 @@ export function Navbar({ user: initialUser }: NavbarProps) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const metadata = session.user.user_metadata || {};
+        let displayName = metadata.display_name;
+        let role = metadata.role || "donor";
+
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("display_name, role")
+            .eq("id", session.user.id)
+            .single();
+          if (prof?.display_name) displayName = prof.display_name;
+          if (prof?.role) role = prof.role;
+        } catch {}
+
         setCurrentUser({
           name:
-            metadata.display_name ||
+            displayName ||
             metadata.full_name ||
             session.user.email?.split("@")[0] ||
             "Pengguna",
+          role,
           roleDescription:
-            metadata.role === "donor"
+            role === "donor"
               ? "Donatur Pangan Terverifikasi"
-              : metadata.role === "processor"
+              : role === "processor"
               ? "Pengolah Residu Organik"
-              : metadata.role === "admin"
+              : role === "admin"
               ? "Administrator & Auditor"
               : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
@@ -95,7 +124,14 @@ export function Navbar({ user: initialUser }: NavbarProps) {
     return () => subscription.unsubscribe();
   }, [initialUser]);
 
-  const navItems = MAIN_NAV;
+  let navItems = MAIN_NAV;
+  if (currentUser?.role === "donor") {
+    navItems = DONOR_NAV;
+  } else if (currentUser?.role === "beneficiary") {
+    navItems = BENEFICIARY_NAV;
+  } else if (currentUser?.role === "processor") {
+    navItems = PROCESSOR_NAV;
+  }
 
   const isItemActive = (href: string) => {
     if (href === "/") {
@@ -168,14 +204,14 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               {/* Vertical Separator */}
               <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
 
-              {/* User Profile Card (Clickable to /dashboard) */}
+              {/* User Profile Card (Clickable to /profile) */}
               <Link
-                href="/dashboard"
+                href="/profile"
                 className={cn(
                   "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
-                  pathname === "/dashboard" && "bg-accent/60"
+                  pathname === "/profile" && "bg-accent/60"
                 )}
-                title="Buka Dashboard ESG & Profil"
+                title="Buka Profil Akun"
               >
                 <div className="flex flex-col text-right">
                   <div className="flex items-center justify-end gap-1.5">
@@ -245,7 +281,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           {currentUser ? (
             /* Mobile Logged In Section */
             <Link
-              href="/dashboard"
+              href="/profile"
               onClick={() => setMobileMenuOpen(false)}
               className="mb-4 flex items-center justify-between border-b border-border/60 pb-3 group"
             >
@@ -280,7 +316,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
               </div>
 
               <span className="text-[11px] font-bold text-primary font-headline group-hover:underline">
-                Dashboard →
+                Profil →
               </span>
             </Link>
           ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { UserProfile, updateUserProfile } from "@/actions/profile";
 import { Button } from "@/components/ui/button";
 import { Building2, Save, Check, AlertCircle, Loader2 } from "lucide-react";
@@ -10,6 +11,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ profile }: ProfileFormProps) {
+  const router = useRouter();
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [phoneNumber, setPhoneNumber] = useState(profile.phone_number);
   const [address, setAddress] = useState(profile.address);
@@ -44,6 +46,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         type: "success",
         text: "Perubahan data profil berhasil disimpan ke basis data!",
       });
+      router.refresh();
       setTimeout(() => setStatusMessage(null), 5000);
     } else {
       setStatusMessage({

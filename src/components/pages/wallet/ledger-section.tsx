@@ -169,24 +169,43 @@ export const WALLET_LEDGER_DATA = {
     },
   ],
   footer: {
-    summaryText: "Menampilkan 5 dari 128 total transaksi rekonsiliasi tahun berjalan.",
+    summaryText: "Menampilkan transaksi rekonsiliasi tahun berjalan.",
     pagination: {
       prevText: "Sebelumnya",
       nextText: "Selanjutnya",
-      pages: [1, 2, 3],
-      lastPage: 13,
+      pages: [1],
     },
   },
 };
 
 import { WalletTransactionRecord, getWalletData } from "@/actions/wallet";
 
+function getTxBadgeIcon(badge: any) {
+  const iconOrName = badge?.iconType || badge?.icon;
+  if (typeof iconOrName === "function" || (typeof iconOrName === "object" && iconOrName !== null && "$$typeof" in iconOrName)) {
+    return iconOrName;
+  }
+  switch (iconOrName) {
+    case "arrow":
+      return ArrowUpRight;
+    case "droplet":
+      return Droplet;
+    case "truck":
+      return Truck;
+    case "hourglass":
+      return Hourglass;
+    case "plus":
+    default:
+      return PlusCircle;
+  }
+}
+
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
 interface LedgerSectionProps {
-  initialTransactions?: WalletTransactionRecord[];
+  initialTransactions?: any[];
 }
 
 export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
@@ -216,6 +235,20 @@ export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
     if (activeTab === "all") return true;
     return tx.type === activeTab;
   });
+
+  // Dynamic pagination calculation (real, without hardcoded 13)
+  const PAGE_SIZE = 5;
+  const totalItems = filteredTransactions.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const activePage = Math.min(currentPage, totalPages);
+  const startIndex = (activePage - 1) * PAGE_SIZE;
+  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + PAGE_SIZE);
+
+  const summaryText =
+    totalItems === 0
+      ? "Tidak ada transaksi tercatat pada kategori ini."
+      : `Menampilkan ${startIndex + 1} - ${startIndex + paginatedTransactions.length} dari ${totalItems} total transaksi.`;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -269,8 +302,20 @@ export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
-              {filteredTransactions.map((tx) => {
-                const TypeIcon = tx.typeBadge.icon;
+              {paginatedTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={tableHeaders.length} className="py-12 text-center text-muted-foreground">
+                    <p className="text-sm font-semibold font-headline text-foreground">
+                      Belum Ada Transaksi Rekonsiliasi
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                      Transaksi mutasi insentif reverse tipping dan subsidi logistik akun Anda akan tercatat otomatis di sini setelah serah terima tervalidasi.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedTransactions.map((tx) => {
+                  const TypeIcon = getTxBadgeIcon(tx.typeBadge);
 
                 return (
                   <tr
@@ -332,7 +377,7 @@ export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
                     {/* STATUS */}
                     <td className="py-4 px-3 whitespace-nowrap">
                       <StatusPill
-                        label={tx.status}
+                        label={tx.status || tx.statusBadge?.label || "Berhasil"}
                         variant={tx.status === "Escrow Pending" ? "pending" : "success"}
                         hasDot
                       />
@@ -340,7 +385,17 @@ export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
 
                     {/* BUKTI KUITANSI */}
                     <td className="py-4 px-3 last:pr-0 whitespace-nowrap">
-                      {tx.receipt.type === "pdf" ? (
+                      {tx.receipt?.type === "lock" ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2.5 rounded-lg border-border text-muted-foreground hover:bg-muted font-medium font-headline text-xs gap-1"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span>{tx.receipt?.label || "Terkunci"}</span>
+                        </Button>
+                      ) : (
                         <Button
                           type="button"
                           onClick={() => typeof window !== "undefined" && window.print()}
@@ -349,33 +404,22 @@ export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
                           className="h-8 px-2.5 rounded-lg border-border text-foreground hover:bg-muted font-bold font-headline text-xs gap-1 cursor-pointer"
                         >
                           <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>PDF</span>
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-2.5 rounded-lg border-border text-muted-foreground hover:bg-muted font-medium font-headline text-xs gap-1"
-                        >
-                          <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{tx.receipt.label}</span>
+                          <span>{tx.receipt?.label || "PDF"}</span>
                         </Button>
                       )}
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>
 
-        {/* Reusable Table Pagination */}
+        {/* Reusable Dynamic Table Pagination */}
         <TablePagination
-          currentPage={currentPage}
-          pages={footer.pagination.pages}
-          lastPage={footer.pagination.lastPage}
-          summaryText={footer.summaryText}
+          currentPage={activePage}
+          pages={pages}
+          summaryText={summaryText}
           onPageChange={(page) => setCurrentPage(page)}
           prevLabel={footer.pagination.prevText}
           nextLabel={footer.pagination.nextText}

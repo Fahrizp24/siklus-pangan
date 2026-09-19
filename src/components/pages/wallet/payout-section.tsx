@@ -257,18 +257,6 @@ export function PayoutSection() {
               </div>
             </div>
 
-            {/* Perks Box (Bebas Biaya Admin & Estimasi Instan) */}
-            <div className="p-3.5 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                <span>{payoutForm.perks.adminFee}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-[11px] shrink-0">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{payoutForm.perks.estimation}</span>
-              </div>
-            </div>
-
             {/* Bottom Row: Authorization Note & Submit Button */}
             <div className="pt-4 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-[11px] text-muted-foreground font-body leading-relaxed max-w-xs">

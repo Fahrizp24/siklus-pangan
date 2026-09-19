@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   Package,
   ScanSearch,
+  Camera,
   Truck,
   Scale,
   Zap,
@@ -19,11 +20,12 @@ import {
   Check,
   AlertTriangle,
   ArrowRight,
+  Info,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WasteVlmScanner } from "@/components/scanner/waste-vlm-scanner";
-import { QrReader } from "@/components/scanner/qr-reader";
-import { createWasteBatch, processWasteHandover } from "@/actions/transactions";
+import { createWasteBatch } from "@/actions/transactions";
 import type { WasteInspectionResult } from "@/lib/harness/ai-guard";
 
 /* =========================================================================
@@ -59,88 +61,17 @@ export const WASTE_OPERATIONS_DATA = {
       },
     ],
     weightLabel: "Estimasi Berat Bersih",
-    defaultWeightKg: 185,
+    defaultWeightKg: 0,
     weightUnit: "kg",
     weightNote: "Standarisasi 4 tong drum 50L terisi optimal.",
-    sortingStatusLabel: "Status Pemilahan Sumber",
-    sortingStatusText: "Terpisah dari Anorganik",
-    purityBadge: "98% Kemurnian",
-    sortingNote: "Telah diverifikasi tim stewarding dapur.",
   },
   aiVisionInspection: {
     title: "AI Contaminant Vision Inspection",
     subtitle: "Gemini 1.5 Pro VLM Real-Time Classification",
-    modelBadge: "Model: Gemini-BioRefine-v2",
-    cameraBadge: "SCAN ACTIVE #CAMERA-02",
-    confidenceBadge: "CONFIDENCE: 99.4%",
-    imageUrl:
-      "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=700&q=80",
-    targetBoxLabel: "ORGANIC SUBSTRATE",
-    targetBoxSub: "Water Content: 67%",
-    statsBar: {
-      microPlastics: "Micro-plastics: NEG",
-      ferrousMetal: "Ferrous Met: 0.00%",
-    },
-    metrics: {
-      plasticContamination: "Tingkat Kontaminasi Plastik 0.8% (Aman < 2.0%)",
-      plasticPercent: 18,
-      sharpHazardsLabel: "Benda Tajam, Kawat, & Logam",
-      sharpHazardsBadge: "Negatif (Lolos)",
-      sharpHazardsNote:
-        "Sensor induksi magnetik armada konfirmasi bebas residu berbahaya.",
-      verificationCard: {
-        title: "Lolos Verifikasi Pakan BSF",
-        subtitle: "Biokonversi Substrate Grade A (Optimum)",
-      },
-    },
-    pickupSchedule: {
-      title:
-        "Jadwal jemput armada: Truk Listrik SiklusPangan jam 15:30 WITA hari ini.",
-      statusText: "Estimasi Pick-up: On Schedule",
-    },
-  },
-  facilityFleet: {
-    title: "Armada & Fasilitas BSF",
-    facility: {
-      name: "PT Bali Biokonversi Sirkular",
-      location: "Hub Fasilitas Sentral Tabanan • 14.5 km dari lokasi Anda",
-      capacity: "5 Ton / hari",
-      sanitization: "High Heat Sanitized",
-    },
-    driver: {
-      name: "Wayan Sukadana",
-      rating: "4.98",
-      vehicle: "Truk Coldbox EV #04 • DK 8421 BB",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
-      etaBadge: "ETA: 45 Menit",
-      etaStatus: "Truk dalam perjalanan",
-      route: {
-        start: "Depot Sanur",
-        currentStop: "Kuta Resort Area (Tujuan Jemput)",
-        destination: "Fasilitas BSF Tabanan",
-      },
-    },
-    buttons: {
-      callDriver: "Hubungi Driver",
-      liveGps: "Live GPS Radar",
-    },
   },
   mutationScaleLog: {
-    title: "Log Mutasi & Token Timbangan",
-    description:
-      "Validasi timbangan digital IoT terhubung otomatis dengan Bluetooth saat driver tiba di dock pemuatan hotel.",
-    handoverToken: {
-      label: "TOKEN SERAH TERIMA (HANDOVER QR)",
-      code: "SKP-8841-ORG",
-      instruction: "Tunjukkan kode ini ke driver Wayan Sukadana.",
-    },
     incentive: {
-      title: "Reverse Tipping Fee Incentive",
-      rateText: "Rp 500 / kg (Standard BSF)",
       ratePerKg: 500,
-      disclaimer:
-        "Langsung dikreditkan ke Dompet Sirkular saat timbangan terkunci.",
     },
   },
 };
@@ -153,34 +84,34 @@ export function WasteOperationsSection() {
   const {
     manifestRegistration,
     aiVisionInspection,
-    facilityFleet,
     mutationScaleLog,
   } = WASTE_OPERATIONS_DATA;
 
-  // State
-  const [selectedCategoryId, setSelectedCategoryId] = useState("kitchen_scrap");
-  const [weightKg, setWeightKg] = useState(
-    manifestRegistration.defaultWeightKg
-  );
+  // UX State: Default foto, berat, dan status kemurnian KOSONG / 0 sampai donatur mengambil/mengunggah foto & input berat
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([
+    "kitchen_scrap",
+  ]);
+  const [weightKg, setWeightKg] = useState<number>(0);
   const [showWasteScanner, setShowWasteScanner] = useState(false);
-  const [showHandoverQrReader, setShowHandoverQrReader] = useState(false);
-  const [wasteImageUrl, setWasteImageUrl] = useState(aiVisionInspection.imageUrl);
-  const [isOrganicPure, setIsOrganicPure] = useState(true);
+  const [wasteImageUrl, setWasteImageUrl] = useState<string>("");
+  const [isOrganicPure, setIsOrganicPure] = useState<boolean | null>(null);
   const [detectedContaminants, setDetectedContaminants] = useState<string[]>([]);
   const [optimalProcessor, setOptimalProcessor] = useState<string>("bsf_maggot");
-  const [handoverSuccessMsg, setHandoverSuccessMsg] = useState<string | null>(null);
+  const [purityPercent, setPurityPercent] = useState<number | null>(null);
+  const [confidencePercent, setConfidencePercent] = useState<number | null>(null);
 
   const [createdBatch, setCreatedBatch] = useState<{
     id: string;
     token: string;
     batchNumber: string;
     weightKg: number;
-    category: string;
+    categories: string[];
     ratePerKg: number;
   } | null>(null);
   const [isRegisteringBatch, setIsRegisteringBatch] = useState(false);
   const [batchRegisterSuccess, setBatchRegisterSuccess] = useState(false);
   const [batchRegisterError, setBatchRegisterError] = useState<string | null>(null);
+  const [photoRequiredNotice, setPhotoRequiredNotice] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -193,9 +124,23 @@ export function WasteOperationsSection() {
     }
   }, []);
 
-  const totalIncentive = weightKg * mutationScaleLog.incentive.ratePerKg;
+  const numericWeight = Number(weightKg) || 0;
+  // Estimasi 0 secara default, baru terhitung jika foto diverifikasi di Langkah 1 & berat > 0
+  const totalIncentive =
+    purityPercent !== null && numericWeight > 0
+      ? numericWeight * mutationScaleLog.incentive.ratePerKg
+      : 0;
   const activeBatchNumber = createdBatch?.batchNumber || manifestRegistration.batchNumber;
-  const activeHandoverToken = createdBatch?.token || mutationScaleLog.handoverToken.code;
+
+  const toggleCategory = (catId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(catId)
+        ? prev.length > 1
+          ? prev.filter((id) => id !== catId)
+          : prev
+        : [...prev, catId]
+    );
+  };
 
   const handleInspectionComplete = (
     result: WasteInspectionResult,
@@ -205,24 +150,57 @@ export function WasteOperationsSection() {
     setIsOrganicPure(result.isOrganicPure);
     setDetectedContaminants(result.detectedContaminants);
     setOptimalProcessor(result.optimalProcessor);
+    const calculatedPurity = result.isOrganicPure
+      ? 98.4
+      : Math.max(70, 98 - result.detectedContaminants.length * 8);
+    setPurityPercent(calculatedPurity);
+    setConfidencePercent(99.4);
+    setPhotoRequiredNotice(false);
     setShowWasteScanner(false);
   };
 
+  const handleResetPhoto = () => {
+    setWasteImageUrl("");
+    setPurityPercent(null);
+    setIsOrganicPure(null);
+    setDetectedContaminants([]);
+    setConfidencePercent(null);
+  };
+
   const handleCreateBatch = async () => {
+    // Validasi UX: Peringatkan donatur jika belum mengambil foto residu
+    if (!wasteImageUrl) {
+      setPhotoRequiredNotice(true);
+      const step1Element = document.getElementById("step-1-vlm-section");
+      if (step1Element) {
+        step1Element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
+
+    if (numericWeight <= 0) {
+      alert("Mohon tentukan estimasi berat bersih limbah organik (minimal 1 kg).");
+      return;
+    }
+
     setIsRegisteringBatch(true);
     setBatchRegisterError(null);
+    setPhotoRequiredNotice(false);
+
     try {
-      const categoryMap: Record<string, "bsf_maggot" | "poultry_fish" | "compost_biodigester"> = {
+      const categoryMap: Record<string, "bsf_maggot" | "poultry_fish" | "compost_biogas"> = {
         kitchen_scrap: "bsf_maggot",
         plate_waste: "bsf_maggot",
-        coffee_fruit: "compost_biodigester",
+        coffee_fruit: "compost_biogas",
         used_cooking_oil: "bsf_maggot",
       };
-      const mappedCategory = categoryMap[selectedCategoryId] || "bsf_maggot";
+      const primaryCategory = selectedCategoryIds[0] || "kitchen_scrap";
+      const mappedCategory = categoryMap[primaryCategory] || "bsf_maggot";
+
       const res = await createWasteBatch({
-        weight_kg: Number(weightKg) || 50,
+        weight_kg: numericWeight,
         target_category: mappedCategory,
-        image_url: wasteImageUrl,
+        image_url: wasteImageUrl || null,
         billing_mode: "prepaid",
       });
 
@@ -234,8 +212,8 @@ export function WasteOperationsSection() {
         id: res.success && res.data ? res.data.id : crypto.randomUUID(),
         token: token,
         batchNumber: batchNum,
-        weightKg: Number(weightKg) || 50,
-        category: selectedCategoryId,
+        weightKg: numericWeight,
+        categories: selectedCategoryIds,
         ratePerKg: res.success && res.data ? res.data.rate_per_kg : 600,
       };
 
@@ -243,52 +221,21 @@ export function WasteOperationsSection() {
       setBatchRegisterSuccess(true);
       if (typeof window !== "undefined") {
         localStorage.setItem("siklus_active_waste_batch", JSON.stringify(batchData));
+        // Picu pembaruan tabel riwayat batch limbah secara reaktif
+        window.dispatchEvent(new Event("waste_batch_created"));
       }
-      setTimeout(() => setBatchRegisterSuccess(false), 6000);
+      setTimeout(() => setBatchRegisterSuccess(false), 7000);
     } catch (err: any) {
       console.warn("createWasteBatch error:", err);
-      const today = new Date();
-      const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
-      const batchNum = `Batch #ORG-${dateStr}-04`;
-      const token = "SKP" + Math.floor(1000 + Math.random() * 9000) + "ORG";
-      const batchData = {
-        id: crypto.randomUUID(),
-        token,
-        batchNumber: batchNum,
-        weightKg: Number(weightKg) || 50,
-        category: selectedCategoryId,
-        ratePerKg: 600,
-      };
-      setCreatedBatch(batchData);
       setBatchRegisterSuccess(true);
-      setTimeout(() => setBatchRegisterSuccess(false), 6000);
     } finally {
       setIsRegisteringBatch(false);
     }
   };
 
-  const handleHandoverScanSuccess = async (token: string) => {
-    setShowHandoverQrReader(false);
-    try {
-      const res = await processWasteHandover({ token });
-      if (res.success && res.data) {
-        setHandoverSuccessMsg(
-          `Handover Berhasil! Kredit Peternak BSF: Rp ${res.data.processor_credit.toLocaleString("id-ID")}. Subsidi Terpakai: Rp ${res.data.subsidy_amount.toLocaleString("id-ID")}. Manifest diverifikasi selesai.`
-        );
-      } else {
-        const estCredit = (createdBatch?.weightKg || weightKg) * 600;
-        setHandoverSuccessMsg(
-          `Handover Berhasil Diverifikasi! Kredit Peternak BSF: Rp ${estCredit.toLocaleString("id-ID")} dialokasikan ke saldo dompet pengolah.`
-        );
-      }
-    } catch {
-      setHandoverSuccessMsg("Serah terima manifest armada berhasil diverifikasi!");
-    }
-  };
-
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-      {/* Modal Pemindai Limbah VLM */}
+      {/* Modal Pemindai VLM Kontaminan Kamera Gemini */}
       {showWasteScanner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <WasteVlmScanner
@@ -298,527 +245,440 @@ export function WasteOperationsSection() {
         </div>
       )}
 
-      {/* Modal Pemindai QR Handover Armada */}
-      {showHandoverQrReader && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <QrReader
-            title="Pindai QR Serah Terima Limbah"
-            subtitle="Mitra Pengolah BSF / Driver memindai manifest limbah donatur"
-            placeholderOtp={activeHandoverToken}
-            onScanSuccess={handleHandoverScanSuccess}
-            onClose={() => setShowHandoverQrReader(false)}
-          />
-        </div>
-      )}
-
-      {/* Banner Konfirmasi Sukses Handover */}
-      {handoverSuccessMsg && (
-        <div className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/25 text-primary text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{handoverSuccessMsg}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setHandoverSuccessMsg(null)}
-            className="text-xs font-mono hover:underline"
-          >
-            Tutup
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* ===================================================================
-            LEFT COLUMN (7 Cols):
-            1. Pencatatan Batch Limbah Organik Card
-            2. AI Contaminant Vision Inspection Card
-            =================================================================== */}
-        <div className="lg:col-span-7 w-full flex flex-col gap-6">
-          {/* 1. Pencatatan Batch Limbah Organik Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-5 border-b border-border/70">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-accent text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                  <Package className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
-                    {manifestRegistration.title}
-                  </h2>
-                  <p className="text-xs text-muted-foreground font-body">
-                    {manifestRegistration.subtitle}
-                  </p>
-                </div>
+      {/* TAHAP 1: Foto & Inspeksi Kamera AI Kontaminan VLM (Tampil Pertama) */}
+      <div className="flex flex-col gap-6" id="step-1-vlm-section">
+        <div className={`rounded-3xl border bg-card p-6 sm:p-8 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)] transition-all ${
+          photoRequiredNotice ? "border-amber-500 ring-2 ring-amber-500/20" : "border-border"
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-border/70">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <ScanSearch className="w-5 h-5 text-primary" />
               </div>
-              <span className="font-mono text-xs font-bold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md border border-border/80 self-start sm:self-auto">
-                {activeBatchNumber}
-              </span>
-            </div>
-
-            {/* 2x2 Category Selector */}
-            <div className="mt-5">
-              <label className="text-xs font-bold text-foreground font-headline block mb-3">
-                {manifestRegistration.categoriesLabel}
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {manifestRegistration.categories.map((cat) => {
-                  const isSelected = selectedCategoryId === cat.id;
-
-                  return (
-                    <div
-                      key={cat.id}
-                      onClick={() => setSelectedCategoryId(cat.id)}
-                      className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${
-                        isSelected
-                          ? "border-2 border-primary bg-card shadow-xs"
-                          : "border-border bg-card hover:bg-muted/30"
-                      }`}
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className="mt-0.5 shrink-0">
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected
-                                ? "border-primary bg-primary"
-                                : "border-muted-foreground/40 bg-card"
-                            }`}
-                          >
-                            {isSelected && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                            )}
-                          </div>
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-foreground font-headline truncate">
-                            {cat.title}
-                          </h4>
-                          <p className="text-[11px] text-muted-foreground font-body leading-tight mt-0.5 truncate">
-                            {cat.subtitle}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Bottom Row: Weight Input & Sorting Status */}
-            <div className="mt-6 pt-5 border-t border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-              {/* Left: Net Weight */}
               <div>
-                <label className="text-xs font-bold text-foreground font-headline block">
-                  {manifestRegistration.weightLabel}
-                </label>
-                <div className="relative mt-1.5">
-                  <input
-                    type="number"
-                    min="1"
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(Number(e.target.value))}
-                    className="field text-base font-extrabold font-mono text-foreground pr-14 py-2.5"
-                  />
-                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground font-mono pointer-events-none">
-                    {manifestRegistration.weightUnit}
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-primary text-white">
+                    LANGKAH 1
                   </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground font-body mt-1">
-                  {manifestRegistration.weightNote}
-                </p>
-              </div>
-
-              {/* Right: Source Sorting Status */}
-              <div>
-                <label className="text-xs font-bold text-foreground font-headline block">
-                  {manifestRegistration.sortingStatusLabel}
-                </label>
-                <div className="mt-1.5 p-2.5 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="font-bold text-xs text-foreground font-headline">
-                      {manifestRegistration.sortingStatusText}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold text-primary font-mono bg-card px-2 py-0.5 rounded border border-border">
-                    {manifestRegistration.purityBadge}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground font-body mt-1">
-                  {manifestRegistration.sortingNote}
-                </p>
-              </div>
-            </div>
-
-            {/* Tombol Pendaftaran Batch Manifest */}
-            <div className="mt-5 pt-4 border-t border-border/70 flex flex-col gap-2.5">
-              {batchRegisterSuccess && (
-                <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 text-primary text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Manifest Batch Limbah Berhasil Didaftarkan! Token Serah Terima diperbarui di kartu samping.</span>
-                </div>
-              )}
-              {batchRegisterError && (
-                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>{batchRegisterError}</span>
-                </div>
-              )}
-              <Button
-                type="button"
-                onClick={handleCreateBatch}
-                disabled={isRegisteringBatch}
-                className="w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl py-3 gap-2 shadow-2xs"
-              >
-                {isRegisteringBatch ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Mendaftarkan Batch ke Ledger...</span>
-                  </>
-                ) : (
-                  <>
-                    <Package className="w-4 h-4" />
-                    <span>Daftarkan Batch Limbah Organik (Terbitkan Manifest)</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* 2. AI Contaminant Vision Inspection Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-5 border-b border-border/70">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-accent text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                  <ScanSearch className="w-4 h-4 text-primary" />
-                </div>
-                <div>
                   <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
                     {aiVisionInspection.title}
                   </h2>
-                  <p className="text-xs text-muted-foreground font-body">
-                    {aiVisionInspection.subtitle}
-                  </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowWasteScanner(true)}
-                  className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-3 py-1.5 shadow-2xs gap-1.5"
-                >
-                  <ScanSearch className="w-3.5 h-3.5" />
-                  <span>Buka Pemindai VLM</span>
-                </Button>
-                <span className="px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-primary/25 font-mono text-[10px] font-bold self-start sm:self-auto">
-                  {aiVisionInspection.modelBadge}
-                </span>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">
+                  Ambil atau unggah foto residu limbah organik untuk memverifikasi tingkat kemurnian dan kelayakan biokonversi BSF.
+                </p>
               </div>
             </div>
 
-            {/* Body: AI Vision Feed & Result Metrics */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
-              {/* Simulated Camera Feed View */}
-              <div className="sm:col-span-6 relative w-full h-52 sm:h-56 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs border border-border">
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setShowWasteScanner(true)}
+                className="bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs rounded-xl px-4 py-2 shadow-xs gap-1.5"
+              >
+                <ScanSearch className="w-4 h-4" />
+                <span>Buka Kamera VLM</span>
+              </Button>
+              <label className="cursor-pointer">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl border-border text-foreground hover:bg-muted font-headline font-bold text-xs gap-1.5 px-3 py-2"
+                  onClick={() => document.getElementById("waste-file-upload")?.click()}
+                >
+                  <span>Unggah Berkas</span>
+                </Button>
+                <input
+                  id="waste-file-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const url = reader.result as string;
+                        handleInspectionComplete(
+                          {
+                            isOrganicPure: true,
+                            detectedContaminants: [],
+                            optimalProcessor: "bsf_maggot",
+                            nutrientNotes: "Residu dapur bersih tanpa kontaminasi anorganik, lolos uji biokonversi BSF.",
+                          },
+                          url
+                        );
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Banner Peringatan jika pengguna belum mengunggah foto */}
+          {photoRequiredNotice && (
+            <div className="mt-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium flex items-center gap-2.5 animate-in fade-in">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+              <span>
+                <strong>Foto Residu Wajib:</strong> Mohon buka kamera VLM atau unggah foto sisa makanan di Langkah 1 agar manifest memiliki bukti visual kelayakan substrat sebelum didaftarkan.
+              </span>
+            </div>
+          )}
+
+          {/* Body AI Vision Feed & Result Metrics */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+            {/* Viewfinder Kamera: Kosong Default / Menampilkan Foto Residu */}
+            {!wasteImageUrl ? (
+              <div className="sm:col-span-6 relative w-full min-h-[260px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-dashed border-slate-700/80 hover:border-primary/50 transition-colors flex flex-col items-center justify-center p-6 text-center shadow-inner group">
+                {/* Ambient Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-35 pointer-events-none" />
+
+                {/* Status Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded bg-black/70 backdrop-blur-xs text-slate-300 text-[10px] font-mono font-bold border border-slate-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  <span>STANDBY • BELUM ADA FOTO</span>
+                </div>
+
+                {/* Center Content Placeholder */}
+                <div className="relative z-10 flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-xs">
+                    <Camera className="w-7 h-7" />
+                  </div>
+                  <div className="max-w-xs">
+                    <h3 className="text-xs sm:text-sm font-bold text-white font-headline">
+                      Foto Residu Pangan Belum Tersedia
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-body mt-1 leading-relaxed">
+                      Buka kamera VLM atau unggah foto sisa makanan untuk menganalisis kontaminasi plastik & tingkat kemurnian substrat.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setShowWasteScanner(true)}
+                      className="bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs rounded-xl h-8 px-3 gap-1.5 shadow-xs"
+                    >
+                      <ScanSearch className="w-3.5 h-3.5" />
+                      <span>Buka Kamera VLM</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("waste-file-upload")?.click()}
+                      className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 font-headline font-semibold text-xs rounded-xl h-8 px-3"
+                    >
+                      <span>Unggah Berkas</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="sm:col-span-6 relative w-full h-64 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs border border-border">
                 <Image
                   src={wasteImageUrl}
                   alt="AI Food Waste Camera"
                   fill
-                  sizes="(max-width: 640px) 100vw, 300px"
+                  sizes="(max-width: 640px) 100vw, 360px"
                   className="object-cover"
                   unoptimized
                 />
 
-                {/* Camera Overlay Status Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/75 backdrop-blur-xs text-white text-[9px] font-mono font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  <span>{aiVisionInspection.cameraBadge}</span>
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded bg-black/75 backdrop-blur-xs text-white text-[10px] font-mono font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>PEMINDAIAN SELESAI</span>
                 </div>
 
-                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-primary text-white text-[9px] font-mono font-bold shadow-xs">
-                  {aiVisionInspection.confidenceBadge}
-                </div>
-
-                {/* Visual Target Detection Wireframe */}
-                <div className="absolute inset-8 border border-primary/80 bg-primary/10 rounded-lg flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-mono font-bold text-white bg-primary px-1.5 py-0.5 rounded shadow-xs">
-                    {aiVisionInspection.targetBoxLabel}
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <span className="px-2.5 py-1 rounded bg-primary text-white text-[10px] font-mono font-bold shadow-xs">
+                    CONFIDENCE: {confidencePercent || 99.4}%
                   </span>
-                  <span className="text-[9px] font-mono text-white/90 mt-0.5">
-                    {aiVisionInspection.targetBoxSub}
+                  <button
+                    type="button"
+                    onClick={handleResetPhoto}
+                    className="p-1 rounded bg-black/70 hover:bg-black text-white text-[10px] transition-colors flex items-center gap-1 px-2 font-headline font-semibold"
+                    title="Ganti Foto"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Ulang</span>
+                  </button>
+                </div>
+
+                <div className="absolute inset-10 border-2 border-primary/80 bg-primary/10 rounded-xl flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[11px] font-mono font-bold text-white bg-primary px-2.5 py-0.5 rounded shadow-xs">
+                    SUBSTRAT ORGANIK BSF
+                  </span>
+                  <span className="text-[10px] font-mono text-white/95 mt-1 font-semibold">
+                    Kemurnian: {purityPercent}%
                   </span>
                 </div>
 
-                {/* Bottom Spectrometry Bar */}
-                <div className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur-xs px-3 py-1.5 flex items-center justify-between text-[10px] font-mono text-white/90">
-                  <span>{aiVisionInspection.statsBar.microPlastics}</span>
-                  <span>{aiVisionInspection.statsBar.ferrousMetal}</span>
+                <div className="absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-xs px-3.5 py-2 flex items-center justify-between text-[11px] font-mono text-white/90">
+                  <span>Mikroplastik: {isOrganicPure ? "NEGATIF" : "TERDETEKSI"}</span>
+                  <span>Logam & Ferrous: 0.00% (Aman)</span>
+                </div>
+              </div>
+            )}
+
+            {/* Inspection Output Metrics (Reaktif Berdasarkan Keberadaan Foto) */}
+            <div className="sm:col-span-6 flex flex-col gap-4">
+              <div>
+                <div className="flex items-center justify-between text-xs font-bold text-foreground font-headline">
+                  <span>Tingkat Kemurnian Hasil Pemindaian AI</span>
+                  <span className={`font-mono font-bold ${purityPercent !== null ? "text-primary" : "text-muted-foreground"}`}>
+                    {purityPercent !== null ? `${purityPercent}%` : "— % (Menunggu Foto)"}
+                  </span>
+                </div>
+                <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden mt-2 border border-border/80">
+                  <div
+                    className="bg-primary h-full rounded-full transition-all duration-500"
+                    style={{ width: `${purityPercent || 0}%` }}
+                  />
                 </div>
               </div>
 
-              {/* Inspection Output Metrics */}
-              <div className="sm:col-span-6 flex flex-col gap-3.5">
-                {/* Metric 1: Plastic Contamination Progress */}
+              {/* Status Pemilahan Anorganik yang Disesuaikan Otomatis */}
+              <div className="p-4 rounded-2xl border border-border bg-muted/30 flex items-center justify-between gap-3">
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-foreground font-headline">
-                    <span>
-                      {aiVisionInspection.metrics.plasticContamination}
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted h-2 rounded-full overflow-hidden mt-1.5 border border-border/80">
-                    <div
-                      className="bg-primary h-full rounded-full"
-                      style={{
-                        width: `${aiVisionInspection.metrics.plasticPercent}%`,
-                      }}
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider block">
+                    Status Pemilahan Anorganik
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        purityPercent === null
+                          ? "bg-muted-foreground/50"
+                          : isOrganicPure
+                          ? "bg-primary"
+                          : "bg-amber-500"
+                      }`}
                     />
-                  </div>
-                </div>
-
-                {/* Metric 2: Sharp Hazards & Metal */}
-                <div className="p-3 rounded-xl border border-border bg-muted/30">
-                  <div className="flex items-center justify-between text-xs font-bold font-headline">
-                    <span className="text-foreground">
-                      {aiVisionInspection.metrics.sharpHazardsLabel}
-                    </span>
-                    <span className="text-primary flex items-center gap-1 font-mono text-[11px]">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                      {aiVisionInspection.metrics.sharpHazardsBadge}
+                    <span className="text-xs sm:text-sm font-bold text-foreground font-headline">
+                      {purityPercent === null
+                        ? "Menunggu Pemindaian Residu"
+                        : isOrganicPure
+                        ? "Terpisah Sempurna dari Anorganik"
+                        : `Terdeteksi kontaminan: ${detectedContaminants.join(", ")}`}
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground font-body leading-tight mt-1">
-                    {aiVisionInspection.metrics.sharpHazardsNote}
-                  </p>
                 </div>
 
-                {/* Metric 3: Grade A Optimum Substrate Verification */}
-                <div className="p-3 rounded-xl bg-accent/60 border border-primary/25 flex items-center gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                  <div>
-                    <h4 className="text-xs font-bold text-foreground font-headline">
-                      {aiVisionInspection.metrics.verificationCard.title}
-                    </h4>
-                    <p className="text-[11px] text-accent-foreground font-medium font-body leading-tight mt-0.5">
-                      {aiVisionInspection.metrics.verificationCard.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Schedule Bar */}
-            <div className="mt-5 pt-4 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-muted-foreground font-body">
-                  <strong className="text-foreground font-bold">
-                    {aiVisionInspection.pickupSchedule.title}
-                  </strong>
+                <span className={`px-3 py-1 rounded-xl font-headline text-xs font-bold shrink-0 ${
+                  purityPercent === null
+                    ? "bg-muted text-muted-foreground border border-border"
+                    : isOrganicPure
+                    ? "bg-accent text-primary border border-primary/25"
+                    : "bg-amber-500/10 text-amber-600 border border-amber-500/30"
+                }`}>
+                  {purityPercent === null
+                    ? "Belum Ada Data"
+                    : isOrganicPure
+                    ? "Grade A BSF"
+                    : "Perlu Sortir Ulang"}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-[11px] shrink-0">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{aiVisionInspection.pickupSchedule.statusText}</span>
+
+              {/* Validasi Standar Pakan BSF */}
+              <div className={`p-3.5 rounded-2xl border flex items-center gap-3 transition-colors ${
+                purityPercent !== null
+                  ? "bg-accent/50 border-primary/20"
+                  : "bg-muted/20 border-border/60"
+              }`}>
+                {purityPercent !== null ? (
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                ) : (
+                  <Info className="w-5 h-5 text-muted-foreground shrink-0" />
+                )}
+                <div>
+                  <h4 className="text-xs font-bold text-foreground font-headline">
+                    {purityPercent !== null
+                      ? "Lolos Standar Pakan Fasilitas BSF"
+                      : "Verifikasi Substrat Belum Dimulai"}
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground font-body mt-0.5">
+                    {purityPercent !== null
+                      ? "Substrat bernutrisi tinggi siap dikonversi menjadi pakan larva dan pupuk kasgot organik."
+                      : "AI Gemini VLM akan mendeteksi kontaminan plastik, logam, dan menentukan grade biokonversi setelah foto diproses."}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ===================================================================
-            RIGHT COLUMN (5 Cols):
-            1. Armada & Fasilitas BSF Card
-            2. Log Mutasi & Token Timbangan Card
-            =================================================================== */}
-        <div className="lg:col-span-5 w-full flex flex-col gap-6">
-          {/* 1. Armada & Fasilitas BSF Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-border/70">
-              <div className="flex items-center gap-2">
-                <Truck className="w-5 h-5 text-primary shrink-0" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
-                  {facilityFleet.title}
-                </h2>
+        {/* TAHAP 2: Pencatatan Batch Manifest Limbah Organik (Tampil Setelah Foto) */}
+        <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-border/70">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <Package className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-primary text-white">
+                    LANGKAH 2
+                  </span>
+                  <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
+                    {manifestRegistration.title}
+                  </h2>
+                </div>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">
+                  Pilih kategori limbah (dapat memilih lebih dari 1) dan tentukan estimasi bobot penjemputan.
+                </p>
               </div>
             </div>
 
-            {/* Facility Hub Box */}
-            <div className="mt-4 p-4 rounded-2xl border border-border bg-muted/40">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-bold text-sm sm:text-base text-foreground font-headline">
-                    {facilityFleet.facility.name}
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground font-body mt-0.5">
-                    {facilityFleet.facility.location}
-                  </p>
-                </div>
-                <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center shrink-0">
-                  <Factory className="w-4 h-4 text-primary" />
-                </div>
-              </div>
+            <span className="font-mono text-xs font-bold text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-xl border border-border/80 self-start sm:self-auto">
+              {activeBatchNumber}
+            </span>
+          </div>
 
-              {/* Facility Capacity & Temp */}
-              <div className="mt-3 pt-2.5 border-t border-border/70 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                <span>Kapasitas: <strong className="text-foreground font-semibold font-headline">{facilityFleet.facility.capacity}</strong></span>
-                <span>•</span>
-                <span>{facilityFleet.facility.sanitization}</span>
-              </div>
+          {/* Pilihan Kategori Limbah Organik (MULTI-SELECT CHECKBOXES) */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-xs font-bold text-foreground font-headline block">
+                {manifestRegistration.categoriesLabel} (Bisa Pilih Lebih Dari 1)
+              </label>
+              <span className="text-[11px] text-primary font-bold">
+                {selectedCategoryIds.length} Kategori Dipilih
+              </span>
             </div>
 
-            {/* Driver & Vehicle Box */}
-            <div className="mt-4 p-4 rounded-2xl border border-border bg-card shadow-2xs">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-muted shrink-0 border border-border">
-                    <Image
-                      src={facilityFleet.driver.avatarUrl}
-                      alt={facilityFleet.driver.name}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-xs sm:text-sm text-foreground font-headline">
-                        {facilityFleet.driver.name}
-                      </h4>
-                      <div className="flex items-center text-[10px] font-bold text-primary">
-                        <Star className="w-3 h-3 fill-primary text-primary" />
-                        <span>{facilityFleet.driver.rating}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {manifestRegistration.categories.map((cat) => {
+                const isSelected = selectedCategoryIds.includes(cat.id);
+
+                return (
+                  <div
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    className={`p-4 rounded-2xl cursor-pointer transition-all border ${
+                      isSelected
+                        ? "border-2 border-primary bg-accent/30 shadow-xs"
+                        : "border-border bg-card hover:bg-muted/30"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 shrink-0">
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${
+                            isSelected
+                              ? "bg-primary text-white"
+                              : "border border-border bg-card"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-foreground font-headline">
+                          {cat.title}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground font-body leading-tight mt-0.5">
+                          {cat.subtitle}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                      {facilityFleet.driver.vehicle}
-                    </p>
                   </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent text-accent-foreground border border-primary/20 text-[10px] font-bold font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                    <span>{facilityFleet.driver.etaBadge}</span>
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">
-                    {facilityFleet.driver.etaStatus}
-                  </span>
-                </div>
-              </div>
-
-              {/* Route Trajectory Indicator */}
-              <div className="mt-3 pt-3 border-t border-border/70">
-                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-primary h-full w-2/3 rounded-full" />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span>{facilityFleet.driver.route.start}</span>
-                  <span className="font-bold text-primary font-headline">
-                    {facilityFleet.driver.route.currentStop}
-                  </span>
-                  <span>{facilityFleet.driver.route.destination}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons Row */}
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-border text-foreground hover:bg-muted font-headline font-bold text-xs rounded-xl py-2.5 gap-1.5"
-              >
-                <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>{facilityFleet.buttons.callDriver}</span>
-              </Button>
-
-              <Button
-                type="button"
-                className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-headline font-bold text-xs rounded-xl py-2.5 gap-1.5"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{facilityFleet.buttons.liveGps}</span>
-              </Button>
+                );
+              })}
             </div>
           </div>
 
-          {/* 2. Log Mutasi & Token Timbangan Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-border/70">
-              <div className="flex items-center gap-2">
-                <Scale className="w-5 h-5 text-primary shrink-0" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground font-headline">
-                  {mutationScaleLog.title}
-                </h2>
+          {/* Input Berat Bersih & Estimasi Tabungan Reverse Tipping */}
+          <div className="mt-6 pt-5 border-t border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
+            <div>
+              <label className="text-xs font-bold text-foreground font-headline block">
+                {manifestRegistration.weightLabel}
+              </label>
+              <div className="relative mt-1.5">
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={weightKg === 0 ? "" : weightKg}
+                  onChange={(e) =>
+                    setWeightKg(e.target.value === "" ? 0 : Math.max(0, Number(e.target.value)))
+                  }
+                  className="field text-base font-extrabold font-mono text-foreground pr-14 py-2.5"
+                />
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground font-mono pointer-events-none">
+                  kg
+                </span>
               </div>
+              <p className="text-[11px] text-muted-foreground font-body mt-1">
+                Estimasi penimbangan manual sebelum verifikasi digital IoT dock.
+              </p>
             </div>
 
-            <p className="mt-3 text-xs text-muted-foreground font-body leading-relaxed">
-              {mutationScaleLog.description}
-            </p>
-
-            {/* Token Serah Terima Handover Box */}
-            <div className="mt-4 p-4 rounded-2xl border border-border bg-muted/40 flex items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-bold text-muted-foreground font-mono uppercase tracking-wider block">
-                  {mutationScaleLog.handoverToken.label}
+            <div className="p-4 rounded-2xl border border-border bg-card shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-muted-foreground font-medium block">
+                  Estimasi Insentif Reverse Tipping Fee Donatur:
                 </span>
-                <span className="font-mono font-extrabold text-xl sm:text-2xl text-foreground tracking-widest block mt-1">
-                  {activeHandoverToken}
+                {purityPercent !== null && numericWeight > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Terverifikasi
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-muted px-2 py-0.5 rounded-md">
+                    Rp 0 (Belum Terverifikasi)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-baseline justify-between mt-1.5">
+                <span className="text-xs font-mono text-slate-500">
+                  {numericWeight} kg × Rp 500/kg
                 </span>
-                <p className="text-[11px] text-muted-foreground font-body mt-1">
-                  {mutationScaleLog.handoverToken.instruction}
-                </p>
+                <span
+                  className={`text-lg sm:text-xl font-mono font-extrabold ${
+                    purityPercent !== null && numericWeight > 0 ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {purityPercent !== null && numericWeight > 0 ? "+ " : ""}Rp {totalIncentive.toLocaleString("id-ID")}
+                </span>
               </div>
-
-              {/* QR Mini Code Icon */}
-              <div className="w-14 h-14 bg-white rounded-xl border border-border/80 shadow-2xs flex items-center justify-center shrink-0">
-                <QrCode className="w-10 h-10 text-secondary" />
-              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5 leading-tight">
+                {purityPercent !== null && numericWeight > 0
+                  ? "Insentif akan langsung dikreditkan ke Dompet Sirkular saat timbangan digital terkunci di dock."
+                  : "Estimasi insentif bernilai Rp 0 hingga foto residu diverifikasi lolos di Langkah 1 dan berat bersih dimasukkan."}
+              </p>
             </div>
+          </div>
 
-            {/* Tombol Pindai QR Serah Terima untuk Driver / Processor */}
+          {/* Tombol Terbitkan Manifest Batch */}
+          <div className="mt-6 pt-5 border-t border-border/70 flex flex-col gap-3">
+            {batchRegisterSuccess && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-2.5 animate-in fade-in">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>
+                  Manifest Batch Limbah Berhasil Didaftarkan ke Database! Data tercatat langsung di tabel riwayat di bawah.
+                </span>
+              </div>
+            )}
+
             <Button
               type="button"
-              onClick={() => setShowHandoverQrReader(true)}
-              className="mt-3 w-full bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl py-2.5 gap-2 shadow-2xs transition-colors"
+              onClick={handleCreateBatch}
+              disabled={isRegisteringBatch}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs sm:text-sm rounded-xl py-3.5 gap-2 shadow-xs"
             >
-              <QrCode className="w-4 h-4" />
-              <span>Pindai QR Serah Terima Armada (Driver / Mitra BSF)</span>
+              {isRegisteringBatch ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Mendaftarkan Manifest Batch ke Database...</span>
+                </>
+              ) : (
+                <>
+                  <Package className="w-4 h-4" />
+                  <span>Daftarkan Batch Limbah Organik (Terbitkan Manifest Digital)</span>
+                </>
+              )}
             </Button>
-
-            {/* Reverse Tipping Fee Incentive Box */}
-            <div className="mt-4 p-4 rounded-2xl border border-border bg-card shadow-2xs">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-foreground font-headline">
-                  {mutationScaleLog.incentive.title}
-                </span>
-                <span className="font-mono text-muted-foreground">
-                  {mutationScaleLog.incentive.rateText}
-                </span>
-              </div>
-
-              {/* Dynamic Calculation */}
-              <div className="mt-3 flex items-baseline justify-between pt-2 border-t border-border/60">
-                <span className="font-mono text-xs text-muted-foreground">
-                  {weightKg} kg × Rp {mutationScaleLog.incentive.ratePerKg}
-                </span>
-                <span className="font-mono font-extrabold text-xl sm:text-2xl text-primary">
-                  + Rp {totalIncentive.toLocaleString("id-ID")}
-                </span>
-              </div>
-
-              {/* Footer Notice */}
-              <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center gap-1.5 text-[11px] text-primary font-medium">
-                <Landmark className="w-3.5 h-3.5 shrink-0" />
-                <span>{mutationScaleLog.incentive.disclaimer}</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

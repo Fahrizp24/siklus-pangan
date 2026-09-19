@@ -68,7 +68,7 @@ export async function signIn(formData: FormData) {
   } else if (profile.role === "processor") {
     redirect("/waste");
   } else {
-    redirect("/");
+    redirect("/dashboard");
   }
 }
 
