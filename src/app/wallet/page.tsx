@@ -44,6 +44,9 @@ export default async function WalletPage() {
             activeBalance={walletData.activeBalance}
             reverseTippingTotal={walletData.reverseTippingTotal}
             logisticsSubsidyTotal={walletData.logisticsSubsidyTotal}
+            pendingEscrowTotal={walletData.pendingEscrowTotal}
+            pendingBatchesCount={walletData.pendingBatchesCount}
+            totalWasteKg={walletData.totalWasteKg}
             isDonor={isDonor}
           />
         )}

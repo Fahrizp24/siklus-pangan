@@ -62,12 +62,44 @@ export const SDG_MATRIX_DATA = {
   ],
 };
 
-/* =========================================================================
-   COMPONENT IMPLEMENTATION
-   ========================================================================= */
+import { EsgDashboardMetrics } from "@/actions/dashboard";
 
-export function SdgMatrixSection() {
-  const { header, cards } = SDG_MATRIX_DATA;
+interface SdgMatrixSectionProps {
+  metrics?: EsgDashboardMetrics;
+}
+
+export function SdgMatrixSection({ metrics }: SdgMatrixSectionProps) {
+  const { header, cards: defaultCards } = SDG_MATRIX_DATA;
+
+  const cards = defaultCards.map((card) => {
+    if (!metrics) return card;
+    if (card.id === "sdg2") {
+      return {
+        ...card,
+        statValue: `${metrics.mealsRescued.toLocaleString("id-ID")} Porsi`,
+      };
+    }
+    if (card.id === "sdg12") {
+      return {
+        ...card,
+        statValue: `${metrics.wasteDivertedKg.toLocaleString("id-ID")} kg`,
+      };
+    }
+    if (card.id === "sdg13") {
+      return {
+        ...card,
+        statValue: `${metrics.co2eReducedKg.toLocaleString("id-ID")} kg CO2e`,
+      };
+    }
+    if (card.id === "sdg17") {
+      return {
+        ...card,
+        statValue: `${metrics.donorCount || 0} F&B`,
+        statHighlight: `& ${metrics.processorCount || 0} Fasilitas BSF`,
+      };
+    }
+    return card;
+  });
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">

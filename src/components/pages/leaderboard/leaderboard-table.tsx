@@ -73,12 +73,18 @@ const SEGMENTS = [
   "Pengolah Residu",
 ];
 
-export function LeaderboardTable() {
+interface LeaderboardTableProps {
+  entities?: VerifiedEntity[];
+}
+
+export function LeaderboardTable({ entities }: LeaderboardTableProps) {
   const [selectedSegment, setSelectedSegment] = useState("Semua Segmen");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const baseEntities = entities && entities.length > 0 ? entities : EXTENDED_ENTITIES;
+
   const filteredEntities = useMemo(() => {
-    return EXTENDED_ENTITIES.filter((e) => {
+    return baseEntities.filter((e) => {
       const matchSearch =
         e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.segment.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,7 +102,7 @@ export function LeaderboardTable() {
         return e.segment.includes("Pengolah") || e.segment.includes("BSF");
       return true;
     });
-  }, [selectedSegment, searchQuery]);
+  }, [baseEntities, selectedSegment, searchQuery]);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6">

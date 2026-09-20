@@ -61,57 +61,6 @@ export async function getDisputesData(donorId?: string): Promise<DisputeSummary>
 
     let { data: disputes, error } = await query;
 
-    // If donor has 0 disputes, guarantee at least 1 active dispute synced in DB
-    if ((!disputes || disputes.length === 0) && donorId) {
-      const { data: donorListings } = await admin
-        .from("food_listings")
-        .select("id")
-        .eq("donor_id", donorId)
-        .limit(1);
-
-      let targetListingId = donorListings?.[0]?.id;
-      if (!targetListingId) {
-        const { data: anyListing } = await admin
-          .from("food_listings")
-          .select("id")
-          .limit(1);
-        targetListingId = anyListing?.[0]?.id;
-      }
-
-      if (targetListingId) {
-        await admin.from("strike_disputes").insert({
-          donor_id: donorId,
-          listing_id: targetListingId,
-          reported_by: "ae18eed8-a479-4432-9c7e-f3e87580be05",
-          reason: "Waktu penjemputan tertunda 15 menit melewati safe until, meminta konfirmasi kelayakan wadah termal.",
-          is_resolved: false,
-          penalty_applied: false,
-        });
-
-        // Re-query to get the freshly synced record
-        const reRes = await admin
-          .from("strike_disputes")
-          .select(`
-            id,
-            donor_id,
-            listing_id,
-            reported_by,
-            reason,
-            donor_evidence_url,
-            donor_statement,
-            is_resolved,
-            penalty_applied,
-            created_at
-          `)
-          .eq("donor_id", donorId)
-          .order("created_at", { ascending: false });
-
-        if (reRes.data && reRes.data.length > 0) {
-          disputes = reRes.data;
-        }
-      }
-    }
-
     if (error && (!disputes || disputes.length === 0)) {
       throw error || new Error("Gagal memuat sengketa.");
     }
@@ -149,6 +98,9 @@ export async function getDisputesData(donorId?: string): Promise<DisputeSummary>
 
     const activeCount = formattedDisputes.filter((d) => !d.is_resolved).length;
     const resolvedCount = formattedDisputes.filter((d) => d.is_resolved).length;
+    const totalDisputes = formattedDisputes.length;
+    const complianceRate =
+      totalDisputes === 0 ? 100 : Math.max(0, Math.round((1 - activeCount / totalDisputes) * 1000) / 10);
 
     // Check banned accounts count
     const { count: bannedCount } = await admin
@@ -159,38 +111,18 @@ export async function getDisputesData(donorId?: string): Promise<DisputeSummary>
     return {
       activeDisputesCount: activeCount,
       resolvedDisputesCount: resolvedCount,
-      complianceRate: 99.8,
+      complianceRate,
       accountsBlockedCount: bannedCount || 0,
       disputes: formattedDisputes,
     };
   } catch (err: any) {
     console.error("[getDisputesData error]:", err);
-    // Reliable fallback for presentation
-    const now = new Date();
-    const effectiveDonorId = donorId || "6dee3ea9-691a-49b3-8c7f-9b8feab49a02";
     return {
-      activeDisputesCount: 1,
+      activeDisputesCount: 0,
       resolvedDisputesCount: 0,
-      complianceRate: 99.8,
+      complianceRate: 100,
       accountsBlockedCount: 0,
-      disputes: [
-        {
-          id: "d1000000-0000-0000-0000-000000000001",
-          donor_id: effectiveDonorId,
-          donor_name: "Katering Selera Nusantara (Renon)",
-          listing_id: "l1000000-0000-0000-0000-000000000001",
-          listing_title: "Sup Ayam Jagung Manis & Roti Garlic Katering",
-          reported_by: "ae18eed8-a479-4432-9c7e-f3e87580be05",
-          reporter_name: "Panti Asuhan Yayasan Sayap Ibu",
-          reason: "Waktu penjemputan tertunda 15 menit melewati safe until, meminta konfirmasi kelayakan suhu wadah.",
-          donor_evidence_url: null,
-          donor_statement: null,
-          is_resolved: false,
-          penalty_applied: false,
-          created_at: new Date(now.getTime() - 2.5 * 3600 * 1000).toISOString(),
-          deadline_at: new Date(now.getTime() + 21.5 * 3600 * 1000).toISOString(),
-        },
-      ],
+      disputes: [],
     };
   }
 }

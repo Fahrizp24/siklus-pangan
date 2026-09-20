@@ -4,7 +4,11 @@ import { StatSection } from "@/components/pages/waste/stat-section";
 import { WasteOperationsSection } from "@/components/pages/waste/waste-operations-section";
 import { HistorySection } from "@/components/pages/waste/history-section";
 import { ProcessorWasteFeed } from "@/components/pages/waste/processor-waste-feed";
-import { getWasteBatchesHistory, getAvailableWasteForProcessors } from "@/actions/waste";
+import {
+  getWasteBatchesHistory,
+  getAvailableWasteForProcessors,
+  getWasteOverviewStats,
+} from "@/actions/waste";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -38,13 +42,16 @@ export default async function WastePage() {
     );
   }
 
-  const batches = await getWasteBatchesHistory(user?.id);
+  const [batches, wasteStats] = await Promise.all([
+    getWasteBatchesHistory(user?.id),
+    getWasteOverviewStats(user?.id),
+  ]);
 
   return (
     <AppShell>
       <main className="w-full py-8 sm:py-10 flex flex-col gap-8 sm:gap-10 items-center justify-start selection:bg-primary/20 selection:text-primary">
         <HeroSection />
-        <StatSection />
+        <StatSection stats={wasteStats} />
         <WasteOperationsSection />
         <HistorySection initialBatches={batches} />
       </main>

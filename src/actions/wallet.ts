@@ -38,6 +38,9 @@ export interface WalletSummary {
   activeBalance: number;
   reverseTippingTotal: number;
   logisticsSubsidyTotal: number;
+  pendingEscrowTotal: number;
+  pendingBatchesCount: number;
+  totalWasteKg: number;
   transactions: WalletTransactionRecord[];
 }
 
@@ -77,19 +80,29 @@ export async function getWalletData(userId?: string, role?: string): Promise<Wal
 
     const effectiveTxs = txRes.data || [];
     const effectiveBatches = wasteRes.data || [];
-    const profileCreditBalance = Number(profileRes.data?.credit_balance ?? (role === "processor" ? 750000 : 180000));
+    const profileCreditBalance = Number(profileRes.data?.credit_balance ?? 0);
 
     const allMappedTransactions: WalletTransactionRecord[] = [];
 
     let reverseTippingSum = 0;
     let subsidySum = 0;
+    let pendingEscrowSum = 0;
+    let pendingEscrowCount = 0;
+    let totalWasteKgSum = 0;
 
     // 1. Map waste batches from Supabase into ledger entries
     effectiveBatches.forEach((b) => {
-      const weight = Number(b.weight_kg) || 50;
+      const weight = Number(b.weight_kg) || 0;
       const rate = Number(b.rate_per_kg) || 600;
       const nominalVal = weight * rate;
-      reverseTippingSum += nominalVal;
+      totalWasteKgSum += weight;
+
+      if (b.is_collected) {
+        reverseTippingSum += nominalVal;
+      } else {
+        pendingEscrowSum += nominalVal;
+        pendingEscrowCount += 1;
+      }
 
       const dateObj = new Date(b.created_at || Date.now());
       const isSettled = b.is_collected === true;
@@ -217,16 +230,22 @@ export async function getWalletData(userId?: string, role?: string): Promise<Wal
 
     return {
       activeBalance: profileCreditBalance,
-      reverseTippingTotal: Math.max(reverseTippingSum, role === "donor" ? 42100000 : 2500000),
-      logisticsSubsidyTotal: Math.max(subsidySum, role === "donor" ? 8450000 : 1200000),
+      reverseTippingTotal: reverseTippingSum,
+      logisticsSubsidyTotal: subsidySum,
+      pendingEscrowTotal: pendingEscrowSum,
+      pendingBatchesCount: pendingEscrowCount,
+      totalWasteKg: totalWasteKgSum,
       transactions: allMappedTransactions,
     };
   } catch (err) {
     console.error("[getWalletData error]:", err);
     return {
-      activeBalance: role === "donor" ? 180000 : 750000,
-      reverseTippingTotal: 42100000,
-      logisticsSubsidyTotal: 8450000,
+      activeBalance: 0,
+      reverseTippingTotal: 0,
+      logisticsSubsidyTotal: 0,
+      pendingEscrowTotal: 0,
+      pendingBatchesCount: 0,
+      totalWasteKg: 0,
       transactions: [],
     };
   }

@@ -20,7 +20,7 @@ export default async function LeaderboardPage() {
           avgDiversionRate={data.avgDiversionRate}
         />
         <LeaderboardPodium entities={data.entities} />
-        <LeaderboardTable />
+        <LeaderboardTable entities={data.entities} />
       </main>
     </AppShell>
   );

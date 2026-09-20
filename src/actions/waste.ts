@@ -242,3 +242,59 @@ export async function claimWasteBatchByProcessor(batchId: string): Promise<{ suc
     return { success: false, error: err?.message || "Terjadi kesalahan sistem." };
   }
 }
+
+export interface WasteOverviewStats {
+  wasteDivertedKg: number;
+  bsfLarvaeKg: number;
+  kasgotKg: number;
+  methanePreventedKg: number;
+  tippingFeeSavedIdr: number;
+}
+
+/**
+ * Mengambil ringkasan statistik limbah organik murni dari database Supabase
+ */
+export async function getWasteOverviewStats(donorId?: string): Promise<WasteOverviewStats> {
+  try {
+    const admin = createAdminClient();
+    let query = admin.from("waste_batches").select("weight_kg, rate_per_kg");
+
+    if (donorId) {
+      query = query.eq("donor_id", donorId);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) {
+      return {
+        wasteDivertedKg: 0,
+        bsfLarvaeKg: 0,
+        kasgotKg: 0,
+        methanePreventedKg: 0,
+        tippingFeeSavedIdr: 0,
+      };
+    }
+
+    const totalKg = data.reduce((acc, b) => acc + (Number(b.weight_kg) || 0), 0);
+    const totalSaved = data.reduce(
+      (acc, b) => acc + (Number(b.weight_kg) || 0) * (Number(b.rate_per_kg) || 600),
+      0
+    );
+
+    return {
+      wasteDivertedKg: totalKg,
+      bsfLarvaeKg: Math.round(totalKg * 0.2),
+      kasgotKg: Math.round(totalKg * 0.3),
+      methanePreventedKg: Math.round(totalKg * 0.04),
+      tippingFeeSavedIdr: totalSaved,
+    };
+  } catch (err) {
+    console.error("[getWasteOverviewStats error]:", err);
+    return {
+      wasteDivertedKg: 0,
+      bsfLarvaeKg: 0,
+      kasgotKg: 0,
+      methanePreventedKg: 0,
+      tippingFeeSavedIdr: 0,
+    };
+  }
+}

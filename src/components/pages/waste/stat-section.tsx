@@ -79,17 +79,60 @@ export const WASTE_STATS_DATA: WasteStatItem[] = [
   },
 ];
 
-/* =========================================================================
-   COMPONENT IMPLEMENTATION
-   ========================================================================= */
+import { WasteOverviewStats } from "@/actions/waste";
 
-export function StatSection() {
-  const stats = WASTE_STATS_DATA;
+interface StatSectionProps {
+  stats?: WasteOverviewStats;
+}
+
+export function StatSection({ stats }: StatSectionProps) {
+  const statList = WASTE_STATS_DATA.map((item) => {
+    if (!stats) return item;
+
+    if (item.id === "waste-diverted") {
+      return {
+        ...item,
+        value: stats.wasteDivertedKg.toLocaleString("id-ID"),
+      };
+    }
+    if (item.id === "bsf-larvae") {
+      return {
+        ...item,
+        value: stats.bsfLarvaeKg.toLocaleString("id-ID"),
+      };
+    }
+    if (item.id === "kasgot-fertilizer") {
+      return {
+        ...item,
+        value: stats.kasgotKg.toLocaleString("id-ID"),
+      };
+    }
+    if (item.id === "methane-prevented") {
+      return {
+        ...item,
+        value: stats.methanePreventedKg.toLocaleString("id-ID"),
+      };
+    }
+    if (item.id === "tipping-fee-saved") {
+      const val = stats.tippingFeeSavedIdr;
+      const formatted =
+        val >= 1000000000
+          ? `Rp ${(val / 1000000000).toFixed(1)}M`
+          : val >= 1000000
+          ? `Rp ${(val / 1000000).toFixed(1)} Juta`
+          : `Rp ${val.toLocaleString("id-ID")}`;
+      return {
+        ...item,
+        value: formatted,
+      };
+    }
+    return item;
+  });
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-        {stats.map((stat) => {
+        {statList.map((stat) => {
           const Icon = stat.icon;
 
           return (

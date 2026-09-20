@@ -23,9 +23,22 @@ import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 import { QrReader } from "@/components/scanner/qr-reader";
 import { collectFoodClaim } from "@/actions/transactions";
 
+export interface BeneficiaryCapacityInfo {
+  consumedPortions: number;
+  totalCapacityPortions: number;
+  foundationName: string;
+}
+
+export interface DonorImpactInfo {
+  totalPortions: number;
+  co2eReducedKg: number;
+}
+
 export interface SurplusFeedSectionProps {
   isDonor?: boolean;
   donorId?: string;
+  beneficiaryCapacity?: BeneficiaryCapacityInfo;
+  donorImpact?: DonorImpactInfo;
 }
 
 /* =========================================================================
@@ -205,22 +218,29 @@ export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
    INTERNAL SIDE MENU SUB-COMPONENTS
    ========================================================================= */
 
-function BeneficiaryCapacityCard() {
+function BeneficiaryCapacityCard({ capacity }: { capacity?: BeneficiaryCapacityInfo }) {
   const {
     title,
     statusBadge,
     label,
-    consumedPortions,
-    totalCapacityPortions,
-    description,
+    consumedPortions: defaultConsumed,
+    totalCapacityPortions: defaultTotal,
+    foundationName: defaultName,
     historyButtonText,
     reportButtonText,
   } = BENEFICIARY_CAPACITY_DATA;
 
+  const consumedPortions = capacity ? capacity.consumedPortions : defaultConsumed;
+  const totalCapacityPortions = capacity ? capacity.totalCapacityPortions : defaultTotal;
+  const foundationName = capacity ? capacity.foundationName : defaultName;
+  const remainingPortions = Math.max(0, totalCapacityPortions - consumedPortions);
+
   const percentage = Math.min(
     100,
-    Math.round((consumedPortions / totalCapacityPortions) * 100)
+    Math.round((consumedPortions / Math.max(totalCapacityPortions, 1)) * 100)
   );
+
+  const description = `Sisa kuota harian: ${remainingPortions} porsi untuk ${foundationName}. Kuota diperbarui otomatis setiap pukul 00.00 WITA untuk pemerataan distribusi panti & komunitas.`;
 
   return (
     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
@@ -287,7 +307,10 @@ function BeneficiaryCapacityCard() {
   );
 }
 
-function DonorImpactSummaryCard() {
+function DonorImpactSummaryCard({ impact }: { impact?: DonorImpactInfo }) {
+  const portions = impact ? impact.totalPortions : 165;
+  const co2e = impact ? impact.co2eReducedKg : 412.5;
+
   return (
     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
       <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -307,11 +330,11 @@ function DonorImpactSummaryCard() {
       <div className="mt-4 space-y-3">
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Total Porsi Donasi:</span>
-          <span className="text-sm font-bold text-neutral-900 font-headline">165 Porsi</span>
+          <span className="text-sm font-bold text-neutral-900 font-headline">{portions.toLocaleString("id-ID")} Porsi</span>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Reduksi Emisi GHG:</span>
-          <span className="text-sm font-bold text-primary font-headline">412.5 kg CO₂e</span>
+          <span className="text-sm font-bold text-primary font-headline">{co2e.toLocaleString("id-ID")} kg CO₂e</span>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Kepatuhan Safe-Until:</span>
@@ -391,6 +414,8 @@ function PickupProtocolCard() {
 export function SurplusFeedSection({
   isDonor = false,
   donorId,
+  beneficiaryCapacity,
+  donorImpact,
 }: SurplusFeedSectionProps) {
   const {
     searchQuery,
@@ -772,7 +797,11 @@ export function SurplusFeedSection({
 
         {/* RIGHT COLUMN: Side Menu Cards */}
         <div className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col gap-6">
-          {isDonor ? <DonorImpactSummaryCard /> : <BeneficiaryCapacityCard />}
+          {isDonor ? (
+            <DonorImpactSummaryCard impact={donorImpact} />
+          ) : (
+            <BeneficiaryCapacityCard capacity={beneficiaryCapacity} />
+          )}
           <PickupProtocolCard />
         </div>
       </div>
