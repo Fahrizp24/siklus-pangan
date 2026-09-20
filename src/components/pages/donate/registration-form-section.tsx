@@ -849,17 +849,6 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                 <span className="font-bold text-foreground shrink-0">@</span>
                 <p>{expiryEngine.criticalThreshold}</p>
               </div>
-
-              {/* Digital Hygiene Audit Badge */}
-              <div className="mt-4 pt-4 border-t border-border/70 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground font-headline">
-                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                  <span>{expiryEngine.hygieneAudit.label}</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-md bg-accent text-accent-foreground border border-primary/25 font-mono text-[10px] font-bold">
-                  {expiryEngine.hygieneAudit.badge}
-                </span>
-              </div>
             </div>
 
             {/* 2. Pratinjau Live Radar (/rescue) Card */}

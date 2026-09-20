@@ -22,7 +22,7 @@ export const DONATE_HERO_CONTENT = {
   },
   title: "Inspeksi AI & Registrasi Surplus Pangan",
   description:
-    "Unggah dokumentasi hidangan surplus. Sistem memadukan Gemini AI VLM dengan Deterministic Rules Engine berbasis standar BPOM & ISO 14044.",
+    "Unggah dokumentasi hidangan surplus. Sistem memadukan Gemini AI VLM dengan Deterministic Rules Engine berbasis standar BPOM.",
   steps: [
     {
       stepNumber: "01",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, Award, ShieldCheck } from "lucide-react";
+import { Download, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EsgPdfTemplate } from "@/components/reports/esg-pdf-template";
 
@@ -44,20 +44,8 @@ export function HeroSection() {
 
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Left Side: Badges, Title & Subtitle */}
+          {/* Left Side: Title & Subtitle */}
           <div className="flex-1 max-w-3xl">
-            {/* Badges Row */}
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-accent/80 border border-primary/25 text-primary text-[10px] sm:text-xs font-headline font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span>{badges.certification}</span>
-              </div>
-
-              <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-muted/70 border border-border text-muted-foreground font-mono text-[10px] sm:text-[11px] font-medium">
-                <span>{badges.nodeId}</span>
-              </div>
-            </div>
-
             {/* Main Headline */}
             <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-foreground font-headline tracking-tight leading-tight">
               {title}

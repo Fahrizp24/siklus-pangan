@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ShieldCheck, Server, Users, Utensils, Recycle, Coins } from "lucide-react";
+import { Users, Utensils, Recycle, Coins } from "lucide-react";
 import { AdminTelemetry } from "@/actions/admin";
 
 interface AdminHeroProps {
@@ -13,21 +13,12 @@ export function AdminHero({ telemetry }: AdminHeroProps) {
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-2">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/80">
         <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-mono font-bold text-primary">
-            <Server className="w-3.5 h-3.5" />
-            <span>Pusat Kendali Pengawasan DLHK • Node ID-DPS-RN01</span>
-          </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground font-headline tracking-tight">
             Dasbor Moderasi Sistem & Audit Ekosistem
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed">
             Pusat pengawasan kepatuhan higienitas pangan olahan, moderasi sengketa 3-strike, penegakan sanksi, dan rekonsiliasi reverse tipping fee limbah organik Bali.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 shrink-0">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>RLS & Audit Database Aktif</span>
         </div>
       </div>
 

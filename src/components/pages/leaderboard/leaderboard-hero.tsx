@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Award, ShieldCheck, TrendingUp, Sparkles } from "lucide-react";
+import { TrendingUp, Sparkles } from "lucide-react";
 
 interface LeaderboardHeroProps {
   totalSurplusKg: number;
@@ -20,21 +20,12 @@ export function LeaderboardHero({
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-2">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/80">
         <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-mono font-bold text-primary">
-            <Award className="w-3.5 h-3.5" />
-            <span>Wall of Fame Publik • Terverifikasi ISO 14064 & GHG Protocol</span>
-          </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground font-headline tracking-tight">
             Peringkat Dekarbonisasi Pangan & Sirkularitas
           </h1>
           <p className="text-sm text-muted-foreground font-body leading-relaxed">
             Transparansi kontribusi industri perhotelan, katering korporat, restoran, dan fasilitas biokonversi dalam mencegah emisi gas metana dari timbunan pangan di TPA.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-muted/60 px-3.5 py-2 rounded-xl border border-border shrink-0">
-          <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-          <span>Audit Log Loading Dock Terkoneksi</span>
         </div>
       </div>
 
