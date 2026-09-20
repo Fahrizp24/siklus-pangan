@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Compass, Sparkles, ShieldCheck, CheckCircle2, Award } from "lucide-react";
+import { ArrowRight, Compass, Sparkles, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -33,11 +33,6 @@ export const HERO_CONTENT = {
       id: "halal",
       label: "Verifikasi Halal MUI",
       icon: CheckCircle2,
-    },
-    {
-      id: "iso",
-      label: "Audit Emisi ISO 14044 LCA",
-      icon: Award,
     },
   ],
 };

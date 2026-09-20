@@ -7,8 +7,6 @@ import { LedgerSection } from "@/components/pages/wallet/ledger-section";
 import { getWalletData } from "@/actions/wallet";
 import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
-
 export default async function WalletPage() {
   const supabase = await createClient();
   const {
@@ -30,7 +28,7 @@ export default async function WalletPage() {
   const walletData = await getWalletData(user?.id, role);
 
   return (
-    <AppShell>
+    <AppShell role={role}>
       <main className="w-full py-8 sm:py-10 flex flex-col gap-8 sm:gap-10 items-center justify-start selection:bg-primary/20 selection:text-primary">
         <HeroSection />
         {isProcessor ? (
@@ -44,10 +42,13 @@ export default async function WalletPage() {
             activeBalance={walletData.activeBalance}
             reverseTippingTotal={walletData.reverseTippingTotal}
             logisticsSubsidyTotal={walletData.logisticsSubsidyTotal}
+            pendingEscrowTotal={walletData.pendingEscrowTotal}
+            pendingBatchesCount={walletData.pendingBatchesCount}
+            totalWasteKg={walletData.totalWasteKg}
             isDonor={isDonor}
           />
         )}
-        {isDonor && <PayoutSection />}
+        {isDonor && <PayoutSection activeBalance={walletData.activeBalance} />}
         <LedgerSection initialTransactions={walletData.transactions} />
       </main>
     </AppShell>

@@ -182,6 +182,73 @@ export function StatSection({ metrics }: StatSectionProps) {
     return item;
   });
 
+  // Dynamic Scopes calculation
+  const totalCo2 = metrics ? Math.max(metrics.co2eReducedKg, 1) : 48836;
+  const s1 = metrics ? metrics.scope1Kg : 3420;
+  const s2 = metrics ? metrics.scope2Kg : 8210;
+  const s3 = metrics ? metrics.scope3Kg : 37206;
+
+  const s1Pct = Math.round((s1 / totalCo2) * 100);
+  const s2Pct = Math.round((s2 / totalCo2) * 100);
+  const s3Pct = Math.max(0, 100 - s1Pct - s2Pct);
+
+  const dynamicScopes = [
+    {
+      id: "scope1",
+      name: "Scope 1: Armada Distribusi EV",
+      value: `${s1.toLocaleString("id-ID")} kg (${s1Pct}%)`,
+      percentage: s1Pct,
+      colorBox: "bg-[#3B4B66]",
+      barColor: "bg-[#3B4B66]",
+    },
+    {
+      id: "scope2",
+      name: "Scope 2: Cold Storage Fasilitas",
+      value: `${s2.toLocaleString("id-ID")} kg (${s2Pct}%)`,
+      percentage: s2Pct,
+      colorBox: "bg-secondary",
+      barColor: "bg-secondary",
+    },
+    {
+      id: "scope3",
+      name: "Scope 3: Limbah & Pangan Selamat",
+      value: `${s3.toLocaleString("id-ID")} kg (${s3Pct}%)`,
+      percentage: s3Pct,
+      colorBox: "bg-primary",
+      barColor: "bg-primary",
+    },
+  ];
+
+  // Dynamic Monthly Chart
+  const monthlyData =
+    metrics?.monthlyTrend && metrics.monthlyTrend.length > 0
+      ? metrics.monthlyTrend
+      : ESG_CHART_DATA.monthlyData;
+
+  // Dynamic Bioconversion Bottom Cards
+  const bsfKg = metrics ? metrics.bsfFeedKg : 54300;
+  const kasgotKg = metrics ? metrics.kasgotKg : 29900;
+  const totalBioconv = Math.max(bsfKg + kasgotKg, 1);
+  const bsfPct = ((bsfKg / totalBioconv) * 100).toFixed(1);
+  const kasgotPct = ((kasgotKg / totalBioconv) * 100).toFixed(1);
+
+  const dynamicBottomCards = [
+    {
+      id: "bsf_feed",
+      label: "Biokonversi BSF (Pakan)",
+      value: `${bsfKg.toLocaleString("id-ID")} kg (${bsfPct}%)`,
+      icon: Bug,
+      iconStyle: "text-primary bg-accent/70 border-primary/25",
+    },
+    {
+      id: "kasgot_fertilizer",
+      label: "Pupuk Organik Kasgot",
+      value: `${kasgotKg.toLocaleString("id-ID")} kg (${kasgotPct}%)`,
+      icon: Sprout,
+      iconStyle: "text-secondary bg-muted border-border",
+    },
+  ];
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* 1. 4 Metric Cards */}
@@ -223,7 +290,7 @@ export function StatSection({ metrics }: StatSectionProps) {
 
               {/* 3 Scope Breakdown Progress Bars */}
               <div className="mt-5 flex flex-col gap-4">
-                {ESG_SCOPE_DATA.scopes.map((scope) => (
+                {dynamicScopes.map((scope) => (
                   <div key={scope.id} className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
@@ -322,7 +389,7 @@ export function StatSection({ metrics }: StatSectionProps) {
               {/* Dual Bar Chart (Pure CSS/Tailwind & SVG Coordinates) */}
               <div className="mt-6 pt-4 px-2 sm:px-6">
                 <div className="h-44 flex items-end justify-between gap-3 sm:gap-6 border-b border-border/80 pb-2">
-                  {ESG_CHART_DATA.monthlyData.map((d) => (
+                  {monthlyData.map((d: any) => (
                     <div
                       key={d.month}
                       className="flex-1 flex flex-col items-center h-full justify-end group"
@@ -362,7 +429,7 @@ export function StatSection({ metrics }: StatSectionProps) {
 
             {/* Bottom 2 Summary Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {ESG_CHART_DATA.bottomCards.map((c) => {
+              {dynamicBottomCards.map((c) => {
                 const CIcon = c.icon;
                 return (
                   <div

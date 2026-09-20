@@ -209,21 +209,15 @@ interface LedgerSectionProps {
 }
 
 export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
-  const { header, tableHeaders, transactions: defaultTransactions, footer } = WALLET_LEDGER_DATA;
+  const { header, tableHeaders, footer } = WALLET_LEDGER_DATA;
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [txList, setTxList] = useState<any[]>(
-    initialTransactions && initialTransactions.length > 0
-      ? initialTransactions
-      : defaultTransactions
-  );
+  const [txList, setTxList] = useState<any[]>(initialTransactions ?? []);
 
   React.useEffect(() => {
-    if (!initialTransactions || initialTransactions.length === 0) {
+    if (initialTransactions === undefined) {
       getWalletData().then((res) => {
-        if (res.transactions && res.transactions.length > 0) {
-          setTxList(res.transactions);
-        }
+        setTxList(res.transactions || []);
       });
     }
   }, [initialTransactions]);

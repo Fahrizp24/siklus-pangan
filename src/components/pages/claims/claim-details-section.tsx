@@ -176,7 +176,11 @@ export const CLAIM_DETAILS_CONTENT = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function ClaimDetailsSection() {
+export interface ClaimDetailsSectionProps {
+  initialClaim?: any;
+}
+
+export function ClaimDetailsSection({ initialClaim }: ClaimDetailsSectionProps = {}) {
   const { qrCard, dishSummary, auditLog, pickupGuide } = CLAIM_DETAILS_CONTENT;
 
   const [activeClaim, setActiveClaim] = useState<{
@@ -186,7 +190,27 @@ export function ClaimDetailsSection() {
     portions: number;
     isCollected: boolean;
     collectedAt?: string | null;
-  } | null>(null);
+    imageUrl?: string | null;
+    storageMethod?: string;
+    dietaryTags?: string[];
+    riskyIngredients?: string[];
+    safeUntil?: string;
+  } | null>(() => {
+    if (!initialClaim) return null;
+    return {
+      id: initialClaim.id,
+      token: initialClaim.qr_token,
+      title: initialClaim.food_listings?.title || dishSummary.dishTitle,
+      portions: initialClaim.portions_claimed || 1,
+      isCollected: initialClaim.is_collected,
+      collectedAt: initialClaim.collected_at,
+      imageUrl: initialClaim.food_listings?.image_url,
+      storageMethod: initialClaim.food_listings?.storage_method,
+      dietaryTags: initialClaim.food_listings?.dietary_tags,
+      riskyIngredients: initialClaim.food_listings?.risky_ingredients,
+      safeUntil: initialClaim.food_listings?.safe_until,
+    };
+  });
 
   // Real-time OTP countdown timer
   const [secondsLeft, setSecondsLeft] = useState(qrCard.initialTimerSeconds);
@@ -270,6 +294,32 @@ export function ClaimDetailsSection() {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
+
+  const dynamicSpecs = [
+    {
+      icon: "snowflake",
+      label: "Suhu Simpan:",
+      value: activeClaim?.storageMethod === "refrigerated" ? "Cold Chain 4°C" : "Suhu Ruang Higienis",
+    },
+    {
+      icon: "halal",
+      label: "Sertifikasi:",
+      value: (activeClaim?.dietaryTags || []).includes("halal") ? "Halal MUI Terverifikasi" : "Standar Pangan BPOM",
+    },
+    {
+      icon: "allergen",
+      label: "Bebas Alergen:",
+      value:
+        activeClaim?.riskyIngredients && activeClaim.riskyIngredients.length > 0
+          ? `Alergen: ${activeClaim.riskyIngredients.join(", ")}`
+          : "Bebas Kontaminan Alergen",
+    },
+    {
+      icon: "package",
+      label: "Kemasan:",
+      value: "Food-Grade Sealed",
+    },
+  ];
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -580,7 +630,7 @@ export function ClaimDetailsSection() {
               {/* Food Image with Floating Primary Seal Badge */}
               <div className="relative w-full sm:w-56 h-48 sm:h-52 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs">
                 <Image
-                  src={dishSummary.imageUrl}
+                  src={activeClaim?.imageUrl || dishSummary.imageUrl}
                   alt={activeClaim?.title || dishSummary.dishTitle}
                   fill
                   sizes="(max-width: 768px) 100vw, 240px"
@@ -603,7 +653,7 @@ export function ClaimDetailsSection() {
 
                 {/* 2x2 Specs Grid */}
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
-                  {dishSummary.specs.map((spec) => (
+                  {dynamicSpecs.map((spec) => (
                     <div
                       key={spec.label}
                       className="p-2.5 rounded-xl border border-border/70 bg-muted/40"

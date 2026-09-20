@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        headline: ["var(--font-plus-jakarta-sans)", "sans-serif"],
+        headline: ["var(--font-urbanist)", "sans-serif"],
         body: ["var(--font-plus-jakarta-sans)", "sans-serif"],
         label: ["var(--font-inter)", "sans-serif"],
         sans: ["var(--font-plus-jakarta-sans)", "sans-serif"],

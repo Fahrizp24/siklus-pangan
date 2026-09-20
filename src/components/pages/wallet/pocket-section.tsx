@@ -88,6 +88,9 @@ interface PocketSectionProps {
   activeBalance?: number;
   reverseTippingTotal?: number;
   logisticsSubsidyTotal?: number;
+  pendingEscrowTotal?: number;
+  pendingBatchesCount?: number;
+  totalWasteKg?: number;
   isDonor?: boolean;
 }
 
@@ -95,6 +98,9 @@ export function PocketSection({
   activeBalance,
   reverseTippingTotal,
   logisticsSubsidyTotal,
+  pendingEscrowTotal,
+  pendingBatchesCount,
+  totalWasteKg,
   isDonor,
 }: PocketSectionProps) {
   const cards = WALLET_POCKET_DATA.map((item) => {
@@ -126,7 +132,7 @@ export function PocketSection({
         customItem.footerLeft = {
           type: "text",
           prefix: "Hemat biaya TPA ",
-          boldText: "84.200 kg",
+          boldText: `${(totalWasteKg || 0).toLocaleString("id-ID")} kg`,
           suffix: " limbah",
         };
         customItem.footerRight = {
@@ -143,9 +149,9 @@ export function PocketSection({
         customItem.label = "Alokasi Subsidi Logistik Pangan";
         customItem.footerLeft = {
           type: "text",
-          prefix: "Tersalurkan ",
-          boldText: "128 Trip",
-          suffix: " Armada",
+          prefix: "Tersertifikasi ",
+          boldText: "IDXCarbon",
+          suffix: "",
         };
         customItem.footerRight = {
           type: "text",
@@ -153,12 +159,21 @@ export function PocketSection({
         };
       }
     }
-    if (item.id === "pending_escrow" && isDonor) {
-      customItem.label = "Pending Timbangan IoT Dock";
-      customItem.footerLeft = {
-        type: "warning_text",
-        text: "Verifikasi bluetooth timbangan",
+    if (item.id === "pending_escrow") {
+      if (pendingEscrowTotal !== undefined) {
+        customItem.amount = pendingEscrowTotal.toLocaleString("id-ID");
+      }
+      customItem.footerRight = {
+        type: "text",
+        text: `${pendingBatchesCount ?? 0} Batch aktif`,
       };
+      if (isDonor) {
+        customItem.label = "Pending Timbangan IoT Dock";
+        customItem.footerLeft = {
+          type: "warning_text",
+          text: "Verifikasi bluetooth timbangan",
+        };
+      }
     }
     return customItem;
   });

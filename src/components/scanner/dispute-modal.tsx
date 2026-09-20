@@ -62,6 +62,7 @@ export function DisputeModal({
       const res = await submitDisputeStrike({
         listing_id: listingId,
         reason: reason.trim(),
+        evidence_url: photoProof || null,
       });
 
       if (res.success && res.data) {

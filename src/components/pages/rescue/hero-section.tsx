@@ -24,7 +24,7 @@ import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 export const RADAR_HERO_CONTENT = {
   title: "Radar Penyelamatan Surplus Pangan Aktif",
   description:
-    "Memantau surplus pangan segar berstandar BPOM & ISO 14044 di radius 5.0 km Anda. Setiap listing dilindungi Anonimitas Donatur Terenkripsi (#00X) untuk menjaga privasi korporat serta mencegah kerumunan fisik di lokasi penjemputan.",
+    "Memantau surplus pangan segar berstandar BPOM di radius 5.0 km Anda. Setiap listing dilindungi Anonimitas Donatur Terenkripsi (#00X) untuk menjaga privasi korporat serta mencegah kerumunan fisik di lokasi penjemputan.",
   searchPlaceholder:
     "Cari jenis hidangan, kandungan alergen, atau ID anonim (misal: #084)...",
   radiusZoneLabel: "Bangkalan & UTM",
@@ -35,7 +35,6 @@ export const RADAR_CATEGORY_OPTIONS: FilterPillOption[] = [
   {
     id: "all",
     label: "Semua Kategori",
-    count: 14,
     icon: LayoutGrid,
   },
   {

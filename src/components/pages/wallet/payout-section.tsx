@@ -109,30 +109,65 @@ export const WALLET_PAYOUT_DATA = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function PayoutSection() {
+import { requestPayoutAction } from "@/actions/wallet";
+
+interface PayoutSectionProps {
+  activeBalance?: number;
+}
+
+export function PayoutSection({ activeBalance = 180000 }: PayoutSectionProps) {
   const { payoutForm, tariffIndex } = WALLET_PAYOUT_DATA;
 
   // Form states
   const [selectedAccountId, setSelectedAccountId] = useState("mandiri");
   const [withdrawAmount, setWithdrawAmount] = useState(
-    payoutForm.defaultAmount
+    activeBalance > 0 ? activeBalance.toLocaleString("id-ID") : "100.000"
   );
   const [refNote, setRefNote] = useState(payoutForm.defaultRefNote);
   const [isProcessing, setIsProcessing] = useState(false);
   const [payoutSuccess, setPayoutSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleMaxWithdraw = () => {
-    setWithdrawAmount("14.850.000");
+    setWithdrawAmount(activeBalance.toLocaleString("id-ID"));
+    setErrorMessage(null);
   };
 
-  const handleConfirmPayout = () => {
+  const handleConfirmPayout = async () => {
+    setErrorMessage(null);
+    const cleanAmount = parseInt(withdrawAmount.replace(/\D/g, ""), 10);
+    if (isNaN(cleanAmount) || cleanAmount < 10000) {
+      setErrorMessage("Nominal penarikan minimal Rp 10.000.");
+      return;
+    }
+
+    const selectedAcc = payoutForm.accounts.find((a) => a.id === selectedAccountId) || payoutForm.accounts[0];
+
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      const res = await requestPayoutAction({
+        amount: cleanAmount,
+        bankName: selectedAcc.bankName,
+        accountNumber: selectedAcc.accountNumber,
+        refNote: refNote.trim(),
+      });
+
+      if (res.success) {
+        setPayoutSuccess(true);
+        setTimeout(() => {
+          setPayoutSuccess(false);
+          window.location.reload();
+        }, 2000);
+      } else {
+        setErrorMessage(res.error || "Gagal memproses penarikan saldo.");
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Terjadi kesalahan jaringan.");
+    } finally {
       setIsProcessing(false);
-      setPayoutSuccess(true);
-      setTimeout(() => setPayoutSuccess(false), 4000);
-    }, 1000);
+    }
   };
+
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -256,6 +291,19 @@ export function PayoutSection() {
                 />
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {payoutSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Permintaan payout berhasil dikonfirmasi dan saldo telah terpotong di database!</span>
+              </div>
+            )}
 
             {/* Bottom Row: Authorization Note & Submit Button */}
             <div className="pt-4 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

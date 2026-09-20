@@ -29,17 +29,56 @@ export const CLAIM_HERO_CONTENT = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function HeroSection() {
+export interface HeroSectionProps {
+  claim?: any;
+  beneficiaryName?: string;
+}
+
+export function HeroSection({ claim, beneficiaryName: propBeneficiary }: HeroSectionProps = {}) {
   const {
-    claimId,
-    statusBadge,
+    claimId: defaultClaimId,
+    statusBadge: defaultStatusBadge,
     protocolBadge,
-    title,
+    title: defaultTitle,
     descriptionPrefix,
-    beneficiaryName,
+    beneficiaryName: defaultBeneficiaryName,
     descriptionSuffix,
-    timer,
+    timer: defaultTimer,
   } = CLAIM_HERO_CONTENT;
+
+  const claimId = claim ? `#CLM-${claim.id.slice(0, 5).toUpperCase()}` : defaultClaimId;
+  const statusBadge = claim?.is_collected
+    ? "SUDAH DIAMBIL (Selesai)"
+    : claim
+    ? "MENUNGGU PENJEMPUTAN (Siap Diambil)"
+    : defaultStatusBadge;
+  const title = claim?.food_listings?.title
+    ? `Penjemputan Pangan: ${claim.food_listings.title} (${claim.portions_claimed} Porsi)`
+    : defaultTitle;
+  const beneficiaryName = propBeneficiary || defaultBeneficiaryName;
+
+  // Real safeUntil calculations
+  const safeUntilDate = claim?.food_listings?.safe_until ? new Date(claim.food_listings.safe_until) : null;
+  let remainingText = defaultTimer.remainingHoursMinutes;
+  let safeTimeStr = defaultTimer.deterministicBpomTime;
+  let pickupWindowTimeStr = defaultTimer.pickupWindowTime;
+
+  if (safeUntilDate) {
+    const diff = safeUntilDate.getTime() - Date.now();
+    const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+    const mins = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+    remainingText = `${String(hours).padStart(2, "0")} Jam ${String(mins).padStart(2, "0")} Menit`;
+    safeTimeStr = safeUntilDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+    const pickupWindow = new Date(safeUntilDate.getTime() - 15 * 60 * 1000);
+    pickupWindowTimeStr = pickupWindow.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
+  }
+
+  const timer = {
+    ...defaultTimer,
+    pickupWindowTime: pickupWindowTimeStr,
+    remainingHoursMinutes: remainingText,
+    deterministicBpomTime: safeTimeStr,
+  };
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">

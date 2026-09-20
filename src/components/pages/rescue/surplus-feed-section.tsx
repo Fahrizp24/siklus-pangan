@@ -12,8 +12,20 @@ import {
   Sparkles,
   Award,
   CheckCircle2,
+  Pencil,
+  Trash2,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   SurplusFoodCard,
   SurplusFoodCardData,
@@ -22,10 +34,25 @@ import {
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 import { QrReader } from "@/components/scanner/qr-reader";
 import { collectFoodClaim } from "@/actions/transactions";
+import { updateFoodListingPortions, deleteFoodListing } from "@/actions/food";
+
+export interface BeneficiaryCapacityInfo {
+  consumedPortions: number;
+  totalCapacityPortions: number;
+  foundationName: string;
+}
+
+export interface DonorImpactInfo {
+  totalPortions: number;
+  co2eReducedKg: number;
+}
 
 export interface SurplusFeedSectionProps {
   isDonor?: boolean;
   donorId?: string;
+  beneficiaryCapacity?: BeneficiaryCapacityInfo;
+  donorImpact?: DonorImpactInfo;
+  initialListings?: SurplusFoodCardData[];
 }
 
 /* =========================================================================
@@ -90,137 +117,35 @@ export const PICKUP_PROTOCOL_CONTENT = {
   ],
 };
 
-export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
-  {
-    id: "2a02ea19-32b6-43ac-b4d2-71c2eeead97b",
-    donorCode: "Donatur Anonim #084",
-    location: "Renon, Denpasar (1.2 km)",
-    distanceKm: 1.2,
-    remainingTime: "01j 42m",
-    isUrgentBadge: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
-    imageBadge: {
-      label: "Cold Chain 4°C Terjaga",
-      iconType: "cold_chain",
-    },
-    title: "Premium Chicken Teriyaki Bento & Na...",
-    portionsCount: 35,
-    portionsRemainingText: "35 Porsi Tersisa",
-    batchInfo: "Batch Produksi: 10:15 WITA",
-    tags: [
-      { label: "Alergen: Kedelai & Wijen", colorScheme: "yellow" },
-      { label: "Higienis Cold Chain", colorScheme: "green" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Subsidi Korporat CSR",
-    },
-    category: "hotel_catering",
-  },
-  {
-    id: "4c39b812-76fa-45b0-9ef2-5f60e9d1a89c",
-    donorCode: "Donatur Anonim #022",
-    location: "Sanur, Denpasar (2.4 km)",
-    distanceKm: 2.4,
-    remainingTime: "02j 15m",
-    isUrgentBadge: false,
-    imageUrl:
-      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=700&q=80",
-    imageBadge: {
-      label: "Shift Pagi Hotel Bintang 5",
-      iconType: "hotel",
-    },
-    title: "Artisan Croissant, Danishes &...",
-    portionsCount: 60,
-    portionsRemainingText: "60 Paket Tersisa",
-    batchInfo: "Batch: Bake 06:30 WITA",
-    tags: [
-      { label: "Vegetarian Friendly", colorScheme: "green" },
-      { label: "Mengandung Gluten & Butter", colorScheme: "neutral" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Food Waste Divert #022",
-    },
-    category: "bakery",
-  },
-  {
-    id: "7e18ab44-245c-4d8e-9081-35688bca8791",
-    donorCode: "Donatur Anonim #109",
-    location: "Panjer / Renon (3.1 km)",
-    distanceKm: 3.1,
-    remainingTime: "03j 10m",
-    isUrgentBadge: false,
-    imageUrl:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&q=80",
-    imageBadge: {
-      label: "Halal Terverifikasi LPOM MUI",
-      iconType: "halal",
-    },
-    title: "Nasi Kotak Semur Daging & Tumis...",
-    portionsCount: 48,
-    portionsRemainingText: "48 Box Tersisa",
-    batchInfo: "Corporate Summit Untouched Surplus",
-    tags: [
-      { label: "100% Halal MUI", colorScheme: "green" },
-      { label: "Kering / Non-Kuah Tumpah", colorScheme: "blue" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Event Catering Surplus",
-    },
-    category: "nasi_kotak",
-  },
-  {
-    id: "a2f643e1-8899-4c02-99be-710e2ad47c55",
-    donorCode: "Donatur Anonim #061",
-    location: "Seminyak / Kuta (4.5 km)",
-    distanceKm: 4.5,
-    remainingTime: "00j 55m",
-    isUrgentBadge: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=700&q=80",
-    imageBadge: {
-      label: "100% Organik & Vegan",
-      iconType: "vegan",
-    },
-    title: "Fresh Seasonal Fruit Platter & Salad...",
-    portionsCount: 22,
-    portionsRemainingText: "22 Porsi Tersisa",
-    batchInfo: "Chilled Sealed 2°C",
-    tags: [
-      { label: "Vegan & 100% Organik", colorScheme: "green" },
-      { label: "High Fiber & Nutrisi Tinggi", colorScheme: "blue" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Resort Breakfast Surplus",
-    },
-    category: "vegetarian",
-  },
-];
+
 
 /* =========================================================================
    INTERNAL SIDE MENU SUB-COMPONENTS
    ========================================================================= */
 
-function BeneficiaryCapacityCard() {
+function BeneficiaryCapacityCard({ capacity }: { capacity?: BeneficiaryCapacityInfo }) {
   const {
     title,
     statusBadge,
     label,
-    consumedPortions,
-    totalCapacityPortions,
-    description,
+    consumedPortions: defaultConsumed,
+    totalCapacityPortions: defaultTotal,
+    foundationName: defaultName,
     historyButtonText,
     reportButtonText,
   } = BENEFICIARY_CAPACITY_DATA;
 
+  const consumedPortions = capacity ? capacity.consumedPortions : defaultConsumed;
+  const totalCapacityPortions = capacity ? capacity.totalCapacityPortions : defaultTotal;
+  const foundationName = capacity ? capacity.foundationName : defaultName;
+  const remainingPortions = Math.max(0, totalCapacityPortions - consumedPortions);
+
   const percentage = Math.min(
     100,
-    Math.round((consumedPortions / totalCapacityPortions) * 100)
+    Math.round((consumedPortions / Math.max(totalCapacityPortions, 1)) * 100)
   );
+
+  const description = `Sisa kuota harian: ${remainingPortions} porsi untuk ${foundationName}. Kuota diperbarui otomatis setiap pukul 00.00 WITA untuk pemerataan distribusi panti & komunitas.`;
 
   return (
     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
@@ -287,7 +212,10 @@ function BeneficiaryCapacityCard() {
   );
 }
 
-function DonorImpactSummaryCard() {
+function DonorImpactSummaryCard({ impact }: { impact?: DonorImpactInfo }) {
+  const portions = impact ? impact.totalPortions : 165;
+  const co2e = impact ? impact.co2eReducedKg : 412.5;
+
   return (
     <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
       <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -307,11 +235,11 @@ function DonorImpactSummaryCard() {
       <div className="mt-4 space-y-3">
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Total Porsi Donasi:</span>
-          <span className="text-sm font-bold text-neutral-900 font-headline">165 Porsi</span>
+          <span className="text-sm font-bold text-neutral-900 font-headline">{portions.toLocaleString("id-ID")} Porsi</span>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Reduksi Emisi GHG:</span>
-          <span className="text-sm font-bold text-primary font-headline">412.5 kg CO₂e</span>
+          <span className="text-sm font-bold text-primary font-headline">{co2e.toLocaleString("id-ID")} kg CO₂e</span>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
           <span className="text-xs text-slate-600 font-medium">Kepatuhan Safe-Until:</span>
@@ -391,6 +319,9 @@ function PickupProtocolCard() {
 export function SurplusFeedSection({
   isDonor = false,
   donorId,
+  beneficiaryCapacity,
+  donorImpact,
+  initialListings,
 }: SurplusFeedSectionProps) {
   const {
     searchQuery,
@@ -406,13 +337,31 @@ export function SurplusFeedSection({
   const [claimedId, setClaimedId] = useState<string | null>(null);
   const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
   const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(
-    isDonor ? SURPLUS_FEED_LISTINGS.slice(0, 2) : SURPLUS_FEED_LISTINGS
-  );
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(initialListings || []);
+  const [isLoading, setIsLoading] = useState(!initialListings || initialListings.length === 0);
 
-  // Ambil data live dari view Postgres public.food_radar di Supabase
+  // Sync if initialListings updates
+  React.useEffect(() => {
+    if (initialListings && initialListings.length > 0) {
+      setLiveListings(initialListings);
+      setIsLoading(false);
+    }
+  }, [initialListings]);
+
+  // States untuk Donatur: Edit Porsi & Hapus Listing
+  const [editingItem, setEditingItem] = useState<SurplusFoodCardData | null>(null);
+  const [editPortions, setEditPortions] = useState<number>(10);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+
+  // Ambil data live dari view Postgres public.food_radar atau food_listings di Supabase
   React.useEffect(() => {
     async function loadLiveRadar() {
+      if (!initialListings || initialListings.length === 0) {
+        setIsLoading(true);
+      }
       try {
         let newlyAdded: SurplusFoodCardData[] = [];
         if (typeof window !== "undefined") {
@@ -456,9 +405,22 @@ export function SurplusFeedSection({
 
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
-        const { data, error } = await supabase.from("food_radar").select("*");
-        if (!error && data && data.length > 0) {
-          const mapped: SurplusFoodCardData[] = data.map((row: any, idx: number) => {
+        
+        let dbData: any[] = [];
+        if (isDonor) {
+          let query = supabase.from("food_listings").select("*").eq("status", "active");
+          if (donorId) {
+            query = query.eq("donor_id", donorId);
+          }
+          const { data, error } = await query.order("created_at", { ascending: false });
+          if (!error && data) dbData = data;
+        } else {
+          const { data, error } = await supabase.from("food_radar").select("*");
+          if (!error && data) dbData = data;
+        }
+
+        if (dbData && dbData.length > 0) {
+          const mapped: SurplusFoodCardData[] = dbData.map((row: any, idx: number) => {
             const diffMs = new Date(row.safe_until).getTime() - Date.now();
             const hoursLeft = Math.max(0, Math.floor(diffMs / (3600 * 1000)));
             const minsLeft = Math.max(0, Math.floor((diffMs % (3600 * 1000)) / (60 * 1000)));
@@ -472,6 +434,8 @@ export function SurplusFeedSection({
               tags.push({ label: `Alergen: ${row.risky_ingredients.join(", ")}`, colorScheme: "yellow" });
             }
 
+            const currentPortions = row.remaining_portions !== undefined ? row.remaining_portions : row.portions;
+
             return {
               id: row.id,
               donorCode: `Donatur Terverifikasi #${row.id.slice(0, 4).toUpperCase()}`,
@@ -481,8 +445,8 @@ export function SurplusFeedSection({
               remainingTime,
               isUrgentBadge: hoursLeft < 2,
               title: row.title,
-              portionsCount: row.remaining_portions,
-              portionsRemainingText: `${row.remaining_portions} Porsi Tersisa`,
+              portionsCount: currentPortions,
+              portionsRemainingText: `${currentPortions} Porsi Tersisa`,
               batchInfo: `Dimasak: ${new Date(row.cooked_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WITA`,
               tags,
               category: row.dietary_tags?.[0] || "halal",
@@ -498,14 +462,103 @@ export function SurplusFeedSection({
           const uniqueNew = newlyAdded.filter((n) => !existingIds.has(n.id));
           setLiveListings([...uniqueNew, ...mapped]);
         } else if (newlyAdded.length > 0) {
-          setLiveListings([...newlyAdded, ...SURPLUS_FEED_LISTINGS]);
+          setLiveListings([...newlyAdded]);
+        } else {
+          setLiveListings([]);
         }
       } catch (err) {
-        console.warn("Using initial listings:", err);
+        console.warn("Error loading live radar:", err);
+        setLiveListings([]);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadLiveRadar();
-  }, []);
+  }, [isDonor, donorId, initialListings]);
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    if (editPortions < 1) {
+      alert("Jumlah porsi minimal 1.");
+      return;
+    }
+    setIsSubmittingEdit(true);
+    try {
+      const res = await updateFoodListingPortions({
+        listing_id: editingItem.id,
+        portions: editPortions,
+        remaining_portions: editPortions,
+      });
+      if (res.success) {
+        setLiveListings((prev) =>
+          prev.map((item) => {
+            if (item.id === editingItem.id) {
+              return {
+                ...item,
+                portionsCount: editPortions,
+                portionsRemainingText: `${editPortions} Porsi Tersisa`,
+              };
+            }
+            return item;
+          })
+        );
+
+        if (typeof window !== "undefined") {
+          const rawNew = localStorage.getItem("siklus_new_food_listing");
+          if (rawNew) {
+            try {
+              const parsed = JSON.parse(rawNew);
+              if (parsed.id === editingItem.id) {
+                parsed.portions = editPortions;
+                localStorage.setItem("siklus_new_food_listing", JSON.stringify(parsed));
+              }
+            } catch {}
+          }
+        }
+
+        setHandoverBanner(`Jumlah porsi untuk "${editingItem.title}" berhasil diubah menjadi ${editPortions} porsi.`);
+        setEditingItem(null);
+      } else {
+        alert(res.error || "Gagal memperbarui jumlah porsi.");
+      }
+    } catch (err: any) {
+      alert(err?.message || "Gagal memperbarui porsi.");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
+    setIsSubmittingDelete(true);
+    try {
+      const res = await deleteFoodListing({ listing_id: deletingItemId });
+      if (res.success) {
+        setLiveListings((prev) => prev.filter((item) => item.id !== deletingItemId));
+
+        if (typeof window !== "undefined") {
+          const rawNew = localStorage.getItem("siklus_new_food_listing");
+          if (rawNew) {
+            try {
+              const parsed = JSON.parse(rawNew);
+              if (parsed.id === deletingItemId) {
+                localStorage.removeItem("siklus_new_food_listing");
+              }
+            } catch {}
+          }
+        }
+
+        setHandoverBanner("Listing donasi pangan berhasil dihapus dari radar aktif.");
+        setDeletingItemId(null);
+      } else {
+        alert(res.error || "Gagal menghapus listing.");
+      }
+    } catch (err: any) {
+      alert(err?.message || "Gagal menghapus listing.");
+    } finally {
+      setIsSubmittingDelete(false);
+    }
+  };
 
   const handleClaimFood = async (id: string) => {
     setClaimedId(id);
@@ -697,8 +750,8 @@ export function SurplusFeedSection({
             <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
               {title}
             </h2>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs">
-              {badgeText}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs font-mono">
+              {isLoading ? "Memuat..." : `${filteredListings.length} Listing Aktif`}
             </span>
           </div>
 
@@ -729,7 +782,17 @@ export function SurplusFeedSection({
       <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
         {/* LEFT COLUMN: Food Cards Grid (2 Columns) */}
         <div className="flex-1 w-full">
-          {filteredListings.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-pulse">
+              {[1, 2].map((n) => (
+                <div key={n} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+                  <div className="w-full h-44 bg-slate-100 rounded-xl" />
+                  <div className="h-5 bg-slate-100 rounded w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : filteredListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {filteredListings.map((card) => (
                 <SurplusFoodCard
@@ -737,6 +800,11 @@ export function SurplusFeedSection({
                   card={card}
                   isDonorView={isDonor}
                   onDonorAction={() => setShowDonorQrScanner(true)}
+                  onEdit={(item) => {
+                    setEditingItem(item);
+                    setEditPortions(item.portionsCount || 10);
+                  }}
+                  onDelete={(cardId) => setDeletingItemId(cardId)}
                   isClaimed={claimedId === card.id}
                   onClaim={handleClaimFood}
                 />
@@ -747,12 +815,21 @@ export function SurplusFeedSection({
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                 <Utensils className="w-6 h-6" />
               </div>
-              <p className="text-sm font-semibold text-neutral-800">
-                {isDonor ? "Belum ada donasi pangan aktif yang terdaftar atas nama Anda." : emptyMessage}
+              <p className="text-sm font-bold text-neutral-800 font-headline">
+                {isDonor
+                  ? "Belum ada donasi pangan aktif yang terdaftar atas nama Anda."
+                  : searchQuery.trim() || selectedCategory !== "all"
+                  ? emptyMessage
+                  : "Belum ada listing surplus pangan aktif di radar saat ini."}
               </p>
-              {isDonor ? (
+              <p className="text-xs text-slate-500 font-body mt-1 max-w-md mx-auto">
+                {isDonor
+                  ? "Setiap hidangan surplus yang didaftarkan akan otomatis diproteksi BPOM dan ditayangkan ke radar yayasan penerima."
+                  : "Donatur terverifikasi dapat mendaftarkan hidangan surplus untuk disalurkan ke panti asuhan & komunitas."}
+              </p>
+              {isDonor || (!searchQuery.trim() && selectedCategory === "all") ? (
                 <Button asChild size="sm" className="mt-4 rounded-xl font-headline font-bold text-xs bg-primary text-white">
-                  <Link href="/donate">+ Buat Donasi Pertama</Link>
+                  <Link href="/donate">+ Daftarkan Donasi Pangan</Link>
                 </Button>
               ) : (
                 <button
@@ -761,7 +838,7 @@ export function SurplusFeedSection({
                     setSearchQuery("");
                     setSelectedCategory("all");
                   }}
-                  className="mt-3 text-xs text-primary font-bold hover:underline"
+                  className="mt-3 text-xs text-primary font-bold hover:underline cursor-pointer"
                 >
                   {resetFilterText}
                 </button>
@@ -772,10 +849,140 @@ export function SurplusFeedSection({
 
         {/* RIGHT COLUMN: Side Menu Cards */}
         <div className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col gap-6">
-          {isDonor ? <DonorImpactSummaryCard /> : <BeneficiaryCapacityCard />}
+          {isDonor ? (
+            <DonorImpactSummaryCard impact={donorImpact} />
+          ) : (
+            <BeneficiaryCapacityCard capacity={beneficiaryCapacity} />
+          )}
           <PickupProtocolCard />
         </div>
       </div>
+
+      {/* Dialog Edit Porsi (Donatur) */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <Pencil className="w-4 h-4" />
+              </div>
+              <DialogTitle className="text-base font-headline font-bold">
+                Edit Jumlah Porsi Aktif
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-slate-500">
+              Sesuaikan kuota porsi yang tersedia di radar publik. Perubahan langsung tersinkronisasi ke sistem.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingItem && (
+            <div className="space-y-4 py-2">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <p className="text-xs font-bold text-neutral-900 line-clamp-1">{editingItem.title}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">{editingItem.portionsRemainingText}</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700">
+                  Jumlah Porsi Baru
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={10000}
+                    value={editPortions}
+                    onChange={(e) => setEditPortions(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <span className="text-xs font-medium text-slate-500 shrink-0">Porsi</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Minimal 1 porsi. Kuota ini akan dapat diklaim oleh yayasan / relawan.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingItem(null)}
+              className="text-xs font-headline font-semibold rounded-xl"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSubmittingEdit}
+              onClick={handleSaveEdit}
+              className="bg-primary hover:bg-primary/90 text-white text-xs font-headline font-bold rounded-xl gap-1.5 shadow-xs"
+            >
+              {isSubmittingEdit ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <span>Simpan Perubahan</span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Konfirmasi Hapus Listing (Donatur) */}
+      <Dialog open={!!deletingItemId} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-rose-600">
+              <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <DialogTitle className="text-base font-headline font-bold text-rose-600">
+                Hapus Donasi Pangan Ini?
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-slate-500">
+              Listing donasi pangan ini akan dibatalkan dan seketika ditarik dari radar publik penerima manfaat. Tindakan ini tidak dapat diurungkan.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingItemId(null)}
+              className="text-xs font-headline font-semibold rounded-xl"
+            >
+              Batalkan
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSubmittingDelete}
+              onClick={handleConfirmDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-headline font-bold rounded-xl gap-1.5 shadow-xs"
+            >
+              {isSubmittingDelete ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menghapus...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Ya, Hapus Listing</span>
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

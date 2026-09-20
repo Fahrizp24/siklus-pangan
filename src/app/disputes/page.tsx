@@ -29,7 +29,7 @@ export default async function DisputesPage() {
   const summary = await getDisputesData(isDonor ? user?.id : undefined);
 
   return (
-    <AppShell>
+    <AppShell role={role}>
       <main className="w-full py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 items-center justify-start selection:bg-primary/20 selection:text-primary">
         <DisputesHero summary={summary} />
         <DisputesList disputes={summary.disputes} />

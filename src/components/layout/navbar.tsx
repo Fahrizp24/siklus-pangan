@@ -5,14 +5,23 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
-  SlidersHorizontal,
   CheckCircle2,
   Menu,
   X,
+  LayoutDashboard,
+  User,
+  Trophy,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MAIN_NAV, DONOR_NAV, BENEFICIARY_NAV, PROCESSOR_NAV } from "@/lib/nav";
+import {
+  GUEST_NAV,
+  MAIN_NAV,
+  DONOR_NAV,
+  BENEFICIARY_NAV,
+  PROCESSOR_NAV,
+  ADMIN_NAV,
+} from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import logoText from "@/assets/logo-text.webp";
@@ -25,60 +34,100 @@ export interface NavbarUser {
   isVerified?: boolean;
 }
 
-interface NavbarProps {
+export interface NavbarProps {
   user?: NavbarUser | null;
+  role?: string | null;
 }
 
-export function Navbar({ user: initialUser }: NavbarProps) {
+// In-memory module cache across client-side page transitions
+let cachedNavbarUser: NavbarUser | null = null;
+
+export function Navbar({ user: initialUser, role: initialRole }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(initialUser ?? null);
+  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(() => {
+    if (initialUser !== undefined && initialUser !== null) return initialUser;
+    return null;
+  });
 
   useEffect(() => {
-    if (initialUser !== undefined) {
+    if (initialUser !== undefined && initialUser !== null) {
+      cachedNavbarUser = initialUser;
       setCurrentUser(initialUser);
       return;
     }
 
+    // Safely restore cached user on client AFTER hydration
+    if (cachedNavbarUser) {
+      setCurrentUser(cachedNavbarUser);
+    } else if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("siklus_cached_user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          cachedNavbarUser = parsed;
+          setCurrentUser(parsed);
+        }
+      } catch {}
+    }
+
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-      if (authUser) {
-        const metadata = authUser.user_metadata || {};
-        let displayName = metadata.display_name;
-        let role = metadata.role || "donor";
+    if (!cachedNavbarUser) {
+      supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
+        if (authUser) {
+          const metadata = authUser.user_metadata || {};
+          let displayName = metadata.display_name;
+          let role = metadata.role || "donor";
 
-        try {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("display_name, role")
-            .eq("id", authUser.id)
-            .single();
-          if (prof?.display_name) displayName = prof.display_name;
-          if (prof?.role) role = prof.role;
-        } catch {}
+          try {
+            const { data: prof } = await supabase
+              .from("profiles")
+              .select("display_name, role")
+              .eq("id", authUser.id)
+              .single();
+            if (prof?.display_name) displayName = prof.display_name;
+            if (prof?.role) role = prof.role;
+          } catch { }
 
-        setCurrentUser({
-          name:
-            displayName ||
-            metadata.full_name ||
-            authUser.email?.split("@")[0] ||
-            "Pengguna",
-          role,
-          roleDescription:
-            role === "donor"
-              ? "Donatur Pangan Terverifikasi"
-              : role === "processor"
-              ? "Pengolah Residu Organik"
-              : role === "admin"
-              ? "Administrator & Auditor"
-              : "Penerima Manfaat",
-          avatarUrl: metadata.avatar_url,
-          isVerified: true,
-        });
-      } else {
-        setCurrentUser(null);
-      }
-    });
+          const userObj: NavbarUser = {
+            name:
+              displayName ||
+              metadata.full_name ||
+              authUser.email?.split("@")[0] ||
+              "Pengguna",
+            role,
+            roleDescription:
+              role === "donor"
+                ? "Donatur Pangan Terverifikasi"
+                : role === "processor"
+                  ? "Pengolah Residu Organik"
+                  : role === "admin"
+                    ? "Administrator & Auditor"
+                    : "Penerima Manfaat",
+            avatarUrl: metadata.avatar_url,
+            isVerified: true,
+          };
+
+          cachedNavbarUser = userObj;
+          setCurrentUser(userObj);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
+              localStorage.setItem("siklus_cached_role", role);
+            } catch {}
+          }
+        } else {
+          cachedNavbarUser = null;
+          setCurrentUser(null);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem("siklus_cached_user");
+              localStorage.removeItem("siklus_cached_role");
+            } catch {}
+          }
+        }
+      });
+    }
 
     const {
       data: { subscription },
@@ -96,9 +145,9 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             .single();
           if (prof?.display_name) displayName = prof.display_name;
           if (prof?.role) role = prof.role;
-        } catch {}
+        } catch { }
 
-        setCurrentUser({
+        const userObj: NavbarUser = {
           name:
             displayName ||
             metadata.full_name ||
@@ -109,28 +158,47 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             role === "donor"
               ? "Donatur Pangan Terverifikasi"
               : role === "processor"
-              ? "Pengolah Residu Organik"
-              : role === "admin"
-              ? "Administrator & Auditor"
-              : "Penerima Manfaat",
+                ? "Pengolah Residu Organik"
+                : role === "admin"
+                  ? "Administrator & Auditor"
+                  : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
-        });
+        };
+
+        cachedNavbarUser = userObj;
+        setCurrentUser(userObj);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
+            localStorage.setItem("siklus_cached_role", role);
+          } catch {}
+        }
       } else {
+        cachedNavbarUser = null;
         setCurrentUser(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("siklus_cached_user");
+            localStorage.removeItem("siklus_cached_role");
+          } catch {}
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, [initialUser]);
 
-  let navItems = MAIN_NAV;
-  if (currentUser?.role === "donor") {
+  const effectiveRole = currentUser?.role || initialRole;
+  let navItems = GUEST_NAV;
+  if (effectiveRole === "donor") {
     navItems = DONOR_NAV;
-  } else if (currentUser?.role === "beneficiary") {
+  } else if (effectiveRole === "beneficiary") {
     navItems = BENEFICIARY_NAV;
-  } else if (currentUser?.role === "processor") {
+  } else if (effectiveRole === "processor") {
     navItems = PROCESSOR_NAV;
+  } else if (effectiveRole === "admin") {
+    navItems = ADMIN_NAV;
   }
 
   const isItemActive = (href: string) => {
@@ -154,7 +222,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         </Link>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 h-full">
+        <nav className="hidden md:flex items-center gap-5 lg:gap-8 h-full">
           {navItems.map((item) => {
             const active = isItemActive(item.href);
             return (
@@ -162,16 +230,13 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative flex items-center gap-1.5 h-full text-sm transition-all font-headline",
+                  "relative flex items-center h-full text-sm transition-all font-headline tracking-normal",
                   active
                     ? "font-bold text-primary border-b-2 border-primary"
-                    : "font-medium text-neutral hover:text-primary border-b-2 border-transparent"
+                    : "font-medium text-neutral/80 hover:text-primary border-b-2 border-transparent"
                 )}
               >
                 <span>{item.label}</span>
-                {active && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                )}
               </Link>
             );
           })}
@@ -182,65 +247,143 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           {currentUser ? (
             /* Logged In State */
             <>
-              {/* Notification Button */}
-              <button
-                type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors relative"
-                aria-label="Notifikasi"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
-              </button>
-
-              {/* Preferences / Filter Button */}
-              <button
-                type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors"
-                aria-label="Filter dan Pengaturan"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-              </button>
-
-              {/* Vertical Separator */}
-              <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
-
-              {/* User Profile Card (Clickable to /profile) */}
-              <Link
-                href="/profile"
-                className={cn(
-                  "hidden sm:flex items-center gap-3 pl-1 group p-1 rounded-xl transition-all hover:bg-muted/50",
-                  pathname === "/profile" && "bg-accent/60"
-                )}
-                title="Buka Profil Akun"
-              >
-                <div className="flex flex-col text-right">
-                  <div className="flex items-center justify-end gap-1.5">
-                    <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight">
-                      {currentUser.name}
+              {/* User Profile Dropdown (Hover to reveal Dashboard, Leaderboard & Detail Profil) */}
+              <div className="relative group hidden sm:block">
+                <Link
+                  href="/profile"
+                  className={cn(
+                    "flex items-center gap-3 pl-1 p-1 rounded-xl transition-all hover:bg-muted/50 cursor-pointer",
+                    pathname === "/profile" && "bg-accent/60"
+                  )}
+                  title="Menu Profil & Dashboard"
+                >
+                  <div className="flex flex-col text-right max-w-[130px] lg:max-w-[180px]">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight truncate">
+                        {currentUser.name}
+                      </span>
+                      {currentUser.isVerified && (
+                        <CheckCircle2 className="h-4 w-4 text-primary fill-primary/10 shrink-0" />
+                      )}
+                    </div>
+                    <span className="font-body text-[11px] text-muted-foreground leading-tight truncate">
+                      {currentUser.roleDescription}
                     </span>
-                    {currentUser.isVerified && (
-                      <CheckCircle2 className="h-4 w-4 text-primary fill-primary/10 shrink-0" />
+                  </div>
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted shadow-xs transition-colors">
+                    {currentUser.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={currentUser.avatarUrl}
+                        alt={currentUser.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
+                        {currentUser.name.charAt(0)}
+                      </div>
                     )}
                   </div>
-                  <span className="font-body text-[11px] text-muted-foreground leading-tight">
-                    {currentUser.roleDescription}
-                  </span>
-                </div>
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted shadow-xs transition-colors">
-                  {currentUser.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={currentUser.avatarUrl}
-                      alt={currentUser.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-sm">
-                      {currentUser.name.charAt(0)}
+                </Link>
+
+                {/* Dropdown Menu on Hover */}
+                <div className="absolute right-0 top-full pt-2 w-64 invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50 pointer-events-none group-hover:pointer-events-auto">
+                  <div className="rounded-2xl border border-border/80 bg-white p-2 shadow-xl ring-1 ring-black/5">
+                    {/* User Info Snippet */}
+                    <div className="px-3 py-2 border-b border-border/50 mb-1">
+                      <p className="text-xs font-bold text-neutral truncate font-headline">
+                        {currentUser.name}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate font-body">
+                        {currentUser.roleDescription}
+                      </p>
                     </div>
-                  )}
+
+                    {/* Navigation Items */}
+                    <div className="space-y-0.5">
+                      <Link
+                        href="/dashboard"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/dashboard"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                          <LayoutDashboard className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Dashboard ESG</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Metrik emisi, kalkulator & dampak
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/leaderboard"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/leaderboard"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/60">
+                          <Trophy className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Wall of Fame</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Peringkat dampak komunitas
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/disputes"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/disputes"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/60">
+                          <AlertTriangle className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Pusat Sengketa</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Resolusi & tiket kendala pangan
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/profile"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/profile"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Detail Akun & Profil</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Data pribadi, peran & keamanan
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </Link>
+              </div>
             </>
           ) : (
             /* Logged Out / Guest State */
@@ -280,13 +423,9 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         <div className="md:hidden border-t border-border/80 bg-white px-4 py-4 shadow-lg animate-in slide-in-from-top-2 duration-150">
           {currentUser ? (
             /* Mobile Logged In Section */
-            <Link
-              href="/profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mb-4 flex items-center justify-between border-b border-border/60 pb-3 group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 group-hover:border-primary bg-muted">
+            <div className="mb-4 border-b border-border/60 pb-3">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border/80 bg-muted">
                   {currentUser.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -302,7 +441,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors">
+                    <span className="font-headline text-sm font-bold text-neutral">
                       {currentUser.name}
                     </span>
                     {currentUser.isVerified && (
@@ -315,10 +454,36 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 </div>
               </div>
 
-              <span className="text-[11px] font-bold text-primary font-headline group-hover:underline">
-                Profil →
-              </span>
-            </Link>
+              {/* Mobile Quick Action Buttons for Dashboard & Detail Profil */}
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold font-headline transition-colors",
+                    pathname === "/dashboard"
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-muted/40 text-neutral border-border/80 hover:bg-muted"
+                  )}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold font-headline transition-colors",
+                    pathname === "/profile"
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-muted/40 text-neutral border-border/80 hover:bg-muted"
+                  )}
+                >
+                  <User className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+                  <span>Detail Profil</span>
+                </Link>
+              </div>
+            </div>
           ) : (
             /* Mobile Guest Login / Register Section */
             <div className="mb-4 flex items-center gap-2 border-b border-border/60 pb-3">
@@ -367,6 +532,42 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 </Link>
               );
             })}
+
+            {/* Mobile Extra Links for Logged In Users */}
+            {currentUser && (
+              <div className="pt-2 mt-2 border-t border-border/60 space-y-1">
+                <Link
+                  href="/leaderboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-headline transition-colors",
+                    pathname === "/leaderboard"
+                      ? "bg-primary/10 font-bold text-primary"
+                      : "font-medium text-neutral hover:bg-muted"
+                  )}
+                >
+                  <span>Wall of Fame</span>
+                  {pathname === "/leaderboard" && (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+                <Link
+                  href="/disputes"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-headline transition-colors",
+                    pathname === "/disputes"
+                      ? "bg-primary/10 font-bold text-primary"
+                      : "font-medium text-neutral hover:bg-muted"
+                  )}
+                >
+                  <span>Pusat Sengketa</span>
+                  {pathname === "/disputes" && (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}

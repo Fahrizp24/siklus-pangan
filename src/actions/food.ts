@@ -96,3 +96,103 @@ export async function createFoodListing(input: unknown): Promise<{
     return { success: false, error: err?.message || "Permintaan gagal. Periksa koneksi basis data." };
   }
 }
+
+import { revalidatePath } from "next/cache";
+
+const updatePortionsSchema = z.object({
+  listing_id: z.string().trim().min(1),
+  portions: z.number().int().min(1).max(2147483647),
+  remaining_portions: z.number().int().min(0).max(2147483647),
+}).strict();
+
+/**
+ * Server Action: Perbarui Jumlah Porsi Listing Makanan Donatur
+ */
+export async function updateFoodListingPortions(input: unknown): Promise<{
+  success: boolean;
+  data?: { id: string; portions: number; remaining_portions: number };
+  error?: string;
+}> {
+  const parsed = updatePortionsSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Data porsi tidak valid." };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { listing_id, portions, remaining_portions } = parsed.data;
+
+    // Pastikan portions >= remaining_portions sesuai check constraint remaining_within_total
+    const safeRemaining = Math.min(portions, remaining_portions);
+
+    const { data, error } = await admin
+      .from("food_listings")
+      .update({
+        portions: portions,
+        remaining_portions: safeRemaining,
+      })
+      .eq("id", listing_id)
+      .select("id, portions, remaining_portions")
+      .maybeSingle();
+
+    if (error) {
+      console.error("[updateFoodListingPortions error]:", error);
+      return { success: false, error: error.message || "Gagal memperbarui jumlah porsi listing." };
+    }
+
+    revalidatePath("/rescue");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      data: data || { id: listing_id, portions, remaining_portions: safeRemaining },
+    };
+  } catch (err: any) {
+    console.error("[updateFoodListingPortions catch]:", err);
+    return { success: false, error: err?.message || "Gagal memperbarui porsi." };
+  }
+}
+
+const deleteListingSchema = z.object({
+  listing_id: z.string().trim().min(1),
+}).strict();
+
+/**
+ * Server Action: Hapus / Batalkan Listing Makanan Aktif Donatur
+ * Mengubah status menjadi 'cancelled' sehingga seketika hilang dari radar publik
+ */
+export async function deleteFoodListing(input: unknown): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const parsed = deleteListingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "ID listing tidak valid." };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { listing_id } = parsed.data;
+
+    const { error } = await admin
+      .from("food_listings")
+      .update({
+        status: "cancelled",
+        remaining_portions: 0,
+      })
+      .eq("id", listing_id);
+
+    if (error) {
+      console.error("[deleteFoodListing error]:", error);
+      return { success: false, error: error.message || "Gagal menghapus listing makanan." };
+    }
+
+    revalidatePath("/rescue");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("[deleteFoodListing catch]:", err);
+    return { success: false, error: err?.message || "Gagal menghapus listing." };
+  }
+}

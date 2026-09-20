@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Urbanist, Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+
+const urbanist = Urbanist({
+  subsets: ["latin"],
+  variable: "--font-urbanist",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -26,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${plusJakartaSans.variable} ${inter.variable}`}>
+    <html lang="id" className={`${urbanist.variable} ${plusJakartaSans.variable} ${inter.variable}`}>
       <body className="font-sans antialiased bg-background text-foreground min-h-screen">
         {children}
         <Toaster />

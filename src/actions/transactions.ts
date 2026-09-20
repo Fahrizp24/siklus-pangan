@@ -361,12 +361,20 @@ export async function submitDisputeStrike(
   const p = z.object({
     listing_id: z.string().uuid(),
     reason: z.string().trim().min(1).max(2000),
+    evidence_url: z.string().optional().nullable(),
   }).strict().safeParse(input);
 
   if (!p.success) return { success: false, error: "Format laporan sengketa tidak valid." };
 
   try {
     const admin = createAdminClient();
+    const client = await createClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+
+    const reporterId = user?.id || DEFAULT_BENEFICIARY_ID;
+
     const { data: listing, error: lErr } = await admin
       .from("food_listings")
       .select("id, donor_id, status")
@@ -382,8 +390,9 @@ export async function submitDisputeStrike(
       .insert({
         donor_id: listing.donor_id,
         listing_id: listing.id,
-        reported_by: DEFAULT_BENEFICIARY_ID,
+        reported_by: reporterId,
         reason: p.data.reason,
+        donor_evidence_url: p.data.evidence_url || null,
         response_deadline: deadline,
         is_resolved: false,
         penalty_applied: false,
@@ -409,3 +418,79 @@ export async function submitDisputeStrike(
     return { success: false, error: err?.message || "Gagal mengirimkan laporan sengketa." };
   }
 }
+
+const cancelClaimSchema = z.object({
+  claim_id: z.string().uuid(),
+}).strict();
+
+/**
+ * Server Action: Pembatalan Klaim Makanan oleh Penerima Manfaat
+ * Menghapus tiket klaim dari database dan mengembalikan kuota porsi ke listing makanan
+ */
+export async function cancelFoodClaim(
+  input: unknown
+): Promise<Result<{ id: string; refunded_portions: number }>> {
+  const p = cancelClaimSchema.safeParse(input);
+  if (!p.success) return { success: false, error: "ID klaim tidak valid." };
+
+  try {
+    const admin = createAdminClient();
+
+    // 1. Ambil data tiket klaim
+    const { data: claim, error: cErr } = await admin
+      .from("food_claims")
+      .select("id, listing_id, portions_claimed, is_collected")
+      .eq("id", p.data.claim_id)
+      .single();
+
+    if (cErr || !claim) {
+      return { success: false, error: "Tiket klaim tidak ditemukan di basis data." };
+    }
+
+    if (claim.is_collected) {
+      return {
+        success: false,
+        error: "Makanan sudah diserahterimakan dan tidak dapat dibatalkan.",
+      };
+    }
+
+    // 2. Hapus tiket klaim dari database
+    const { error: delErr } = await admin
+      .from("food_claims")
+      .delete()
+      .eq("id", claim.id);
+
+    if (delErr) {
+      return { success: false, error: "Gagal membatalkan tiket klaim." };
+    }
+
+    // 3. Kembalikan sisa porsi ke food_listings
+    const { data: listing } = await admin
+      .from("food_listings")
+      .select("id, remaining_portions")
+      .eq("id", claim.listing_id)
+      .single();
+
+    if (listing) {
+      const restored = Number(listing.remaining_portions || 0) + Number(claim.portions_claimed || 1);
+      await admin
+        .from("food_listings")
+        .update({
+          remaining_portions: restored,
+          status: "active",
+        })
+        .eq("id", listing.id);
+    }
+
+    return {
+      success: true,
+      data: {
+        id: claim.id,
+        refunded_portions: Number(claim.portions_claimed || 1),
+      },
+    };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Gagal membatalkan klaim makanan." };
+  }
+}
+

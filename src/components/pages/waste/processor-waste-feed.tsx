@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Recycle,
   Scale,
@@ -38,22 +40,28 @@ interface ProcessorWasteFeedProps {
 }
 
 export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) {
+  const router = useRouter();
   const [batches, setBatches] = useState<ProcessorWasteItem[]>(initialBatches);
+  const [statusTab, setStatusTab] = useState<"active" | "collected">("active");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<ProcessorWasteItem | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
 
-  // Filter batches
+  const activeCount = batches.filter((b) => !b.isCollected).length;
+  const collectedCount = batches.filter((b) => b.isCollected).length;
+
+  // Filter batches by active/collected tab, category, and search query
   const filteredBatches = batches.filter((b) => {
+    const matchesStatus = statusTab === "active" ? !b.isCollected : b.isCollected;
     const matchesCategory = selectedCategory === "all" || b.category === selectedCategory;
     const matchesSearch =
       b.donorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.donorAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.batchNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesStatus && matchesCategory && matchesSearch;
   });
 
   const totalAvailableKg = batches
@@ -74,7 +82,10 @@ export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) 
           setSelectedBatch({ ...selectedBatch, isCollected: true });
         }
         setClaimSuccess(true);
-        setTimeout(() => setClaimSuccess(false), 4000);
+        // Direct routing to the detail manifest page
+        setTimeout(() => {
+          router.push(`/waste/${batchId}`);
+        }, 500);
       }
     } catch (err) {
       console.error("claim error:", err);
@@ -170,6 +181,59 @@ export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) 
         </div>
       </div>
 
+      {/* Segmented Status Tab Switcher: Pasokan Aktif vs Riwayat Diangkut */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/80">
+        <div className="flex items-center gap-2 p-1 rounded-2xl bg-muted/60 border border-border w-fit">
+          <button
+            type="button"
+            onClick={() => setStatusTab("active")}
+            className={`px-4 py-2 rounded-xl text-xs font-headline font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              statusTab === "active"
+                ? "bg-card text-foreground shadow-xs border border-border"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span>Pasokan Aktif (Siap Jemput)</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                statusTab === "active"
+                  ? "bg-primary text-white"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {activeCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusTab("collected")}
+            className={`px-4 py-2 rounded-xl text-xs font-headline font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              statusTab === "collected"
+                ? "bg-card text-foreground shadow-xs border border-border"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span>Riwayat Diangkut (Selesai)</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                statusTab === "collected"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {collectedCount}
+            </span>
+          </button>
+        </div>
+
+        <p className="text-xs text-muted-foreground font-body">
+          {statusTab === "active"
+            ? "Pilih batch limbah aktif untuk konfirmasi jadwal penjemputan dan membuka surat jalan."
+            : "Daftar manifest limbah organik yang telah berhasil diangkut armada pengolah."}
+        </p>
+      </div>
+
       {/* Grid Kartu Limbah Organik (Radar Pengolah) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredBatches.length === 0 ? (
@@ -179,10 +243,14 @@ export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) 
                 <Recycle className="w-7 h-7 text-primary" />
               </div>
               <h3 className="font-bold font-headline text-foreground text-base">
-                Belum Ada Pasokan Limbah yang Cocok
+                {statusTab === "active"
+                  ? "Belum Ada Pasokan Limbah Aktif"
+                  : "Belum Ada Riwayat Penjemputan"}
               </h3>
               <p className="text-xs text-muted-foreground font-body leading-relaxed">
-                Tidak ada batch limbah organik yang sesuai dengan filter pencarian saat ini. Silakan periksa kategori lain.
+                {statusTab === "active"
+                  ? "Tidak ada batch limbah organik yang menunggu penjemputan dengan filter saat ini."
+                  : "Batch limbah yang telah Anda angkut akan tercatat otomatis di tab riwayat ini."}
               </p>
             </div>
           </div>
@@ -274,16 +342,27 @@ export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) 
                 </div>
               </div>
 
-              {/* Card Footer Button */}
-              <div className="p-4 pt-0">
+              {/* Card Footer Buttons */}
+              <div className="p-4 pt-0 flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedBatch(item)}
-                  className="w-full rounded-xl text-xs font-headline font-bold text-foreground hover:bg-primary hover:text-white border-border gap-1.5 h-9"
+                  className="flex-1 rounded-xl text-xs font-headline font-bold text-foreground hover:bg-muted border-border gap-1.5 h-9"
                 >
-                  <span>Detail Limbah & Angkut</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>{item.isCollected ? "Ringkasan" : "Review Batch"}</span>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className={`rounded-xl text-xs font-headline font-bold text-white gap-1.5 h-9 px-3.5 ${
+                    item.isCollected ? "bg-emerald-600 hover:bg-emerald-700" : "bg-primary hover:bg-primary/90"
+                  }`}
+                >
+                  <Link href={`/waste/${item.id}`}>
+                    <span>{item.isCollected ? "Surat Jalan" : "Detail & Angkut"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </Button>
               </div>
             </Card>
@@ -423,10 +502,16 @@ export function ProcessorWasteFeed({ initialBatches }: ProcessorWasteFeedProps) 
                     )}
                   </Button>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Telah Diangkut oleh Armada Anda</span>
-                  </span>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-headline font-bold text-xs rounded-xl px-4 gap-1.5 shadow-xs"
+                  >
+                    <Link href={`/waste/${selectedBatch.id}`}>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Buka Surat Jalan / Manifest</span>
+                    </Link>
+                  </Button>
                 )}
               </DialogFooter>
             </>

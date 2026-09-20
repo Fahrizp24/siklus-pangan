@@ -24,7 +24,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell role="admin">
       <main className="w-full py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 items-center justify-start selection:bg-primary/20 selection:text-primary">
         {/* Security / Access Level Notice */}
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
