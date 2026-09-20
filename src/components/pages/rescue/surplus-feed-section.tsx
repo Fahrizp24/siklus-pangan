@@ -103,116 +103,7 @@ export const PICKUP_PROTOCOL_CONTENT = {
   ],
 };
 
-export const SURPLUS_FEED_LISTINGS: SurplusFoodCardData[] = [
-  {
-    id: "2a02ea19-32b6-43ac-b4d2-71c2eeead97b",
-    donorCode: "Donatur Anonim #084",
-    location: "Renon, Denpasar (1.2 km)",
-    distanceKm: 1.2,
-    remainingTime: "01j 42m",
-    isUrgentBadge: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
-    imageBadge: {
-      label: "Cold Chain 4°C Terjaga",
-      iconType: "cold_chain",
-    },
-    title: "Premium Chicken Teriyaki Bento & Na...",
-    portionsCount: 35,
-    portionsRemainingText: "35 Porsi Tersisa",
-    batchInfo: "Batch Produksi: 10:15 WITA",
-    tags: [
-      { label: "Alergen: Kedelai & Wijen", colorScheme: "yellow" },
-      { label: "Higienis Cold Chain", colorScheme: "green" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Subsidi Korporat CSR",
-    },
-    category: "hotel_catering",
-  },
-  {
-    id: "4c39b812-76fa-45b0-9ef2-5f60e9d1a89c",
-    donorCode: "Donatur Anonim #022",
-    location: "Sanur, Denpasar (2.4 km)",
-    distanceKm: 2.4,
-    remainingTime: "02j 15m",
-    isUrgentBadge: false,
-    imageUrl:
-      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=700&q=80",
-    imageBadge: {
-      label: "Shift Pagi Hotel Bintang 5",
-      iconType: "hotel",
-    },
-    title: "Artisan Croissant, Danishes &...",
-    portionsCount: 60,
-    portionsRemainingText: "60 Paket Tersisa",
-    batchInfo: "Batch: Bake 06:30 WITA",
-    tags: [
-      { label: "Vegetarian Friendly", colorScheme: "green" },
-      { label: "Mengandung Gluten & Butter", colorScheme: "neutral" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Food Waste Divert #022",
-    },
-    category: "bakery",
-  },
-  {
-    id: "7e18ab44-245c-4d8e-9081-35688bca8791",
-    donorCode: "Donatur Anonim #109",
-    location: "Panjer / Renon (3.1 km)",
-    distanceKm: 3.1,
-    remainingTime: "03j 10m",
-    isUrgentBadge: false,
-    imageUrl:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&q=80",
-    imageBadge: {
-      label: "Halal Terverifikasi LPOM MUI",
-      iconType: "halal",
-    },
-    title: "Nasi Kotak Semur Daging & Tumis...",
-    portionsCount: 48,
-    portionsRemainingText: "48 Box Tersisa",
-    batchInfo: "Corporate Summit Untouched Surplus",
-    tags: [
-      { label: "100% Halal MUI", colorScheme: "green" },
-      { label: "Kering / Non-Kuah Tumpah", colorScheme: "blue" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Event Catering Surplus",
-    },
-    category: "nasi_kotak",
-  },
-  {
-    id: "a2f643e1-8899-4c02-99be-710e2ad47c55",
-    donorCode: "Donatur Anonim #061",
-    location: "Seminyak / Kuta (4.5 km)",
-    distanceKm: 4.5,
-    remainingTime: "00j 55m",
-    isUrgentBadge: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=700&q=80",
-    imageBadge: {
-      label: "100% Organik & Vegan",
-      iconType: "vegan",
-    },
-    title: "Fresh Seasonal Fruit Platter & Salad...",
-    portionsCount: 22,
-    portionsRemainingText: "22 Porsi Tersisa",
-    batchInfo: "Chilled Sealed 2°C",
-    tags: [
-      { label: "Vegan & 100% Organik", colorScheme: "green" },
-      { label: "High Fiber & Nutrisi Tinggi", colorScheme: "blue" },
-    ],
-    costInfo: {
-      topLabel: "Porsi Bebas Biaya",
-      bottomLabel: "Resort Breakfast Surplus",
-    },
-    category: "vegetarian",
-  },
-];
+
 
 /* =========================================================================
    INTERNAL SIDE MENU SUB-COMPONENTS
@@ -431,13 +322,13 @@ export function SurplusFeedSection({
   const [claimedId, setClaimedId] = useState<string | null>(null);
   const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
   const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(
-    isDonor ? SURPLUS_FEED_LISTINGS.slice(0, 2) : SURPLUS_FEED_LISTINGS
-  );
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Ambil data live dari view Postgres public.food_radar di Supabase
   React.useEffect(() => {
     async function loadLiveRadar() {
+      setIsLoading(true);
       try {
         let newlyAdded: SurplusFoodCardData[] = [];
         if (typeof window !== "undefined") {
@@ -523,10 +414,15 @@ export function SurplusFeedSection({
           const uniqueNew = newlyAdded.filter((n) => !existingIds.has(n.id));
           setLiveListings([...uniqueNew, ...mapped]);
         } else if (newlyAdded.length > 0) {
-          setLiveListings([...newlyAdded, ...SURPLUS_FEED_LISTINGS]);
+          setLiveListings([...newlyAdded]);
+        } else {
+          setLiveListings([]);
         }
       } catch (err) {
-        console.warn("Using initial listings:", err);
+        console.warn("Error loading live radar:", err);
+        setLiveListings([]);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadLiveRadar();
@@ -722,8 +618,8 @@ export function SurplusFeedSection({
             <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 font-headline">
               {title}
             </h2>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs">
-              {badgeText}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 shadow-2xs font-mono">
+              {isLoading ? "Memuat..." : `${filteredListings.length} Listing Aktif`}
             </span>
           </div>
 
@@ -754,7 +650,17 @@ export function SurplusFeedSection({
       <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
         {/* LEFT COLUMN: Food Cards Grid (2 Columns) */}
         <div className="flex-1 w-full">
-          {filteredListings.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-pulse">
+              {[1, 2].map((n) => (
+                <div key={n} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+                  <div className="w-full h-44 bg-slate-100 rounded-xl" />
+                  <div className="h-5 bg-slate-100 rounded w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : filteredListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {filteredListings.map((card) => (
                 <SurplusFoodCard
@@ -772,12 +678,21 @@ export function SurplusFeedSection({
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                 <Utensils className="w-6 h-6" />
               </div>
-              <p className="text-sm font-semibold text-neutral-800">
-                {isDonor ? "Belum ada donasi pangan aktif yang terdaftar atas nama Anda." : emptyMessage}
+              <p className="text-sm font-bold text-neutral-800 font-headline">
+                {isDonor
+                  ? "Belum ada donasi pangan aktif yang terdaftar atas nama Anda."
+                  : searchQuery.trim() || selectedCategory !== "all"
+                  ? emptyMessage
+                  : "Belum ada listing surplus pangan aktif di radar saat ini."}
               </p>
-              {isDonor ? (
+              <p className="text-xs text-slate-500 font-body mt-1 max-w-md mx-auto">
+                {isDonor
+                  ? "Setiap hidangan surplus yang didaftarkan akan otomatis diproteksi BPOM dan ditayangkan ke radar yayasan penerima."
+                  : "Donatur terverifikasi dapat mendaftarkan hidangan surplus untuk disalurkan ke panti asuhan & komunitas."}
+              </p>
+              {isDonor || (!searchQuery.trim() && selectedCategory === "all") ? (
                 <Button asChild size="sm" className="mt-4 rounded-xl font-headline font-bold text-xs bg-primary text-white">
-                  <Link href="/donate">+ Buat Donasi Pertama</Link>
+                  <Link href="/donate">+ Daftarkan Donasi Pangan</Link>
                 </Button>
               ) : (
                 <button
@@ -786,7 +701,7 @@ export function SurplusFeedSection({
                     setSearchQuery("");
                     setSelectedCategory("all");
                   }}
-                  className="mt-3 text-xs text-primary font-bold hover:underline"
+                  className="mt-3 text-xs text-primary font-bold hover:underline cursor-pointer"
                 >
                   {resetFilterText}
                 </button>

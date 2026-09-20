@@ -64,7 +64,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             .single();
           if (prof?.display_name) displayName = prof.display_name;
           if (prof?.role) role = prof.role;
-        } catch {}
+        } catch { }
 
         setCurrentUser({
           name:
@@ -77,10 +77,10 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             role === "donor"
               ? "Donatur Pangan Terverifikasi"
               : role === "processor"
-              ? "Pengolah Residu Organik"
-              : role === "admin"
-              ? "Administrator & Auditor"
-              : "Penerima Manfaat",
+                ? "Pengolah Residu Organik"
+                : role === "admin"
+                  ? "Administrator & Auditor"
+                  : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
         });
@@ -105,7 +105,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             .single();
           if (prof?.display_name) displayName = prof.display_name;
           if (prof?.role) role = prof.role;
-        } catch {}
+        } catch { }
 
         setCurrentUser({
           name:
@@ -118,10 +118,10 @@ export function Navbar({ user: initialUser }: NavbarProps) {
             role === "donor"
               ? "Donatur Pangan Terverifikasi"
               : role === "processor"
-              ? "Pengolah Residu Organik"
-              : role === "admin"
-              ? "Administrator & Auditor"
-              : "Penerima Manfaat",
+                ? "Pengolah Residu Organik"
+                : role === "admin"
+                  ? "Administrator & Auditor"
+                  : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
         });

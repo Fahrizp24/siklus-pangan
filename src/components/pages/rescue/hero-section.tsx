@@ -35,7 +35,6 @@ export const RADAR_CATEGORY_OPTIONS: FilterPillOption[] = [
   {
     id: "all",
     label: "Semua Kategori",
-    count: 14,
     icon: LayoutGrid,
   },
   {
