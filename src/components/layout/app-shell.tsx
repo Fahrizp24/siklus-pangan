@@ -26,17 +26,46 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+let cachedRole: string | null = null;
+
+function getInitialRole(): string | null {
+  if (cachedRole) return cachedRole;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("siklus_cached_role");
+      if (stored) {
+        cachedRole = stored;
+        return cachedRole;
+      }
+    } catch {}
+  }
+  return null;
+}
+
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(getInitialRole);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        setRole(user.user_metadata?.role || "donor");
+        const userRole = user.user_metadata?.role || "donor";
+        cachedRole = userRole;
+        setRole(userRole);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("siklus_cached_role", userRole);
+          } catch {}
+        }
       } else {
+        cachedRole = null;
         setRole(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("siklus_cached_role");
+          } catch {}
+        }
       }
     });
 
@@ -44,9 +73,22 @@ export function AppShell({ children }: AppShellProps) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setRole(session.user.user_metadata?.role || "donor");
+        const userRole = session.user.user_metadata?.role || "donor";
+        cachedRole = userRole;
+        setRole(userRole);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("siklus_cached_role", userRole);
+          } catch {}
+        }
       } else {
+        cachedRole = null;
         setRole(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("siklus_cached_role");
+          } catch {}
+        }
       }
     });
 

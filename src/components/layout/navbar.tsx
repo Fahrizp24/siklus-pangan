@@ -38,13 +38,37 @@ interface NavbarProps {
   user?: NavbarUser | null;
 }
 
+// In-memory module cache across client-side page transitions
+let cachedNavbarUser: NavbarUser | null = null;
+
+function getInitialNavbarUser(initialUser?: NavbarUser | null): NavbarUser | null {
+  if (initialUser !== undefined) {
+    cachedNavbarUser = initialUser;
+    return initialUser;
+  }
+  if (cachedNavbarUser) return cachedNavbarUser;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("siklus_cached_user");
+      if (stored) {
+        cachedNavbarUser = JSON.parse(stored);
+        return cachedNavbarUser;
+      }
+    } catch {}
+  }
+  return null;
+}
+
 export function Navbar({ user: initialUser }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(initialUser ?? null);
+  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(() =>
+    getInitialNavbarUser(initialUser)
+  );
 
   useEffect(() => {
     if (initialUser !== undefined) {
+      cachedNavbarUser = initialUser;
       setCurrentUser(initialUser);
       return;
     }
@@ -66,7 +90,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           if (prof?.role) role = prof.role;
         } catch { }
 
-        setCurrentUser({
+        const userObj: NavbarUser = {
           name:
             displayName ||
             metadata.full_name ||
@@ -83,9 +107,25 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                   : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
-        });
+        };
+
+        cachedNavbarUser = userObj;
+        setCurrentUser(userObj);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
+            localStorage.setItem("siklus_cached_role", role);
+          } catch {}
+        }
       } else {
+        cachedNavbarUser = null;
         setCurrentUser(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("siklus_cached_user");
+            localStorage.removeItem("siklus_cached_role");
+          } catch {}
+        }
       }
     });
 
@@ -107,7 +147,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           if (prof?.role) role = prof.role;
         } catch { }
 
-        setCurrentUser({
+        const userObj: NavbarUser = {
           name:
             displayName ||
             metadata.full_name ||
@@ -124,9 +164,25 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                   : "Penerima Manfaat",
           avatarUrl: metadata.avatar_url,
           isVerified: true,
-        });
+        };
+
+        cachedNavbarUser = userObj;
+        setCurrentUser(userObj);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
+            localStorage.setItem("siklus_cached_role", role);
+          } catch {}
+        }
       } else {
+        cachedNavbarUser = null;
         setCurrentUser(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("siklus_cached_user");
+            localStorage.removeItem("siklus_cached_role");
+          } catch {}
+        }
       }
     });
 
