@@ -243,6 +243,75 @@ export async function claimWasteBatchByProcessor(batchId: string): Promise<{ suc
   }
 }
 
+/**
+ * Server Action: Mengambil detail tunggal batch limbah organik untuk halaman manifest/surat jalan
+ */
+export async function getWasteBatchById(batchId: string): Promise<ProcessorWasteItem | null> {
+  try {
+    const admin = createAdminClient();
+    const { data: b, error } = await admin
+      .from("waste_batches")
+      .select("*, donor:profiles!waste_batches_donor_id_fkey(id, display_name, address, phone_number)")
+      .eq("id", batchId)
+      .single();
+
+    if (error || !b) {
+      console.error("[getWasteBatchById error]:", error);
+      return null;
+    }
+
+    const categoryLabels: Record<string, string> = {
+      bsf_maggot: "Sisa Dapur & Organik Maggot BSF",
+      poultry_fish: "Residu Pastry & Pakan Unggas",
+      compost_biogas: "Ampas Dapur & Kompos Biogas",
+    };
+
+    const categoryImages: Record<string, string> = {
+      bsf_maggot: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=700&q=80",
+      poultry_fish: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=700&q=80",
+      compost_biogas: "https://images.unsplash.com/photo-1592417817098-8f3d6910985b?w=700&q=80",
+    };
+
+    const weight = Number(b.weight_kg) || 0;
+    const rate = Number(b.rate_per_kg) || 600;
+    const totalPrice = weight * rate;
+
+    const dateStr = new Date(b.created_at).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return {
+      id: b.id,
+      batchNumber: `#SKP-${b.id.slice(0, 8).toUpperCase()}`,
+      category: b.target_category,
+      categoryLabel: categoryLabels[b.target_category] || "Limbah Organik Terpilah",
+      weightKg: weight,
+      ratePerKg: rate,
+      totalPrice: totalPrice,
+      purity: {
+        grade: "Grade A BSF",
+        percent: 98.8,
+      },
+      imageUrl: b.image_url || categoryImages[b.target_category] || categoryImages.bsf_maggot,
+      donorId: b.donor?.id || b.donor_id,
+      donorName: b.donor?.display_name || "Donatur Mitra SiklusPangan",
+      donorAddress: b.donor?.address || "Denpasar, Bali",
+      donorPhone: b.donor?.phone_number || "081234567890",
+      isCollected: !!b.is_collected,
+      collectedAt: b.collected_at,
+      createdAt: b.created_at,
+      formattedDate: `${dateStr} WITA`,
+    };
+  } catch (err) {
+    console.error("[getWasteBatchById catch]:", err);
+    return null;
+  }
+}
+
 export interface WasteOverviewStats {
   wasteDivertedKg: number;
   bsfLarvaeKg: number;

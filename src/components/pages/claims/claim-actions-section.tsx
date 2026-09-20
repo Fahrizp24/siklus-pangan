@@ -101,7 +101,7 @@ export function ClaimActionsSection({ claim }: ClaimActionsSectionProps = {}) {
         } catch {}
       }
     }
-  }, []);
+  }, [claim]);
 
   const handlePrintPdf = () => {
     if (typeof window !== "undefined") {

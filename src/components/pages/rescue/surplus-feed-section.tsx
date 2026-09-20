@@ -12,8 +12,20 @@ import {
   Sparkles,
   Award,
   CheckCircle2,
+  Pencil,
+  Trash2,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   SurplusFoodCard,
   SurplusFoodCardData,
@@ -22,6 +34,7 @@ import {
 import { useRescueFilter } from "@/lib/context/rescue-filter-context";
 import { QrReader } from "@/components/scanner/qr-reader";
 import { collectFoodClaim } from "@/actions/transactions";
+import { updateFoodListingPortions, deleteFoodListing } from "@/actions/food";
 
 export interface BeneficiaryCapacityInfo {
   consumedPortions: number;
@@ -325,7 +338,15 @@ export function SurplusFeedSection({
   const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Ambil data live dari view Postgres public.food_radar di Supabase
+  // States untuk Donatur: Edit Porsi & Hapus Listing
+  const [editingItem, setEditingItem] = useState<SurplusFoodCardData | null>(null);
+  const [editPortions, setEditPortions] = useState<number>(10);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+
+  // Ambil data live dari view Postgres public.food_radar atau food_listings di Supabase
   React.useEffect(() => {
     async function loadLiveRadar() {
       setIsLoading(true);
@@ -372,9 +393,22 @@ export function SurplusFeedSection({
 
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
-        const { data, error } = await supabase.from("food_radar").select("*");
-        if (!error && data && data.length > 0) {
-          const mapped: SurplusFoodCardData[] = data.map((row: any, idx: number) => {
+        
+        let dbData: any[] = [];
+        if (isDonor) {
+          let query = supabase.from("food_listings").select("*").eq("status", "active");
+          if (donorId) {
+            query = query.eq("donor_id", donorId);
+          }
+          const { data, error } = await query.order("created_at", { ascending: false });
+          if (!error && data) dbData = data;
+        } else {
+          const { data, error } = await supabase.from("food_radar").select("*");
+          if (!error && data) dbData = data;
+        }
+
+        if (dbData && dbData.length > 0) {
+          const mapped: SurplusFoodCardData[] = dbData.map((row: any, idx: number) => {
             const diffMs = new Date(row.safe_until).getTime() - Date.now();
             const hoursLeft = Math.max(0, Math.floor(diffMs / (3600 * 1000)));
             const minsLeft = Math.max(0, Math.floor((diffMs % (3600 * 1000)) / (60 * 1000)));
@@ -388,6 +422,8 @@ export function SurplusFeedSection({
               tags.push({ label: `Alergen: ${row.risky_ingredients.join(", ")}`, colorScheme: "yellow" });
             }
 
+            const currentPortions = row.remaining_portions !== undefined ? row.remaining_portions : row.portions;
+
             return {
               id: row.id,
               donorCode: `Donatur Terverifikasi #${row.id.slice(0, 4).toUpperCase()}`,
@@ -397,8 +433,8 @@ export function SurplusFeedSection({
               remainingTime,
               isUrgentBadge: hoursLeft < 2,
               title: row.title,
-              portionsCount: row.remaining_portions,
-              portionsRemainingText: `${row.remaining_portions} Porsi Tersisa`,
+              portionsCount: currentPortions,
+              portionsRemainingText: `${currentPortions} Porsi Tersisa`,
               batchInfo: `Dimasak: ${new Date(row.cooked_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WITA`,
               tags,
               category: row.dietary_tags?.[0] || "halal",
@@ -426,7 +462,91 @@ export function SurplusFeedSection({
       }
     }
     loadLiveRadar();
-  }, []);
+  }, [isDonor, donorId]);
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    if (editPortions < 1) {
+      alert("Jumlah porsi minimal 1.");
+      return;
+    }
+    setIsSubmittingEdit(true);
+    try {
+      const res = await updateFoodListingPortions({
+        listing_id: editingItem.id,
+        portions: editPortions,
+        remaining_portions: editPortions,
+      });
+      if (res.success) {
+        setLiveListings((prev) =>
+          prev.map((item) => {
+            if (item.id === editingItem.id) {
+              return {
+                ...item,
+                portionsCount: editPortions,
+                portionsRemainingText: `${editPortions} Porsi Tersisa`,
+              };
+            }
+            return item;
+          })
+        );
+
+        if (typeof window !== "undefined") {
+          const rawNew = localStorage.getItem("siklus_new_food_listing");
+          if (rawNew) {
+            try {
+              const parsed = JSON.parse(rawNew);
+              if (parsed.id === editingItem.id) {
+                parsed.portions = editPortions;
+                localStorage.setItem("siklus_new_food_listing", JSON.stringify(parsed));
+              }
+            } catch {}
+          }
+        }
+
+        setHandoverBanner(`Jumlah porsi untuk "${editingItem.title}" berhasil diubah menjadi ${editPortions} porsi.`);
+        setEditingItem(null);
+      } else {
+        alert(res.error || "Gagal memperbarui jumlah porsi.");
+      }
+    } catch (err: any) {
+      alert(err?.message || "Gagal memperbarui porsi.");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
+    setIsSubmittingDelete(true);
+    try {
+      const res = await deleteFoodListing({ listing_id: deletingItemId });
+      if (res.success) {
+        setLiveListings((prev) => prev.filter((item) => item.id !== deletingItemId));
+
+        if (typeof window !== "undefined") {
+          const rawNew = localStorage.getItem("siklus_new_food_listing");
+          if (rawNew) {
+            try {
+              const parsed = JSON.parse(rawNew);
+              if (parsed.id === deletingItemId) {
+                localStorage.removeItem("siklus_new_food_listing");
+              }
+            } catch {}
+          }
+        }
+
+        setHandoverBanner("Listing donasi pangan berhasil dihapus dari radar aktif.");
+        setDeletingItemId(null);
+      } else {
+        alert(res.error || "Gagal menghapus listing.");
+      }
+    } catch (err: any) {
+      alert(err?.message || "Gagal menghapus listing.");
+    } finally {
+      setIsSubmittingDelete(false);
+    }
+  };
 
   const handleClaimFood = async (id: string) => {
     setClaimedId(id);
@@ -668,6 +788,11 @@ export function SurplusFeedSection({
                   card={card}
                   isDonorView={isDonor}
                   onDonorAction={() => setShowDonorQrScanner(true)}
+                  onEdit={(item) => {
+                    setEditingItem(item);
+                    setEditPortions(item.portionsCount || 10);
+                  }}
+                  onDelete={(cardId) => setDeletingItemId(cardId)}
                   isClaimed={claimedId === card.id}
                   onClaim={handleClaimFood}
                 />
@@ -720,6 +845,132 @@ export function SurplusFeedSection({
           <PickupProtocolCard />
         </div>
       </div>
+
+      {/* Dialog Edit Porsi (Donatur) */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <Pencil className="w-4 h-4" />
+              </div>
+              <DialogTitle className="text-base font-headline font-bold">
+                Edit Jumlah Porsi Aktif
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-slate-500">
+              Sesuaikan kuota porsi yang tersedia di radar publik. Perubahan langsung tersinkronisasi ke sistem.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingItem && (
+            <div className="space-y-4 py-2">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <p className="text-xs font-bold text-neutral-900 line-clamp-1">{editingItem.title}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">{editingItem.portionsRemainingText}</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700">
+                  Jumlah Porsi Baru
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={10000}
+                    value={editPortions}
+                    onChange={(e) => setEditPortions(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <span className="text-xs font-medium text-slate-500 shrink-0">Porsi</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Minimal 1 porsi. Kuota ini akan dapat diklaim oleh yayasan / relawan.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingItem(null)}
+              className="text-xs font-headline font-semibold rounded-xl"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSubmittingEdit}
+              onClick={handleSaveEdit}
+              className="bg-primary hover:bg-primary/90 text-white text-xs font-headline font-bold rounded-xl gap-1.5 shadow-xs"
+            >
+              {isSubmittingEdit ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <span>Simpan Perubahan</span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Konfirmasi Hapus Listing (Donatur) */}
+      <Dialog open={!!deletingItemId} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-rose-600">
+              <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <DialogTitle className="text-base font-headline font-bold text-rose-600">
+                Hapus Donasi Pangan Ini?
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-slate-500">
+              Listing donasi pangan ini akan dibatalkan dan seketika ditarik dari radar publik penerima manfaat. Tindakan ini tidak dapat diurungkan.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingItemId(null)}
+              className="text-xs font-headline font-semibold rounded-xl"
+            >
+              Batalkan
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSubmittingDelete}
+              onClick={handleConfirmDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-headline font-bold rounded-xl gap-1.5 shadow-xs"
+            >
+              {isSubmittingDelete ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menghapus...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Ya, Hapus Listing</span>
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

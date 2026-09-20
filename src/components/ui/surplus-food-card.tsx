@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { QrCode } from "lucide-react";
+import { QrCode, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DietaryTag, DietaryTagColorScheme } from "@/components/ui/dietary-tag";
 import { AnonDonorBadge } from "@/components/ui/anon-donor-badge";
@@ -53,6 +53,8 @@ export interface SurplusFoodCardProps {
   className?: string;
   isDonorView?: boolean;
   onDonorAction?: (cardId: string) => void;
+  onEdit?: (card: SurplusFoodCardData) => void;
+  onDelete?: (cardId: string) => void;
 }
 
 export function SurplusFoodCard({
@@ -62,6 +64,8 @@ export function SurplusFoodCard({
   className,
   isDonorView = false,
   onDonorAction,
+  onEdit,
+  onDelete,
 }: SurplusFoodCardProps) {
   // Format portions string
   const portionsLabel =
@@ -150,14 +154,40 @@ export function SurplusFoodCard({
         </div>
 
         {isDonorView ? (
-          <Button
-            size="sm"
-            onClick={() => onDonorAction?.(card.id)}
-            className="rounded-xl px-3.5 sm:px-4 py-2 font-semibold text-xs shadow-xs gap-1.5 transition-all bg-primary hover:bg-primary/90 text-white"
-          >
-            <QrCode className="w-3.5 h-3.5 shrink-0" />
-            <span>Pindai QR Serah Terima</span>
-          </Button>
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit?.(card)}
+              className="rounded-xl px-2.5 sm:px-3 py-1.5 font-semibold text-xs border-slate-200 text-slate-700 hover:bg-slate-100 gap-1 shadow-2xs"
+              title="Edit Jumlah Porsi"
+            >
+              <Pencil className="w-3.5 h-3.5 text-slate-600" />
+              <span>Edit Porsi</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onDelete?.(card.id)}
+              className="rounded-xl px-2.5 sm:px-3 py-1.5 font-semibold text-xs border-rose-200 text-rose-600 hover:bg-rose-50 gap-1 shadow-2xs"
+              title="Hapus / Batalkan Listing"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+              <span>Hapus</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onDonorAction?.(card.id)}
+              className="rounded-xl px-3 sm:px-3.5 py-1.5 font-semibold text-xs shadow-xs gap-1.5 transition-all bg-primary hover:bg-primary/90 text-white"
+              title="Pindai QR Serah Terima"
+            >
+              <QrCode className="w-3.5 h-3.5 shrink-0" />
+              <span>Scan QR</span>
+            </Button>
+          </div>
         ) : (
           <Button
             size="sm"
