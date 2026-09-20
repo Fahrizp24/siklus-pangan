@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 1. Jika pengguna sudah login dan membuka halaman auth (/login, /signup, /register)
-  if (user && (pathname === "/login" || pathname === "/signup" || pathname === "/register")) {
+  if (user && (pathname === "/" || pathname === "/login" || pathname === "/signup" || pathname === "/register")) {
     const url = request.nextUrl.clone();
     if (role === "beneficiary") {
       url.pathname = "/rescue";
