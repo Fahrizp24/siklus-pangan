@@ -1,0 +1,7 @@
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=linksupabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=supabasekey
+SUPABASE_SERVICE_ROLE_KEY=supabaserolekey
+SUPABASE_PASSWORD=password
+# Google Gemini AI SDK Key
+GEMINI_API_KEY=geminikey
