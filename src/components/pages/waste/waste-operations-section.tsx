@@ -277,7 +277,7 @@ export function WasteOperationsSection() {
                 className="bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs rounded-xl px-4 py-2 shadow-xs gap-1.5"
               >
                 <ScanSearch className="w-4 h-4" />
-                <span>Buka Kamera VLM</span>
+                <span>Buka Kamera</span>
               </Button>
               <label className="cursor-pointer">
                 <Button
@@ -362,7 +362,7 @@ export function WasteOperationsSection() {
                       className="bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs rounded-xl h-8 px-3 gap-1.5 shadow-xs"
                     >
                       <ScanSearch className="w-3.5 h-3.5" />
-                      <span>Buka Kamera VLM</span>
+                      <span>Buka Kamera</span>
                     </Button>
                     <Button
                       type="button"
@@ -501,7 +501,7 @@ export function WasteOperationsSection() {
                   <p className="text-[11px] text-muted-foreground font-body mt-0.5">
                     {purityPercent !== null
                       ? "Substrat bernutrisi tinggi siap dikonversi menjadi pakan larva dan pupuk kasgot organik."
-                      : "AI Gemini VLM akan mendeteksi kontaminan plastik, logam, dan menentukan grade biokonversi setelah foto diproses."}
+                      : "AI akan mendeteksi kontaminan plastik, logam, dan menentukan grade biokonversi setelah foto diproses."}
                   </p>
                 </div>
               </div>

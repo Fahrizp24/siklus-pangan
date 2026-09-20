@@ -17,7 +17,7 @@ export function AdminHero({ telemetry }: AdminHeroProps) {
             Dasbor Moderasi Sistem & Audit Ekosistem
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed">
-            Pusat pengawasan kepatuhan higienitas pangan olahan, moderasi sengketa 3-strike, penegakan sanksi, dan rekonsiliasi reverse tipping fee limbah organik Bali.
+            Pusat pengawasan kepatuhan higienitas pangan olahan, moderasi komplain, penegakan sanksi, dan rekonsiliasi reverse tipping fee limbah organik Bali.
           </p>
         </div>
       </div>

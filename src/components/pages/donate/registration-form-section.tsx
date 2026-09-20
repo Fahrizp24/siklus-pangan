@@ -35,7 +35,7 @@ import type { FoodScanResult } from "@/lib/harness/ai-guard";
 
 export const DONATE_FORM_DATA = {
   visualInspection: {
-    title: "Inspeksi Visual Gemini AI VLM",
+    title: "Inspeksi Visual AI",
     statusBadge: "100% Selesai (Latency: 1.2s) · Keyakinan: 98.4%",
     image: {
       url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
@@ -43,7 +43,7 @@ export const DONATE_FORM_DATA = {
       alt: "Bento Box Korporat Inspeksi AI",
     },
     componentsHeader: "KOMPONEN HIDANGAN TERDETEKSI",
-    vlmModelTag: "VLM MODEL 1.5",
+    vlmModelTag: "VLM MODEL",
     detectedComponents: [
       "Nasi Pulen",
       "Ayam Fillet Teriyaki Panggang",
@@ -61,7 +61,7 @@ export const DONATE_FORM_DATA = {
     volumeValue: "± 35 Porsi Standar",
   },
   humanVerification: {
-    title: "Koreksi Parameter Human-in-the-Loop",
+    title: "Koreksi Parameter",
     subtitle: "Verifikasi input oleh penanggung jawab F&B",
     defaultTitle: "Gourmet Bento Box: Ayam Fillet Teriyaki & Tamagoyaki",
     defaultPortions: 35,
@@ -78,7 +78,7 @@ export const DONATE_FORM_DATA = {
   },
   thermalParameters: {
     title: "Parameter Termal & Waktu Selesai Masak",
-    badgeRight: "Data Input Expiry Engine",
+    badgeRight: "Data Input Mesin Peninjau",
     cookingTime: "10:15 WITA",
     cookingTimeNote: "Tercatat pada log shift katering pagi.",
     packagingSpec: "Food-Grade Sealed Container (Sekali Pakai)",
@@ -99,12 +99,12 @@ export const DONATE_FORM_DATA = {
     },
   },
   expiryEngine: {
-    title: "Deterministic Expiry Engine",
+    title: "Prediksi Penentuan Batas Aman Konsumsi",
     subtitle: "Arsitektur Bebas Halusinasi AI (Rule-Based BPOM)",
     sopNotice:
-      "Standard Operating Procedure: AI Gemini tidak pernah menerbitkan batas kedaluwarsa final. Expiry dihitung kaku secara matematis berdasarkan aktivitas air (aw 0.92), waktu masak 10:15 WITA, dan integrasi rantai pendingin 4°C.",
+      "Standard Operating Procedure: AI tidak pernah menerbitkan batas kedaluwarsa final. Expiry dihitung kaku secara matematis berdasarkan aktivitas air (aw 0.92), waktu masak 10:15 WITA, dan integrasi rantai pendingin 4°C.",
     lockBadge: "REAL-TIME LOCK",
-    safeUntilLabel: "BATAS AMAN KONSUMSI (SAFE UNTIL)",
+    safeUntilLabel: "BATAS AMAN KONSUMSI",
     criticalThreshold:
       "Ambang Batas Kritis BPOM: Maksimal 4 jam pada suhu ruang dinamis; diperpanjang menjadi buffer aman dengan verifikasi chilled cold chain 4°C.",
     hygieneAudit: {
@@ -113,7 +113,7 @@ export const DONATE_FORM_DATA = {
     },
   },
   liveRadarPreview: {
-    title: "Pratinjau Live Radar (/rescue)",
+    title: "Pratinjau Radar",
     viewTag: "Tampilan Publik",
     description:
       "Berikut simulasi presisi kartu listing yang akan ditayangkan kepada yayasan sosial dan mitra rescue resmi:",
@@ -170,7 +170,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
   const [thermalProtocol, setThermalProtocol] = useState<"cold_chain" | "room_temp">(
     "cold_chain"
   );
-  const [cookingTime, setCookingTime] = useState("10:30");
+  const [cookingTime, setCookingTime] = useState("");
   const [isClause1Checked, setIsClause1Checked] = useState(false);
   const [isClause2Checked, setIsClause2Checked] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -370,7 +370,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                   className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs rounded-xl px-3 py-1.5 shadow-2xs gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Buka Pemindai VLM</span>
+                  <span>Buka Pemindai</span>
                 </Button>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-bold shrink-0">
                   <span
@@ -380,8 +380,8 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                   />
                   <span>
                     {foodImageUrl
-                      ? "100% Selesai (AI Terverifikasi)"
-                      : "Menunggu Foto Hidangan (0%)"}
+                      ? "Terverifikasi"
+                      : "Menunggu Foto"}
                   </span>
                 </span>
               </div>
@@ -398,7 +398,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                     Belum Ada Foto Hidangan Surplus
                   </h3>
                   <p className="text-xs text-muted-foreground font-body mt-1 max-w-md mx-auto leading-relaxed">
-                    Ambil foto langsung atau unggah dokumentasi hidangan surplus. Gemini 1.5 Pro VLM akan otomatis mendeteksi komponen hidangan, estimasi volume porsi, dan kandungan alergen.
+                    Ambil foto langsung atau unggah dokumentasi hidangan surplus. AI akan otomatis mendeteksi komponen hidangan, estimasi volume porsi, dan kandungan alergen.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
@@ -408,7 +408,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                     className="rounded-xl bg-primary text-white hover:bg-primary/90 font-headline font-bold text-xs gap-1.5 shadow-xs px-4 py-2.5"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Buka Kamera VLM</span>
+                    <span>Buka Kamera</span>
                   </Button>
                   <label className="cursor-pointer">
                     <Button
@@ -652,7 +652,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-foreground font-headline block">
-                    Waktu Selesai Masak (Cooking Completion)
+                    Waktu Selesai Masak
                   </label>
                   <div className="mt-1.5 relative flex items-center">
                     <Clock className="w-4 h-4 text-primary absolute left-3 pointer-events-none" />
@@ -925,7 +925,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                 <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-[11px]">
                   <div className="flex items-center gap-1 text-muted-foreground font-medium">
                     <Clock className="w-3 h-3 text-destructive" />
-                    <span>Safe Until:</span>
+                    <span>Aman Sampai:</span>
                     <strong className="text-foreground font-bold font-mono">
                       {safeUntilTime}
                     </strong>
@@ -1075,7 +1075,7 @@ export function RegistrationFormSection({ onStepProgress }: RegistrationFormSect
                   ) : (
                     <>
                       <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                      <span>Terbitkan ke Live Radar (/rescue)</span>
+                      <span>Terbitkan ke Live Radar</span>
                     </>
                   )}
                 </Button>

@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import logoText from "@/assets/logo-text.webp";
+import logoTcc from "@/assets/LOGO TCC.png";
 
 export interface NavbarUser {
   name: string;
@@ -211,8 +212,15 @@ export function Navbar({ user: initialUser, role: initialRole }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: Brand Identity */}
-        <Link href="/" className="flex items-center group py-1">
+        {/* Left: Brand Identity (TCC & SiklusPangan) */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group py-1">
+          <Image
+            src={logoTcc}
+            alt="Logo TCC 2026 UTM"
+            priority
+            className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+          />
+          <div className="h-5 sm:h-6 w-[1px] bg-border/80" />
           <Image
             src={logoText}
             alt="SiklusPangan"

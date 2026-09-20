@@ -15,10 +15,10 @@ export function DisputesHero({ summary }: DisputesHeroProps) {
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-mono font-bold text-primary">
             <Scale className="w-3.5 h-3.5" />
-            <span>Klausul Good Samaritan & Hak Sanggah 1x24 Jam</span>
+            <span>Hak Sanggah 1x24 Jam</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground font-headline tracking-tight">
-            Pusat Mediasi Mutu & Sengketa 3-Strike
+            Pusat Mediasi Mutu & Komplain
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-body leading-relaxed">
             Mekanisme audit berimbang untuk melindungi integritas donatur dan keamanan penerima pangan. Setiap laporan ketidaksesuaian diberikan tenggat pembuktian rantai dingin sebelum penjatuhan sanksi.

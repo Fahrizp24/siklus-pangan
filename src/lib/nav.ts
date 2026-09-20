@@ -33,15 +33,12 @@ export const BENEFICIARY_NAV: NavItem[] = [
 ];
 
 export const PROCESSOR_NAV: NavItem[] = [
-  { label: "Radar Limbah BSF", href: "/waste" },
+  { label: "Radar Limbah Organik", href: "/waste" },
   { label: "Dompet", href: "/wallet" },
 ];
 
 export const ADMIN_NAV: NavItem[] = [
   { label: "Konsol Admin", href: "/admin" },
-  { label: "Radar Pangan", href: "/rescue" },
-  { label: "Limbah Organik", href: "/waste" },
-  { label: "Dompet", href: "/wallet" },
 ];
 
 export const FOOTER_SECTIONS: FooterSection[] = [

@@ -73,7 +73,7 @@ export const FEED_HEADER_CONTENT = {
 };
 
 export const BENEFICIARY_CAPACITY_DATA = {
-  title: "Kapasitas Beneficiary",
+  title: "Kapasitas ",
   statusBadge: "Tingkat Aman",
   label: "Porsi Terserap Hari Ini:",
   consumedPortions: 45,

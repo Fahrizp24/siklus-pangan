@@ -22,24 +22,24 @@ export const DONATE_HERO_CONTENT = {
   },
   title: "Inspeksi AI & Registrasi Surplus Pangan",
   description:
-    "Unggah dokumentasi hidangan surplus. Sistem memadukan Gemini AI VLM dengan Deterministic Rules Engine berbasis standar BPOM.",
+    "Unggah dokumentasi hidangan surplus. Sistem memadukan AI dengan Deterministic Rules Engine berbasis standar BPOM.",
   steps: [
     {
       stepNumber: "01",
       stepTag: "STEP 01",
-      title: "Unggah & Gemini VLM",
+      title: "Unggah & Inspeksi AI",
       status: "completed",
     },
     {
       stepNumber: "02",
       stepTag: "STEP 02 · AKTIF",
-      title: "Validasi Human-in-the-Loop",
+      title: "Validasi",
       status: "active",
     },
     {
       stepNumber: "03",
       stepTag: "STEP 03",
-      title: "Deterministic Expiry Engine",
+      title: "Penentuan Batas Aman Konsumsi",
       status: "pending",
     },
     {
@@ -59,17 +59,17 @@ export const STEP_DEFINITIONS = [
   {
     stepNumber: "01",
     stepTag: "STEP 01",
-    title: "Unggah & Gemini VLM",
+    title: "Unggah & Inspeksi AI",
   },
   {
     stepNumber: "02",
     stepTag: "STEP 02",
-    title: "Validasi Human-in-the-Loop",
+    title: "Validasi",
   },
   {
     stepNumber: "03",
     stepTag: "STEP 03",
-    title: "Deterministic Expiry Engine",
+    title: "Penentuan Batas Aman Konsumsi",
   },
   {
     stepNumber: "04",

@@ -28,7 +28,7 @@ export const RADAR_HERO_CONTENT = {
   searchPlaceholder:
     "Cari jenis hidangan, kandungan alergen, atau ID anonim (misal: #084)...",
   radiusZoneLabel: "Bangkalan & UTM",
-  beneficiaryOnlyLabel: "Khusus Kuota Beneficiary",
+  beneficiaryOnlyLabel: "Khusus Kuota Penerima Benefit",
 };
 
 export const RADAR_CATEGORY_OPTIONS: FilterPillOption[] = [
@@ -126,7 +126,7 @@ export function HeroSection() {
             </div>
 
             {/* Radius Slider Selector */}
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs text-neutral-700 font-body shadow-2xs shrink-0">
+            {/* <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs text-neutral-700 font-body shadow-2xs shrink-0">
               <Navigation className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="font-medium whitespace-nowrap">
                 Radius: <strong className="text-neutral-900 font-bold">{radiusKm} km</strong>
@@ -144,7 +144,7 @@ export function HeroSection() {
                 onChange={(e) => setRadiusKm(parseFloat(e.target.value))}
                 className="w-20 sm:w-24 h-1.5 accent-primary bg-slate-200 rounded-lg cursor-pointer ml-1"
               />
-            </div>
+            </div> */}
 
             {/* Beneficiary Quota Toggle Button */}
             <button

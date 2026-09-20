@@ -17,7 +17,7 @@ export const CIRCULAR_FLOW_CONTENT = {
       title: "Penyelamatan Surplus Pangan Segar",
       subtitle: "Makanan layak konsumsi ke panti & dhuafa",
       description:
-        "Surplus hidangan hotel & katering divalidasi keamanannya dengan Deterministic Expiry Engine. Identitas donatur dienkripsi (#00X) dan diklaim dengan verifikasi 2FA Dynamic QR.",
+        "Surplus hidangan hotel & katering divalidasi keamanannya dengan AI. Identitas donatur dienkripsi (#00X) dan diklaim dengan verifikasi 2FA Dynamic QR.",
       highlights: [
         "Enkripsi Anonimitas Donatur (#00X)",
         "Standar Kelayakan Higienis BPOM",

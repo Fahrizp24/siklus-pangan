@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FOOTER_SECTIONS, FOOTER_INFO } from "@/lib/nav";
 import logoText from "@/assets/logo-text.webp";
+import logoTcc from "@/assets/LOGO TCC.png";
 
 export function Footer() {
   return (
@@ -13,11 +14,17 @@ export function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           {/* Left Column: Brand & Engineering Centers */}
           <div className="lg:col-span-5 flex flex-col space-y-4">
-            <Link href="/" className="inline-block group py-0.5">
+            <Link href="/" className="inline-flex items-center gap-2.5 sm:gap-3 group py-0.5">
+              <Image
+                src={logoTcc}
+                alt="Logo TCC 2026 UTM"
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+              <div className="h-7 sm:h-8 w-[1px] bg-border/80" />
               <Image
                 src={logoText}
                 alt="SiklusPangan"
-                className="h-12 sm:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
 
@@ -25,7 +32,7 @@ export function Footer() {
               {FOOTER_INFO.description}
             </p>
 
-            <div className="pt-2 font-body text-xs text-muted-foreground">
+            {/* <div className="pt-2 font-body text-xs text-muted-foreground">
               <span>Engineering Centers: </span>
               {FOOTER_INFO.engineeringCenters.map((hub, idx) => (
                 <span key={hub.city}>
@@ -36,7 +43,7 @@ export function Footer() {
                   {idx < FOOTER_INFO.engineeringCenters.length - 1 ? " • " : "."}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Right Columns: Navigation Links */}
