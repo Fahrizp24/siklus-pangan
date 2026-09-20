@@ -51,18 +51,35 @@ export const CLAIM_ACTIONS_CONTENT = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function ClaimActionsSection() {
+export interface ClaimActionsSectionProps {
+  claim?: any;
+}
+
+export function ClaimActionsSection({ claim }: ClaimActionsSectionProps = {}) {
   const { logisticsInfo, buttons, footerPolicy } = CLAIM_ACTIONS_CONTENT;
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [activeClaimId, setActiveClaimId] = useState<string | null>(null);
-  const [activeListingId, setActiveListingId] = useState("2a02ea19-32b6-43ac-b4d2-71c2eeead97b");
-  const [activeFoodTitle, setActiveFoodTitle] = useState("Gourmet Bento Box Korporat (#CLM-89210-BTO)");
+  const [activeClaimId, setActiveClaimId] = useState<string | null>(claim?.id || null);
+  const [activeListingId, setActiveListingId] = useState(claim?.listing_id || "2a02ea19-32b6-43ac-b4d2-71c2eeead97b");
+  const [activeFoodTitle, setActiveFoodTitle] = useState(
+    claim?.food_listings?.title
+      ? `${claim.food_listings.title} (#CLM-${claim.id?.slice(0, 5)?.toUpperCase() || "AKTIF"})`
+      : "Gourmet Bento Box Korporat (#CLM-89210-BTO)"
+  );
 
   useEffect(() => {
+    if (claim) {
+      setActiveClaimId(claim.id);
+      setActiveListingId(claim.listing_id);
+      if (claim.food_listings?.title) {
+        setActiveFoodTitle(`${claim.food_listings.title} (#CLM-${claim.id?.slice(0, 5)?.toUpperCase() || "AKTIF"})`);
+      }
+      return;
+    }
+
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const urlListingId = params.get("listingId");
