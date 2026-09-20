@@ -13,3 +13,4 @@ export * from "./surplus-food-card";
 export * from "./metric-stat-card";
 export * from "./table-pagination";
 export * from "./status-pill";
+export * from "./skeleton";

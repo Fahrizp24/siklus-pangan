@@ -34,100 +34,100 @@ export interface NavbarUser {
   isVerified?: boolean;
 }
 
-interface NavbarProps {
+export interface NavbarProps {
   user?: NavbarUser | null;
+  role?: string | null;
 }
 
 // In-memory module cache across client-side page transitions
 let cachedNavbarUser: NavbarUser | null = null;
 
-function getInitialNavbarUser(initialUser?: NavbarUser | null): NavbarUser | null {
-  if (initialUser !== undefined) {
-    cachedNavbarUser = initialUser;
-    return initialUser;
-  }
-  if (cachedNavbarUser) return cachedNavbarUser;
-  if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem("siklus_cached_user");
-      if (stored) {
-        cachedNavbarUser = JSON.parse(stored);
-        return cachedNavbarUser;
-      }
-    } catch {}
-  }
-  return null;
-}
-
-export function Navbar({ user: initialUser }: NavbarProps) {
+export function Navbar({ user: initialUser, role: initialRole }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(() =>
-    getInitialNavbarUser(initialUser)
-  );
+  const [currentUser, setCurrentUser] = useState<NavbarUser | null>(() => {
+    if (initialUser !== undefined && initialUser !== null) return initialUser;
+    return null;
+  });
 
   useEffect(() => {
-    if (initialUser !== undefined) {
+    if (initialUser !== undefined && initialUser !== null) {
       cachedNavbarUser = initialUser;
       setCurrentUser(initialUser);
       return;
     }
 
+    // Safely restore cached user on client AFTER hydration
+    if (cachedNavbarUser) {
+      setCurrentUser(cachedNavbarUser);
+    } else if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("siklus_cached_user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          cachedNavbarUser = parsed;
+          setCurrentUser(parsed);
+        }
+      } catch {}
+    }
+
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-      if (authUser) {
-        const metadata = authUser.user_metadata || {};
-        let displayName = metadata.display_name;
-        let role = metadata.role || "donor";
+    if (!cachedNavbarUser) {
+      supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
+        if (authUser) {
+          const metadata = authUser.user_metadata || {};
+          let displayName = metadata.display_name;
+          let role = metadata.role || "donor";
 
-        try {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("display_name, role")
-            .eq("id", authUser.id)
-            .single();
-          if (prof?.display_name) displayName = prof.display_name;
-          if (prof?.role) role = prof.role;
-        } catch { }
-
-        const userObj: NavbarUser = {
-          name:
-            displayName ||
-            metadata.full_name ||
-            authUser.email?.split("@")[0] ||
-            "Pengguna",
-          role,
-          roleDescription:
-            role === "donor"
-              ? "Donatur Pangan Terverifikasi"
-              : role === "processor"
-                ? "Pengolah Residu Organik"
-                : role === "admin"
-                  ? "Administrator & Auditor"
-                  : "Penerima Manfaat",
-          avatarUrl: metadata.avatar_url,
-          isVerified: true,
-        };
-
-        cachedNavbarUser = userObj;
-        setCurrentUser(userObj);
-        if (typeof window !== "undefined") {
           try {
-            localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
-            localStorage.setItem("siklus_cached_role", role);
-          } catch {}
+            const { data: prof } = await supabase
+              .from("profiles")
+              .select("display_name, role")
+              .eq("id", authUser.id)
+              .single();
+            if (prof?.display_name) displayName = prof.display_name;
+            if (prof?.role) role = prof.role;
+          } catch { }
+
+          const userObj: NavbarUser = {
+            name:
+              displayName ||
+              metadata.full_name ||
+              authUser.email?.split("@")[0] ||
+              "Pengguna",
+            role,
+            roleDescription:
+              role === "donor"
+                ? "Donatur Pangan Terverifikasi"
+                : role === "processor"
+                  ? "Pengolah Residu Organik"
+                  : role === "admin"
+                    ? "Administrator & Auditor"
+                    : "Penerima Manfaat",
+            avatarUrl: metadata.avatar_url,
+            isVerified: true,
+          };
+
+          cachedNavbarUser = userObj;
+          setCurrentUser(userObj);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("siklus_cached_user", JSON.stringify(userObj));
+              localStorage.setItem("siklus_cached_role", role);
+            } catch {}
+          }
+        } else {
+          cachedNavbarUser = null;
+          setCurrentUser(null);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem("siklus_cached_user");
+              localStorage.removeItem("siklus_cached_role");
+            } catch {}
+          }
         }
-      } else {
-        cachedNavbarUser = null;
-        setCurrentUser(null);
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.removeItem("siklus_cached_user");
-            localStorage.removeItem("siklus_cached_role");
-          } catch {}
-        }
-      }
-    });
+      });
+    }
 
     const {
       data: { subscription },
@@ -189,14 +189,15 @@ export function Navbar({ user: initialUser }: NavbarProps) {
     return () => subscription.unsubscribe();
   }, [initialUser]);
 
+  const effectiveRole = currentUser?.role || initialRole;
   let navItems = GUEST_NAV;
-  if (currentUser?.role === "donor") {
+  if (effectiveRole === "donor") {
     navItems = DONOR_NAV;
-  } else if (currentUser?.role === "beneficiary") {
+  } else if (effectiveRole === "beneficiary") {
     navItems = BENEFICIARY_NAV;
-  } else if (currentUser?.role === "processor") {
+  } else if (effectiveRole === "processor") {
     navItems = PROCESSOR_NAV;
-  } else if (currentUser?.role === "admin") {
+  } else if (effectiveRole === "admin") {
     navItems = ADMIN_NAV;
   }
 

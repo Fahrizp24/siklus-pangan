@@ -5,8 +5,6 @@ import { LeaderboardHero } from "@/components/pages/leaderboard/leaderboard-hero
 import { LeaderboardPodium } from "@/components/pages/leaderboard/leaderboard-podium";
 import { LeaderboardTable } from "@/components/pages/leaderboard/leaderboard-table";
 
-export const dynamic = "force-dynamic";
-
 export default async function LeaderboardPage() {
   const data = await getLeaderboardData();
 

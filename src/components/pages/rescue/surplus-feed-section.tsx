@@ -52,6 +52,7 @@ export interface SurplusFeedSectionProps {
   donorId?: string;
   beneficiaryCapacity?: BeneficiaryCapacityInfo;
   donorImpact?: DonorImpactInfo;
+  initialListings?: SurplusFoodCardData[];
 }
 
 /* =========================================================================
@@ -320,6 +321,7 @@ export function SurplusFeedSection({
   donorId,
   beneficiaryCapacity,
   donorImpact,
+  initialListings,
 }: SurplusFeedSectionProps) {
   const {
     searchQuery,
@@ -335,8 +337,16 @@ export function SurplusFeedSection({
   const [claimedId, setClaimedId] = useState<string | null>(null);
   const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
   const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
-  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [liveListings, setLiveListings] = useState<SurplusFoodCardData[]>(initialListings || []);
+  const [isLoading, setIsLoading] = useState(!initialListings || initialListings.length === 0);
+
+  // Sync if initialListings updates
+  React.useEffect(() => {
+    if (initialListings && initialListings.length > 0) {
+      setLiveListings(initialListings);
+      setIsLoading(false);
+    }
+  }, [initialListings]);
 
   // States untuk Donatur: Edit Porsi & Hapus Listing
   const [editingItem, setEditingItem] = useState<SurplusFoodCardData | null>(null);
@@ -349,7 +359,9 @@ export function SurplusFeedSection({
   // Ambil data live dari view Postgres public.food_radar atau food_listings di Supabase
   React.useEffect(() => {
     async function loadLiveRadar() {
-      setIsLoading(true);
+      if (!initialListings || initialListings.length === 0) {
+        setIsLoading(true);
+      }
       try {
         let newlyAdded: SurplusFoodCardData[] = [];
         if (typeof window !== "undefined") {
@@ -462,7 +474,7 @@ export function SurplusFeedSection({
       }
     }
     loadLiveRadar();
-  }, [isDonor, donorId]);
+  }, [isDonor, donorId, initialListings]);
 
   const handleSaveEdit = async () => {
     if (!editingItem) return;

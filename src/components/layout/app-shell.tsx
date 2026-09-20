@@ -18,56 +18,73 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Navbar } from "@/components/layout/navbar";
+import { Navbar, NavbarUser } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { createClient } from "@/lib/supabase/client";
 
-interface AppShellProps {
+export interface AppShellProps {
   children: React.ReactNode;
+  role?: string | null;
+  user?: NavbarUser | null;
 }
 
 let cachedRole: string | null = null;
 
-function getInitialRole(): string | null {
-  if (cachedRole) return cachedRole;
-  if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem("siklus_cached_role");
-      if (stored) {
-        cachedRole = stored;
-        return cachedRole;
-      }
-    } catch {}
-  }
-  return null;
-}
-
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, role: initialRole, user: initialUser }: AppShellProps) {
   const pathname = usePathname();
-  const [role, setRole] = useState<string | null>(getInitialRole);
+  const [role, setRole] = useState<string | null>(() => {
+    if (initialRole !== undefined && initialRole !== null) return initialRole;
+    return null;
+  });
+
+  const effectiveRole = role || initialRole;
 
   useEffect(() => {
+    if (initialRole) {
+      cachedRole = initialRole;
+      setRole(initialRole);
+      try {
+        localStorage.setItem("siklus_cached_role", initialRole);
+      } catch {}
+      return;
+    }
+
+    // Safely restore cached role on client AFTER hydration
+    if (cachedRole) {
+      setRole(cachedRole);
+    } else if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("siklus_cached_role");
+        if (stored) {
+          cachedRole = stored;
+          setRole(stored);
+        }
+      } catch {}
+    }
+
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        const userRole = user.user_metadata?.role || "donor";
-        cachedRole = userRole;
-        setRole(userRole);
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.setItem("siklus_cached_role", userRole);
-          } catch {}
+    if (!cachedRole) {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          const userRole = user.user_metadata?.role || "donor";
+          cachedRole = userRole;
+          setRole(userRole);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("siklus_cached_role", userRole);
+            } catch {}
+          }
+        } else {
+          cachedRole = null;
+          setRole(null);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem("siklus_cached_role");
+            } catch {}
+          }
         }
-      } else {
-        cachedRole = null;
-        setRole(null);
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.removeItem("siklus_cached_role");
-          } catch {}
-        }
-      }
-    });
+      });
+    }
 
     const {
       data: { subscription },
@@ -93,7 +110,7 @@ export function AppShell({ children }: AppShellProps) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [initialRole]);
 
   let mobileNavItems = [
     { label: "Beranda", href: "/", icon: Home },
@@ -103,7 +120,7 @@ export function AppShell({ children }: AppShellProps) {
     { label: "Masuk", href: "/login", icon: LogIn },
   ];
 
-  if (role === "donor") {
+  if (effectiveRole === "donor") {
     mobileNavItems = [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Radar", href: "/rescue", icon: Radio },
@@ -111,14 +128,14 @@ export function AppShell({ children }: AppShellProps) {
       { label: "Limbah", href: "/waste", icon: Recycle },
       { label: "Dompet", href: "/wallet", icon: Wallet },
     ];
-  } else if (role === "beneficiary") {
+  } else if (effectiveRole === "beneficiary") {
     mobileNavItems = [
       { label: "Radar", href: "/rescue", icon: Radio },
       { label: "Klaim", href: "/claims", icon: Ticket },
       { label: "Fame", href: "/leaderboard", icon: Trophy },
       { label: "Profil", href: "/profile", icon: User },
     ];
-  } else if (role === "processor") {
+  } else if (effectiveRole === "processor") {
     mobileNavItems = [
       { label: "Limbah", href: "/waste", icon: Recycle },
       { label: "Dompet", href: "/wallet", icon: Wallet },
@@ -126,7 +143,7 @@ export function AppShell({ children }: AppShellProps) {
       { label: "Fame", href: "/leaderboard", icon: Trophy },
       { label: "Profil", href: "/profile", icon: User },
     ];
-  } else if (role === "admin") {
+  } else if (effectiveRole === "admin") {
     mobileNavItems = [
       { label: "Admin", href: "/admin", icon: Shield },
       { label: "ESG", href: "/dashboard", icon: LayoutDashboard },
@@ -139,7 +156,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top Navbar */}
-      <Navbar />
+      <Navbar role={effectiveRole} user={initialUser} />
 
       {/* Main Content Area */}
       <div className="flex-1 pb-16 md:pb-0">{children}</div>

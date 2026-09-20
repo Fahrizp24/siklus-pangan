@@ -58,17 +58,19 @@ export default async function ClaimsPage({ searchParams }: ClaimsPageProps) {
   }
 
   let profileName = user?.user_metadata?.display_name || "Penerima Manfaat";
+  let role = user?.user_metadata?.role || (user ? "beneficiary" : null);
   if (user) {
     const { data: prof } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, role")
       .eq("id", user.id)
       .single();
     if (prof?.display_name) profileName = prof.display_name;
+    if (prof?.role) role = prof.role;
   }
 
   return (
-    <AppShell>
+    <AppShell role={role}>
       <main className="w-full py-8 sm:py-10 flex flex-col gap-8 sm:gap-10 items-center justify-start selection:bg-primary/20 selection:text-primary">
         <ClaimsClientWrapper
           initialClaim={claimData}
