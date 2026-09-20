@@ -5,14 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
-  SlidersHorizontal,
   CheckCircle2,
   Menu,
   X,
   LayoutDashboard,
   User,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -194,28 +191,6 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           {currentUser ? (
             /* Logged In State */
             <>
-              {/* Notification Button */}
-              <button
-                type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors relative"
-                aria-label="Notifikasi"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
-              </button>
-
-              {/* Preferences / Filter Button */}
-              <button
-                type="button"
-                className="p-2 rounded-lg text-neutral hover:text-primary hover:bg-muted/70 transition-colors"
-                aria-label="Filter dan Pengaturan"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-              </button>
-
-              {/* Vertical Separator */}
-              <div className="hidden sm:block h-8 w-[1px] bg-border/80 mx-1" />
-
               {/* User Profile Dropdown (Hover to reveal Dashboard & Detail Profil) */}
               <div className="relative group hidden sm:block">
                 <Link
