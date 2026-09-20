@@ -1,12 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Radio, HeartHandshake, Recycle, Wallet } from "lucide-react";
+import {
+  Home,
+  Radio,
+  HeartHandshake,
+  Recycle,
+  Wallet,
+  Ticket,
+  Trophy,
+  User,
+  LogIn,
+  LayoutDashboard,
+  Leaf,
+  Shield,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { createClient } from "@/lib/supabase/client";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -14,14 +28,71 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
 
-  const mobileNavItems = [
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setRole(user.user_metadata?.role || "donor");
+      } else {
+        setRole(null);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setRole(session.user.user_metadata?.role || "donor");
+      } else {
+        setRole(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  let mobileNavItems = [
     { label: "Beranda", href: "/", icon: Home },
     { label: "Radar", href: "/rescue", icon: Radio },
-    { label: "Donasi", href: "/donate", icon: HeartHandshake },
-    { label: "Limbah", href: "/waste", icon: Recycle },
-    { label: "Dompet", href: "/wallet", icon: Wallet },
+    { label: "ESG", href: "/dashboard", icon: Leaf },
+    { label: "Fame", href: "/leaderboard", icon: Trophy },
+    { label: "Masuk", href: "/login", icon: LogIn },
   ];
+
+  if (role === "donor") {
+    mobileNavItems = [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Radar", href: "/rescue", icon: Radio },
+      { label: "Donasi", href: "/donate", icon: HeartHandshake },
+      { label: "Limbah", href: "/waste", icon: Recycle },
+      { label: "Dompet", href: "/wallet", icon: Wallet },
+    ];
+  } else if (role === "beneficiary") {
+    mobileNavItems = [
+      { label: "Radar", href: "/rescue", icon: Radio },
+      { label: "Klaim", href: "/claims", icon: Ticket },
+      { label: "Fame", href: "/leaderboard", icon: Trophy },
+      { label: "Profil", href: "/profile", icon: User },
+    ];
+  } else if (role === "processor") {
+    mobileNavItems = [
+      { label: "Limbah", href: "/waste", icon: Recycle },
+      { label: "Dompet", href: "/wallet", icon: Wallet },
+      { label: "ESG", href: "/dashboard", icon: Leaf },
+      { label: "Fame", href: "/leaderboard", icon: Trophy },
+      { label: "Profil", href: "/profile", icon: User },
+    ];
+  } else if (role === "admin") {
+    mobileNavItems = [
+      { label: "Admin", href: "/admin", icon: Shield },
+      { label: "ESG", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Radar", href: "/rescue", icon: Radio },
+      { label: "Limbah", href: "/waste", icon: Recycle },
+      { label: "Dompet", href: "/wallet", icon: Wallet },
+    ];
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">

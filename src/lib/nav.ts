@@ -10,34 +10,43 @@ export interface FooterSection {
   links: NavItem[];
 }
 
-export const MAIN_NAV: NavItem[] = [
+export const GUEST_NAV: NavItem[] = [
   { label: "Beranda", href: "/" },
   { label: "Live Radar", href: "/rescue" },
-  { label: "Donasi Pangan", href: "/donate" },
-  { label: "Limbah Organik", href: "/waste" },
-  { label: "Dompet Sirkular", href: "/wallet" },
   { label: "Dashboard ESG", href: "/dashboard" },
   { label: "Wall of Fame", href: "/leaderboard" },
 ];
 
+export const MAIN_NAV: NavItem[] = GUEST_NAV;
+
 export const DONOR_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Donasi Pangan", href: "/donate" },
   { label: "List Donasi", href: "/rescue" },
-  { label: "Donasikan Pangan", href: "/donate" },
-  { label: "Dompet", href: "/wallet" },
   { label: "Limbah Organik", href: "/waste" },
-  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Dompet Sirkular", href: "/wallet" },
   { label: "Sengketa", href: "/disputes" },
+  { label: "Leaderboard", href: "/leaderboard" },
 ];
 
 export const BENEFICIARY_NAV: NavItem[] = [
   { label: "Live Radar", href: "/rescue" },
+  { label: "Tiket Klaim", href: "/claims" },
+  { label: "Lapor Sengketa", href: "/disputes" },
   { label: "Wall of Fame", href: "/leaderboard" },
 ];
 
 export const PROCESSOR_NAV: NavItem[] = [
-  { label: "List Limbah", href: "/waste" },
+  { label: "Radar Limbah BSF", href: "/waste" },
+  { label: "Dompet Operasional", href: "/wallet" },
+  { label: "Leaderboard", href: "/leaderboard" },
+];
+
+export const ADMIN_NAV: NavItem[] = [
+  { label: "Konsol Admin", href: "/admin" },
+  { label: "Radar Pangan", href: "/rescue" },
+  { label: "Limbah Organik", href: "/waste" },
   { label: "Dompet", href: "/wallet" },
+  { label: "Sengketa", href: "/disputes" },
 ];
 
 export const FOOTER_SECTIONS: FooterSection[] = [
