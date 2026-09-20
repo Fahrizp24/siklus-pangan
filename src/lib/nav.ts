@@ -21,24 +21,20 @@ export const MAIN_NAV: NavItem[] = GUEST_NAV;
 
 export const DONOR_NAV: NavItem[] = [
   { label: "Donasi Pangan", href: "/donate" },
-  { label: "List Donasi", href: "/rescue" },
+  { label: "Radar Pangan", href: "/rescue" },
   { label: "Limbah Organik", href: "/waste" },
-  { label: "Dompet Sirkular", href: "/wallet" },
-  { label: "Sengketa", href: "/disputes" },
-  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Dompet", href: "/wallet" },
 ];
 
 export const BENEFICIARY_NAV: NavItem[] = [
-  { label: "Live Radar", href: "/rescue" },
+  { label: "Radar Pangan", href: "/rescue" },
   { label: "Tiket Klaim", href: "/claims" },
   { label: "Lapor Sengketa", href: "/disputes" },
-  { label: "Wall of Fame", href: "/leaderboard" },
 ];
 
 export const PROCESSOR_NAV: NavItem[] = [
   { label: "Radar Limbah BSF", href: "/waste" },
-  { label: "Dompet Operasional", href: "/wallet" },
-  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Dompet", href: "/wallet" },
 ];
 
 export const ADMIN_NAV: NavItem[] = [
@@ -46,7 +42,6 @@ export const ADMIN_NAV: NavItem[] = [
   { label: "Radar Pangan", href: "/rescue" },
   { label: "Limbah Organik", href: "/waste" },
   { label: "Dompet", href: "/wallet" },
-  { label: "Sengketa", href: "/disputes" },
 ];
 
 export const FOOTER_SECTIONS: FooterSection[] = [

@@ -10,6 +10,8 @@ import {
   X,
   LayoutDashboard,
   User,
+  Trophy,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -163,7 +165,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         </Link>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 h-full">
+        <nav className="hidden md:flex items-center gap-5 lg:gap-8 h-full">
           {navItems.map((item) => {
             const active = isItemActive(item.href);
             return (
@@ -171,16 +173,13 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative flex items-center gap-1.5 h-full text-sm transition-all font-headline",
+                  "relative flex items-center h-full text-sm transition-all font-headline tracking-normal",
                   active
                     ? "font-bold text-primary border-b-2 border-primary"
-                    : "font-medium text-neutral hover:text-primary border-b-2 border-transparent"
+                    : "font-medium text-neutral/80 hover:text-primary border-b-2 border-transparent"
                 )}
               >
                 <span>{item.label}</span>
-                {active && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                )}
               </Link>
             );
           })}
@@ -191,7 +190,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
           {currentUser ? (
             /* Logged In State */
             <>
-              {/* User Profile Dropdown (Hover to reveal Dashboard & Detail Profil) */}
+              {/* User Profile Dropdown (Hover to reveal Dashboard, Leaderboard & Detail Profil) */}
               <div className="relative group hidden sm:block">
                 <Link
                   href="/profile"
@@ -201,16 +200,16 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                   )}
                   title="Menu Profil & Dashboard"
                 >
-                  <div className="flex flex-col text-right">
+                  <div className="flex flex-col text-right max-w-[130px] lg:max-w-[180px]">
                     <div className="flex items-center justify-end gap-1.5">
-                      <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight">
+                      <span className="font-headline text-sm font-bold text-neutral group-hover:text-primary transition-colors leading-tight truncate">
                         {currentUser.name}
                       </span>
                       {currentUser.isVerified && (
                         <CheckCircle2 className="h-4 w-4 text-primary fill-primary/10 shrink-0" />
                       )}
                     </div>
-                    <span className="font-body text-[11px] text-muted-foreground leading-tight">
+                    <span className="font-body text-[11px] text-muted-foreground leading-tight truncate">
                       {currentUser.roleDescription}
                     </span>
                   </div>
@@ -244,7 +243,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                     </div>
 
                     {/* Navigation Items */}
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <Link
                         href="/dashboard"
                         className={cn(
@@ -261,6 +260,46 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                           <div className="font-bold">Dashboard ESG</div>
                           <div className="text-[10px] text-muted-foreground font-normal font-body">
                             Metrik emisi, kalkulator & dampak
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/leaderboard"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/leaderboard"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/60">
+                          <Trophy className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Wall of Fame</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Peringkat dampak komunitas
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/disputes"
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold font-headline transition-colors",
+                          pathname === "/disputes"
+                            ? "bg-primary/10 text-primary"
+                            : "text-neutral hover:bg-muted hover:text-primary"
+                        )}
+                      >
+                        <div className="p-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200/60">
+                          <AlertTriangle className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold">Pusat Sengketa</div>
+                          <div className="text-[10px] text-muted-foreground font-normal font-body">
+                            Resolusi & tiket kendala pangan
                           </div>
                         </div>
                       </Link>
@@ -436,6 +475,42 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                 </Link>
               );
             })}
+
+            {/* Mobile Extra Links for Logged In Users */}
+            {currentUser && (
+              <div className="pt-2 mt-2 border-t border-border/60 space-y-1">
+                <Link
+                  href="/leaderboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-headline transition-colors",
+                    pathname === "/leaderboard"
+                      ? "bg-primary/10 font-bold text-primary"
+                      : "font-medium text-neutral hover:bg-muted"
+                  )}
+                >
+                  <span>Wall of Fame</span>
+                  {pathname === "/leaderboard" && (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+                <Link
+                  href="/disputes"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-headline transition-colors",
+                    pathname === "/disputes"
+                      ? "bg-primary/10 font-bold text-primary"
+                      : "font-medium text-neutral hover:bg-muted"
+                  )}
+                >
+                  <span>Pusat Sengketa</span>
+                  {pathname === "/disputes" && (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}
