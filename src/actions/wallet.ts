@@ -297,3 +297,88 @@ export async function topUpProcessorWallet(input: {
     return { success: false, error: err?.message || "Terjadi kesalahan sistem saat top-up." };
   }
 }
+
+/**
+ * Server Action: Penarikan Saldo Insentif (Payout) ke Rekening Bank Perusahaan
+ * Memotong credit_balance pada tabel profiles dan mencatat mutasi riil di financial_transactions
+ */
+export async function requestPayoutAction(input: {
+  amount: number;
+  bankName: string;
+  accountNumber: string;
+  refNote?: string;
+  userId?: string;
+}): Promise<{ success: boolean; newBalance?: number; error?: string }> {
+  try {
+    if (!input.amount || input.amount < 10000) {
+      return { success: false, error: "Nominal penarikan minimal Rp 10.000." };
+    }
+
+    const client = await createClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+
+    const effectiveUserId =
+      input.userId || user?.id || "6dee3ea9-691a-49b3-8c7f-9b8feab49a02";
+
+    const admin = createAdminClient();
+
+    // 1. Ambil saldo terkini
+    const { data: profile, error: pErr } = await admin
+      .from("profiles")
+      .select("credit_balance, display_name")
+      .eq("id", effectiveUserId)
+      .single();
+
+    if (pErr || !profile) {
+      return { success: false, error: "Profil pengguna tidak ditemukan." };
+    }
+
+    const currentBalance = Number(profile.credit_balance || 0);
+    if (currentBalance < input.amount) {
+      return {
+        success: false,
+        error: `Saldo tidak mencukupi. Saldo aktif Anda: Rp ${currentBalance.toLocaleString("id-ID")}`,
+      };
+    }
+
+    const updatedBalance = currentBalance - input.amount;
+
+    // 2. Potong credit_balance di profiles
+    const { error: upErr } = await admin
+      .from("profiles")
+      .update({ credit_balance: updatedBalance })
+      .eq("id", effectiveUserId);
+
+    if (upErr) {
+      console.error("[requestPayoutAction update error]:", upErr);
+      return { success: false, error: "Gagal memperbarui saldo di database." };
+    }
+
+    // 3. Catat mutasi penarikan dana ke financial_transactions
+    const desc = `Penarikan Insentif ke ${input.bankName} (${input.accountNumber})${
+      input.refNote ? ` · Ref: ${input.refNote}` : ""
+    }`;
+
+    await admin.from("financial_transactions").insert({
+      user_id: effectiveUserId,
+      amount: -input.amount,
+      type: "prepaid_deposit",
+      purpose: "donor_charge",
+      description: desc,
+    });
+
+    revalidatePath("/wallet");
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      newBalance: updatedBalance,
+    };
+  } catch (err: any) {
+    console.error("[requestPayoutAction catch]:", err);
+    return { success: false, error: err?.message || "Terjadi kesalahan sistem saat memproses payout." };
+  }
+}
+

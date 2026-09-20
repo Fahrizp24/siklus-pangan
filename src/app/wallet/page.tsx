@@ -47,7 +47,7 @@ export default async function WalletPage() {
             isDonor={isDonor}
           />
         )}
-        {isDonor && <PayoutSection />}
+        {isDonor && <PayoutSection activeBalance={walletData.activeBalance} />}
         <LedgerSection initialTransactions={walletData.transactions} />
       </main>
     </AppShell>

@@ -112,6 +112,13 @@ export function AuditLogSection({
   const [activeTab, setActiveTab] = useState("q2_2025");
   const [selectedCertificate, setSelectedCertificate] = useState<Partial<EsgCertificateData> | null>(null);
 
+  // Filter dinamis berdasarkan kuartal/periode yang dipilih
+  const filteredRows = auditRows.filter((row) => {
+    if (!activeTab || activeTab === "all") return true;
+    return row.periodCategory === activeTab;
+  });
+  const displayRows = filteredRows.length > 0 ? filteredRows : auditRows;
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {selectedCertificate && (
@@ -170,7 +177,7 @@ export function AuditLogSection({
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
-              {auditRows.map((row) => (
+              {displayRows.map((row) => (
                 <tr
                   key={row.id}
                   className="hover:bg-muted/20 transition-colors"

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DisputeModal } from "@/components/scanner/dispute-modal";
+import { cancelFoodClaim } from "@/actions/transactions";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -55,6 +56,9 @@ export function ClaimActionsSection() {
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [activeClaimId, setActiveClaimId] = useState<string | null>(null);
   const [activeListingId, setActiveListingId] = useState("2a02ea19-32b6-43ac-b4d2-71c2eeead97b");
   const [activeFoodTitle, setActiveFoodTitle] = useState("Gourmet Bento Box Korporat (#CLM-89210-BTO)");
 
@@ -65,11 +69,16 @@ export function ClaimActionsSection() {
       if (urlListingId) {
         setActiveListingId(urlListingId);
       }
+      const urlClaimId = params.get("claimId");
+      if (urlClaimId) {
+        setActiveClaimId(urlClaimId);
+      }
 
       const saved = localStorage.getItem("siklus_active_claim");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          if (parsed.claimId) setActiveClaimId(parsed.claimId);
           if (parsed.listingId) setActiveListingId(parsed.listingId);
           if (parsed.foodTitle) setActiveFoodTitle(parsed.foodTitle);
         } catch {}
@@ -83,16 +92,35 @@ export function ClaimActionsSection() {
     }
   };
 
-  const handleCancelClaim = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("siklus_active_claim");
+  const handleCancelClaim = async () => {
+    setIsCancelling(true);
+    setCancelError(null);
+
+    try {
+      if (activeClaimId) {
+        const res = await cancelFoodClaim({ claim_id: activeClaimId });
+        if (!res.success) {
+          setCancelError(res.error || "Gagal membatalkan tiket klaim.");
+          setIsCancelling(false);
+          return;
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("siklus_active_claim");
+      }
+      setShowCancelModal(false);
+      setCancelSuccessMsg("Klaim berhasil dibatalkan. Kuota porsi telah dikembalikan ke donatur.");
+      setTimeout(() => {
+        window.location.href = "/rescue";
+      }, 1200);
+    } catch (err: any) {
+      setCancelError(err?.message || "Terjadi kesalahan saat membatalkan klaim.");
+    } finally {
+      setIsCancelling(false);
     }
-    setShowCancelModal(false);
-    setCancelSuccessMsg("Klaim berhasil dibatalkan. Kuota harian Anda telah dikembalikan.");
-    setTimeout(() => {
-      window.location.href = "/rescue";
-    }, 1200);
   };
+
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -116,10 +144,16 @@ export function ClaimActionsSection() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Apakah Anda yakin ingin membatalkan klaim makanan ini? Porsi akan dikembalikan ke Live Radar untuk penerima lain dan kuota harian akun Anda dipulihkan.
             </p>
+            {cancelError && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
+                <span>{cancelError}</span>
+              </div>
+            )}
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <Button
                 type="button"
                 variant="outline"
+                disabled={isCancelling}
                 onClick={() => setShowCancelModal(false)}
                 className="rounded-xl text-xs"
               >
@@ -127,10 +161,11 @@ export function ClaimActionsSection() {
               </Button>
               <Button
                 type="button"
+                disabled={isCancelling}
                 onClick={handleCancelClaim}
                 className="bg-destructive hover:bg-destructive/90 text-white rounded-xl text-xs font-bold"
               >
-                Ya, Batalkan Klaim
+                {isCancelling ? "Membatalkan..." : "Ya, Batalkan Klaim"}
               </Button>
             </div>
           </div>
