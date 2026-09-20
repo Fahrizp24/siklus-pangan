@@ -151,16 +151,40 @@ export const ESG_CHART_DATA = {
   ],
 };
 
+import { EsgDashboardMetrics } from "@/actions/dashboard";
+
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function StatSection() {
+interface StatSectionProps {
+  metrics?: EsgDashboardMetrics;
+}
+
+export function StatSection({ metrics }: StatSectionProps) {
+  const statCards = ESG_STAT_DATA.map((item) => {
+    if (!metrics) return item;
+    if (item.id === "co2_reduction") {
+      return { ...item, value: metrics.co2eReducedKg.toLocaleString("id-ID") };
+    }
+    if (item.id === "methane_prevented") {
+      return { ...item, value: metrics.methanePreventedKg.toLocaleString("id-ID") };
+    }
+    if (item.id === "food_rescued") {
+      return { ...item, value: metrics.mealsRescued.toLocaleString("id-ID") };
+    }
+    if (item.id === "sroi_impact") {
+      const bVal = (metrics.economicValueIdr / 1000000000).toFixed(2).replace(".", ",");
+      return { ...item, value: `${bVal} Miliar` };
+    }
+    return item;
+  });
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* 1. 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {ESG_STAT_DATA.map((item) => (
+        {statCards.map((item) => (
           <MetricStatCard
             key={item.id}
             label={item.label}

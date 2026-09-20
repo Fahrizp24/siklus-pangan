@@ -97,9 +97,13 @@ const transport = new Proxy({ createClient: async () => {
 const actions = {
   ...load('src/actions/food.ts', {
     '@/lib/supabase/server': transport,
+    '@/lib/supabase/admin': { createAdminClient: () => client },
     '@/lib/rules/expiry': load('src/lib/rules/expiry.ts'),
   }),
-  ...load('src/actions/transactions.ts', { '@/lib/supabase/server': transport }),
+  ...load('src/actions/transactions.ts', {
+    '@/lib/supabase/server': transport,
+    '@/lib/supabase/admin': { createAdminClient: () => client },
+  }),
 };
 for (const [name, action] of Object.entries(actions)) {
   actions[name] = async input => {

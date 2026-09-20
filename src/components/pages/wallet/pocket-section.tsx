@@ -87,11 +87,89 @@ export const WALLET_POCKET_DATA: WalletPocketItem[] = [
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function PocketSection() {
+interface PocketSectionProps {
+  activeBalance?: number;
+  reverseTippingTotal?: number;
+  logisticsSubsidyTotal?: number;
+  isDonor?: boolean;
+}
+
+export function PocketSection({
+  activeBalance,
+  reverseTippingTotal,
+  logisticsSubsidyTotal,
+  isDonor,
+}: PocketSectionProps) {
+  const cards = WALLET_POCKET_DATA.map((item) => {
+    let customItem = { ...item };
+
+    if (item.id === "active_balance") {
+      if (activeBalance !== undefined) {
+        customItem.amount = activeBalance.toLocaleString("id-ID");
+      }
+      if (isDonor) {
+        customItem.label = "Saldo CSR & Deposit Sirkular";
+        customItem.footerLeft = {
+          type: "badge",
+          dot: true,
+          text: "Siap Danai Logistik Pangan",
+        };
+        customItem.footerRight = {
+          type: "text",
+          text: "ESG Impact Ready",
+        };
+      }
+    }
+    if (item.id === "reverse_tipping") {
+      if (reverseTippingTotal !== undefined) {
+        customItem.amount = reverseTippingTotal.toLocaleString("id-ID");
+      }
+      if (isDonor) {
+        customItem.label = "Hemat Biaya Tipping TPA";
+        customItem.footerLeft = {
+          type: "text",
+          prefix: "Hemat biaya TPA ",
+          boldText: "84.200 kg",
+          suffix: " limbah",
+        };
+        customItem.footerRight = {
+          type: "trend",
+          text: "Efisiensi 100%",
+        };
+      }
+    }
+    if (item.id === "logistics_carbon_subsidy") {
+      if (logisticsSubsidyTotal !== undefined) {
+        customItem.amount = logisticsSubsidyTotal.toLocaleString("id-ID");
+      }
+      if (isDonor) {
+        customItem.label = "Alokasi Subsidi Logistik Pangan";
+        customItem.footerLeft = {
+          type: "text",
+          prefix: "Tersalurkan ",
+          boldText: "128 Trip",
+          suffix: " Armada",
+        };
+        customItem.footerRight = {
+          type: "text",
+          boldText: "Scope 3 Offset",
+        };
+      }
+    }
+    if (item.id === "pending_escrow" && isDonor) {
+      customItem.label = "Pending Timbangan IoT Dock";
+      customItem.footerLeft = {
+        type: "warning_text",
+        text: "Verifikasi bluetooth timbangan",
+      };
+    }
+    return customItem;
+  });
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {WALLET_POCKET_DATA.map((item) => (
+        {cards.map((item) => (
           <MetricStatCard
             key={item.id}
             label={item.label}

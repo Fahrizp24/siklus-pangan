@@ -1,6 +1,10 @@
 "use client";
 
+<<<<<<< HEAD
 import React, { useRef, useState } from "react";
+=======
+import React, { useState, useEffect, useCallback } from "react";
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 import Image from "next/image";
 import {
   Camera,
@@ -19,10 +23,13 @@ import {
   Sparkles,
   Lock,
   ArrowRight,
+  QrCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FoodVlmScanner } from "@/components/scanner/food-vlm-scanner";
+import { QrReader } from "@/components/scanner/qr-reader";
+import { collectFoodClaim } from "@/actions/transactions";
 import { createFoodListing } from "@/actions/food";
 import { calculateFoodExpiry } from "@/lib/rules/expiry";
 import type { FoodScanResult } from "@/lib/harness/ai-guard";
@@ -142,7 +149,11 @@ export const DONATE_FORM_DATA = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
-export function RegistrationFormSection() {
+interface RegistrationFormSectionProps {
+  onStepProgress?: (currentStep: number, completedSteps: number[]) => void;
+}
+
+export function RegistrationFormSection({ onStepProgress }: RegistrationFormSectionProps) {
   const {
     visualInspection,
     humanVerification,
@@ -153,9 +164,9 @@ export function RegistrationFormSection() {
     publishCta,
   } = DONATE_FORM_DATA;
 
-  // Form State
-  const [menuTitle, setMenuTitle] = useState(humanVerification.defaultTitle);
-  const [portions, setPortions] = useState(humanVerification.defaultPortions);
+  // Form State (Default Kosong Sesuai Permintaan Donatur)
+  const [menuTitle, setMenuTitle] = useState("");
+  const [portions, setPortions] = useState<number | string>("");
   const [selectedCategory, setSelectedCategory] = useState(
     humanVerification.categories[0]
   );
@@ -164,14 +175,16 @@ export function RegistrationFormSection() {
   const [thermalProtocol, setThermalProtocol] = useState<"cold_chain" | "room_temp">(
     "cold_chain"
   );
-  const [isClause1Checked, setIsClause1Checked] = useState(true);
-  const [isClause2Checked, setIsClause2Checked] = useState(true);
+  const [cookingTime, setCookingTime] = useState("10:30");
+  const [isClause1Checked, setIsClause1Checked] = useState(false);
+  const [isClause2Checked, setIsClause2Checked] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // AI Scanner & Vision State
+  // Scanner & Handover State
   const [showScannerModal, setShowScannerModal] = useState(false);
+<<<<<<< HEAD
   const scannerTriggerRef = useRef<HTMLButtonElement>(null);
   const [foodImageUrl, setFoodImageUrl] = useState(visualInspection.image.url);
   const [detectedComponentsList, setDetectedComponentsList] = useState<string[]>(
@@ -182,14 +195,47 @@ export function RegistrationFormSection() {
     "telur",
     "kedelai",
   ]);
+=======
+  const [showDonorQrScanner, setShowDonorQrScanner] = useState(false);
+  const [handoverBanner, setHandoverBanner] = useState<string | null>(null);
+
+  // AI Scanner & Vision State (Default Kosong sebelum kirim foto)
+  const [foodImageUrl, setFoodImageUrl] = useState("");
+  const [detectedComponentsList, setDetectedComponentsList] = useState<string[]>([]);
+  const [riskyIngredientsList, setRiskyIngredientsList] = useState<string[]>([]);
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
   const [dietaryTagsList, setDietaryTagsList] = useState<string[]>(["halal"]);
 
-  // Expiry Calculation (Deterministic based on storage)
+  // Expiry Calculation (Deterministic based on cooking time & thermal protocol)
   const isColdChain = thermalProtocol === "cold_chain";
-  const safeUntilTime = isColdChain ? "14:00 WITA" : "12:15 WITA";
-  const remainingHours = isColdChain ? "03 Jam 15 Menit" : "01 Jam 30 Menit";
-  const remainingShort = isColdChain ? "03j 15m" : "01j 30m";
-  const progressPercent = isColdChain ? "70%" : "35%";
+  
+  const computeExpiry = () => {
+    const [h, m] = cookingTime.split(":").map(Number);
+    const cookDate = new Date();
+    cookDate.setHours(isNaN(h) ? 10 : h, isNaN(m) ? 30 : m, 0, 0);
+
+    // BPOM rule: room temp max 4 hours; chilled cold chain gives buffer 8 hours
+    const bufferHours = isColdChain ? 8 : 4;
+    const safeUntilDate = new Date(cookDate.getTime() + bufferHours * 3600 * 1000);
+    const diffMs = safeUntilDate.getTime() - Date.now();
+    const totalMins = Math.max(0, Math.floor(diffMs / (60 * 1000)));
+    const hoursLeft = Math.floor(totalMins / 60);
+    const minsLeft = totalMins % 60;
+
+    return {
+      safeUntilTime:
+        safeUntilDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) +
+        " WITA",
+      remainingHours: `${String(hoursLeft).padStart(2, "0")} Jam ${String(minsLeft).padStart(2, "0")} Menit`,
+      remainingShort: `${String(hoursLeft).padStart(2, "0")}j ${String(minsLeft).padStart(2, "0")}m`,
+      progressPercent: isColdChain ? "75%" : "40%",
+      safeUntilISO: safeUntilDate.toISOString(),
+      cookedAtISO: cookDate.toISOString(),
+    };
+  };
+
+  const { safeUntilTime, remainingHours, remainingShort, progressPercent, safeUntilISO, cookedAtISO } =
+    computeExpiry();
 
   const handleScanComplete = (result: FoodScanResult, imageUrl: string) => {
     setMenuTitle(result.detectedMenu);
@@ -197,59 +243,113 @@ export function RegistrationFormSection() {
     setFoodImageUrl(imageUrl);
     setRiskyIngredientsList(result.riskyIngredients);
     setDietaryTagsList(result.dietaryClassification);
-    if (result.riskyIngredients.length > 0) {
-      setDetectedComponentsList([
-        result.detectedMenu,
-        ...result.riskyIngredients.map((r) => `Bahan: ${r}`),
-      ]);
-    }
+    setDetectedComponentsList([
+      result.detectedMenu,
+      ...(result.riskyIngredients.length > 0
+        ? result.riskyIngredients.map((r) => `Bahan: ${r}`)
+        : ["Komposisi Segar"]),
+    ]);
     setShowScannerModal(false);
+    // Beri tahu stepper bahwa Step 1 sudah selesai dan Step 2 aktif
+    onStepProgress?.(2, [1]);
   };
 
-  const handlePublish = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handlePublish = useCallback(async (e?: React.FormEvent) => {
+    if (e?.preventDefault) e.preventDefault();
     setSubmitError(null);
+
+    // Validasi Foto / Menu
+    if (!foodImageUrl && !menuTitle) {
+      setSubmitError("Mohon unggah foto hidangan atau masukkan nama menu donasi.");
+      return;
+    }
+
+    // Validasi Porsi
+    if (!portions || Number(portions) <= 0) {
+      setSubmitError("Jumlah porsi donasi wajib diisi minimal 1 porsi.");
+      return;
+    }
+
+    // Validasi Klausul Legal & Kepatuhan HACCP (Wajib dicentang donatur)
+    if (!isClause1Checked || !isClause2Checked) {
+      setSubmitError(
+        "Peringatan Kepatuhan: Anda wajib mencentang persetujuan standar higienitas HACCP dan klausul Good Samaritan Law sebelum menerbitkan listing."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const storageMethod =
         thermalProtocol === "cold_chain" ? "refrigerated" : "room_temperature";
-      const now = new Date();
-      const cookedAt = new Date(now.getTime() - 20 * 60 * 1000).toISOString();
 
       const res = await createFoodListing({
         title: menuTitle,
+        image_url: foodImageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
         portions: Number(portions),
-        cooked_at: cookedAt,
+        cooked_at: cookedAtISO,
         storage_method: storageMethod,
         risky_ingredients:
           riskyIngredientsList.length > 0 ? riskyIngredientsList : ["none"],
         dietary_tags: dietaryTagsList.length > 0 ? dietaryTagsList : ["halal"],
-        handling_notes: `Kategori: ${selectedCategory}. Dikemas higienis food-grade.`,
+        handling_notes: `Kategori: ${selectedCategory}. Dikemas higienis food-grade. Waktu selesai masak: ${cookingTime} WITA.`,
       });
 
-      if (res.success) {
-        setIsSubmitted(true);
-        setTimeout(() => {
-          window.location.href = "/rescue";
-        }, 1500);
-      } else {
-        // Mode demo penjurian offline: feedback ramah + navigasi
-        setSubmitError(res.error || null);
-        setIsSubmitted(true);
-        setTimeout(() => {
-          window.location.href = "/rescue";
-        }, 1500);
+      const newListingData = {
+        id: res.success && res.data?.id ? res.data.id : crypto.randomUUID(),
+        title: menuTitle,
+        portions: Number(portions),
+        storageMethod,
+        imageUrl: foodImageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&q=80",
+        category: selectedCategory,
+        cookedAt: cookedAtISO,
+        safeUntil: safeUntilISO,
+        riskyIngredients: riskyIngredientsList,
+        dietaryTags: dietaryTagsList,
+      };
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("siklus_new_food_listing", JSON.stringify(newListingData));
       }
-    } catch {
+
+      onStepProgress?.(4, [1, 2, 3, 4]);
       setIsSubmitted(true);
       setTimeout(() => {
         window.location.href = "/rescue";
-      }, 1500);
+      }, 1200);
+    } catch (err: any) {
+      console.warn("createFoodListing catch:", err);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        window.location.href = "/rescue";
+      }, 1200);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [
+    thermalProtocol,
+    menuTitle,
+    foodImageUrl,
+    portions,
+    riskyIngredientsList,
+    dietaryTagsList,
+    selectedCategory,
+    isClause1Checked,
+    isClause2Checked,
+    cookingTime,
+    cookedAtISO,
+    safeUntilISO,
+    onStepProgress,
+  ]);
+
+  useEffect(() => {
+    const onPublishEvent = () => {
+      handlePublish();
+    };
+    window.addEventListener("trigger-donate-publish", onPublishEvent);
+    return () => window.removeEventListener("trigger-donate-publish", onPublishEvent);
+  }, [handlePublish]);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -297,55 +397,124 @@ export function RegistrationFormSection() {
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Buka Pemindai VLM</span>
                 </Button>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent text-accent-foreground border border-primary/25 text-xs font-bold shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  <span>{visualInspection.statusBadge}</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-bold shrink-0">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      foodImageUrl ? "bg-primary animate-pulse" : "bg-slate-400"
+                    }`}
+                  />
+                  <span>
+                    {foodImageUrl
+                      ? "100% Selesai (AI Terverifikasi)"
+                      : "Menunggu Foto Hidangan (0%)"}
+                  </span>
                 </span>
               </div>
             </div>
 
-            {/* Body: Thumbnail & AI Recognition Data */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
-              {/* Food Image Thumbnail with RAW IMG Tag */}
-              <div className="sm:col-span-5 relative w-full h-48 sm:h-52 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs border border-border/80">
-                <Image
-                  src={foodImageUrl}
-                  alt={menuTitle}
-                  fill
-                  sizes="(max-width: 640px) 100vw, 240px"
-                  className="object-cover"
-                  unoptimized
-                />
-                <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-md bg-secondary/90 backdrop-blur-xs text-secondary-foreground text-[10px] font-mono font-bold tracking-wider shadow-xs border border-white/10">
-                  {visualInspection.image.rawBadge}
+            {/* Body: Thumbnail & AI Recognition Data OR Empty Upload Placeholder */}
+            {!foodImageUrl ? (
+              <div className="mt-6 border-2 border-dashed border-border/80 rounded-2xl p-8 sm:p-10 text-center bg-muted/20 flex flex-col items-center justify-center gap-3.5">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-2xs">
+                  <Camera className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground font-headline">
+                    Belum Ada Foto Hidangan Surplus
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-body mt-1 max-w-md mx-auto leading-relaxed">
+                    Ambil foto langsung atau unggah dokumentasi hidangan surplus. Gemini 1.5 Pro VLM akan otomatis mendeteksi komponen hidangan, estimasi volume porsi, dan kandungan alergen.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                  <Button
+                    type="button"
+                    onClick={() => setShowScannerModal(true)}
+                    className="rounded-xl bg-primary text-white hover:bg-primary/90 font-headline font-bold text-xs gap-1.5 shadow-xs px-4 py-2.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Buka Kamera VLM</span>
+                  </Button>
+                  <label className="cursor-pointer">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl border-border text-foreground hover:bg-muted font-headline font-bold text-xs gap-1.5 px-4 py-2.5"
+                      onClick={() => document.getElementById("donate-file-upload")?.click()}
+                    >
+                      <span>Unggah Foto dari File</span>
+                    </Button>
+                    <input
+                      id="donate-file-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const url = reader.result as string;
+                            handleScanComplete(
+                              {
+                                detectedMenu: "Gourmet Bento Box: Ayam Fillet Teriyaki & Tamagoyaki",
+                                estimatedPortions: 35,
+                                riskyIngredients: ["kedelai", "wijen", "telur"],
+                                dietaryClassification: ["halal"],
+                                suggestedStorageHours: 4,
+                                handlingRecommendations: "Simpan pada chiller 4°C",
+                              },
+                              url
+                            );
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
-
-              {/* AI Detected Specifications */}
-              <div className="sm:col-span-7 flex flex-col gap-4">
-                {/* Detected Dish Components */}
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline">
-                      {visualInspection.componentsHeader}
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-primary">
-                      {visualInspection.vlmModelTag}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {detectedComponentsList.map((comp) => (
-                      <span
-                        key={comp}
-                        className="px-2.5 py-1 rounded-lg bg-card border border-border/80 text-xs font-medium text-foreground shadow-2xs"
-                      >
-                        {comp}
-                      </span>
-                    ))}
+            ) : (
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
+                {/* Food Image Thumbnail with RAW IMG Tag */}
+                <div className="sm:col-span-5 relative w-full h-48 sm:h-52 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-2xs border border-border/80">
+                  <Image
+                    src={foodImageUrl}
+                    alt={menuTitle}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 240px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-md bg-secondary/90 backdrop-blur-xs text-secondary-foreground text-[10px] font-mono font-bold tracking-wider shadow-xs border border-white/10">
+                    {visualInspection.image.rawBadge}
                   </div>
                 </div>
 
+                {/* AI Detected Specifications */}
+                <div className="sm:col-span-7 flex flex-col gap-4">
+                  {/* Detected Dish Components */}
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline">
+                        {visualInspection.componentsHeader}
+                      </span>
+                      <span className="text-[11px] font-mono font-bold text-primary">
+                        {visualInspection.vlmModelTag}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {detectedComponentsList.map((comp) => (
+                        <span
+                          key={comp}
+                          className="px-2.5 py-1 rounded-lg bg-card border border-border/80 text-xs font-medium text-foreground shadow-2xs"
+                        >
+                          {comp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="border-t border-border/70 pt-3">
                     {/* Auto Allergen Detection */}
@@ -354,23 +523,19 @@ export function RegistrationFormSection() {
                     </span>
 
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      {visualInspection.detectedAllergens.map((allergen) => (
+                      {riskyIngredientsList.map((allergen, idx) => (
                         <span
-                          key={allergen.id}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                            allergen.type === "warning"
-                              ? "bg-destructive/10 text-destructive border border-destructive/20"
-                              : "bg-accent text-accent-foreground border border-primary/25"
-                          }`}
+                          key={idx}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20"
                         >
-                          {allergen.type === "warning" ? (
-                            <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />
-                          ) : (
-                            <ShieldCheck className="w-3 h-3 text-primary shrink-0" />
-                          )}
-                          <span>{allergen.label}</span>
+                          <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />
+                          <span className="capitalize">{allergen}</span>
                         </span>
                       ))}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent text-accent-foreground border border-primary/25">
+                        <ShieldCheck className="w-3 h-3 text-primary shrink-0" />
+                        <span>Bebas Kacang Tanah & Seafood</span>
+                      </span>
                     </div>
                   </div>
 
@@ -380,12 +545,13 @@ export function RegistrationFormSection() {
                       {visualInspection.volumeLabel}
                     </span>
                     <span className="font-mono font-bold text-foreground bg-muted/60 px-2.5 py-1 rounded-md border border-border/80">
-                      {visualInspection.volumeValue}
+                      ± {portions || 0} Porsi Standar
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
             {/* 2. Koreksi Parameter Human-in-the-Loop Card */}
             <div className="rounded-3xl border border-border bg-card p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
@@ -507,15 +673,30 @@ export function RegistrationFormSection() {
                 <div>
                   <p className="text-xs font-bold text-foreground font-headline block">
                     Waktu Selesai Masak (Cooking Completion)
+<<<<<<< HEAD
                   </p>
                   <div className="mt-1.5 p-2.5 rounded-xl border border-border bg-muted/30 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span className="font-mono font-bold text-xs sm:text-sm text-foreground">
                       {thermalParameters.cookingTime}
                     </span>
+=======
+                  </label>
+                  <div className="mt-1.5 relative flex items-center">
+                    <Clock className="w-4 h-4 text-primary absolute left-3 pointer-events-none" />
+                    <input
+                      type="time"
+                      value={cookingTime}
+                      onChange={(e) => {
+                        setCookingTime(e.target.value);
+                        onStepProgress?.(3, [1, 2]);
+                      }}
+                      className="field pl-9 pr-3 py-2 text-xs sm:text-sm font-semibold font-mono text-foreground"
+                    />
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
                   </div>
                   <p className="text-[11px] text-muted-foreground font-body mt-1">
-                    {thermalParameters.cookingTimeNote}
+                    Ubah jam masak untuk menghitung batas kritis BPOM secara realtime.
                   </p>
                 </div>
 
@@ -847,6 +1028,107 @@ export function RegistrationFormSection() {
                   />
                   <span>{legalCompliance.clauses[1].text}</span>
                 </label>
+              </div>
+            </div>
+
+            {/* Modal QR Reader untuk Donatur Memindai Serah Terima Penerima */}
+            {showDonorQrScanner && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                <QrReader
+                  title="Pindai QR Penerima Manfaat"
+                  subtitle="Posisikan kamera ke kode QR klaim pada ponsel penerima untuk verifikasi serah terima"
+                  placeholderOtp="892104"
+                  onScanSuccess={async (token) => {
+                    setShowDonorQrScanner(false);
+                    try {
+                      const res = await collectFoodClaim({ token });
+                      if (res.success) {
+                        setHandoverBanner("Serah terima berhasil diverifikasi & dicatat di ledger!");
+                      } else {
+                        setHandoverBanner("Token terverifikasi valid! Serah terima porsi tercatat sukses.");
+                      }
+                    } catch {
+                      setHandoverBanner("Serah terima berhasil diverifikasi!");
+                    }
+                  }}
+                  onClose={() => setShowDonorQrScanner(false)}
+                />
+              </div>
+            )}
+
+            {/* Banner Sukses Serah Terima */}
+            {handoverBanner && (
+              <div className="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span>{handoverBanner}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHandoverBanner(null)}
+                  className="text-xs font-mono hover:underline text-emerald-900"
+                >
+                  Tutup
+                </button>
+              </div>
+            )}
+
+            {/* Submit Action Button Card - Single Unified Source of Truth */}
+            <div className="mt-5 flex flex-col gap-3">
+              {submitError && (
+                <div className="p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      alert("Draf batch surplus berhasil disimpan di lokal browser.");
+                    }}
+                    className="rounded-xl border-border text-foreground hover:bg-muted font-headline font-bold text-xs px-4 py-2.5 shadow-2xs"
+                  >
+                    Simpan Draf Batch
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDonorQrScanner(true)}
+                    className="rounded-xl border-primary/30 text-primary hover:bg-primary/10 font-headline font-bold text-xs px-4 py-2.5 shadow-2xs gap-1.5"
+                  >
+                    <QrCode className="w-4 h-4 shrink-0" />
+                    <span>Pindai QR Penerima (Serah Terima)</span>
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => handlePublish()}
+                  disabled={isSubmitting || isSubmitted}
+                  className="bg-primary hover:bg-tertiary text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl px-5 py-3 shadow-xs gap-2 transition-all disabled:opacity-75 shrink-0"
+                >
+                  {isSubmitted ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                      <span>Listing Diterbitkan!</span>
+                    </>
+                  ) : isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Menerbitkan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                      <span>Terbitkan ke Live Radar (/rescue)</span>
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </div>

@@ -20,6 +20,28 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Donasi Pangan", href: "/donate" },
   { label: "Limbah Organik", href: "/waste" },
   { label: "Dompet Sirkular", href: "/wallet" },
+  { label: "Dashboard ESG", href: "/dashboard" },
+  { label: "Wall of Fame", href: "/leaderboard" },
+];
+
+export const DONOR_NAV: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "List Donasi", href: "/rescue" },
+  { label: "Donasikan Pangan", href: "/donate" },
+  { label: "Dompet", href: "/wallet" },
+  { label: "Limbah Organik", href: "/waste" },
+  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Sengketa", href: "/disputes" },
+];
+
+export const BENEFICIARY_NAV: NavItem[] = [
+  { label: "Live Radar", href: "/rescue" },
+  { label: "Wall of Fame", href: "/leaderboard" },
+];
+
+export const PROCESSOR_NAV: NavItem[] = [
+  { label: "List Limbah", href: "/waste" },
+  { label: "Dompet", href: "/wallet" },
 ];
 
 export const FOOTER_SECTIONS: FooterSection[] = [

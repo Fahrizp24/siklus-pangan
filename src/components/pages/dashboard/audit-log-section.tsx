@@ -3,9 +3,13 @@
 import React, { useState } from "react";
 import { CheckCircle2, Eye, Download, Lock } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
+<<<<<<< HEAD
 import { TablePagination } from "@/components/ui/table-pagination";
 
 export const AUDIT_DEMO_REFERENCE_DATE = "2025-05-25";
+=======
+import { EsgPdfTemplate, EsgCertificateData } from "@/components/reports/esg-pdf-template";
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -95,6 +99,7 @@ export const AUDIT_LOG_DATA = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
+<<<<<<< HEAD
 export function filterAuditRows(periodId: string, referenceDate = AUDIT_DEMO_REFERENCE_DATE) {
   const period = AUDIT_LOG_DATA.header.tabs.find((tab) => tab.id === periodId);
   if (!period) return [];
@@ -116,9 +121,39 @@ export function AuditLogSection() {
   const page = Math.min(Math.max(1, currentPage), pageCount);
   const start = (page - 1) * pageSize;
   const visibleRows = filteredRows.slice(start, start + pageSize);
+=======
+import { AuditRecord } from "@/actions/dashboard";
+
+interface AuditLogSectionProps {
+  auditRows?: AuditRecord[];
+  entityName?: string;
+  metrics?: {
+    co2eReducedKg?: number;
+    methanePreventedKg?: number;
+    mealsRescued?: number;
+    wasteDivertedKg?: number;
+  };
+}
+
+export function AuditLogSection({
+  auditRows: propAuditRows,
+  entityName,
+  metrics,
+}: AuditLogSectionProps) {
+  const { header, tableHeaders, auditRows: defaultRows, footer } = AUDIT_LOG_DATA;
+  const auditRows = propAuditRows && propAuditRows.length > 0 ? propAuditRows : defaultRows;
+  const [activeTab, setActiveTab] = useState("q2_2025");
+  const [selectedCertificate, setSelectedCertificate] = useState<Partial<EsgCertificateData> | null>(null);
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {selectedCertificate && (
+        <EsgPdfTemplate
+          data={selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
+        />
+      )}
       <Card className="p-6 sm:p-7">
         {/* Header Row: Title & Segmented Filter Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/70">
@@ -241,20 +276,54 @@ export function AuditLogSection() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
+<<<<<<< HEAD
                         disabled
                         aria-label={`Pratinjau sertifikat ${row.certificateNumber}`}
                         aria-describedby="audit-log-unavailable"
                         className="text-muted-foreground p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+=======
+                        onClick={() =>
+                          setSelectedCertificate({
+                            certificateNumber: row.certificateNumber,
+                            validPeriod: row.auditPeriod,
+                            auditor: `${row.auditorName} (${row.auditorDetail})`,
+                            ledgerHash: row.hashLedger,
+                            entityName: entityName || "PT BOGA SEJAHTERA INDONESIA",
+                            co2eReducedKg: metrics?.co2eReducedKg || 48836,
+                            methanePreventedKg: metrics?.methanePreventedKg || 3368,
+                            mealsRescued: metrics?.mealsRescued || 142850,
+                            wasteDivertedKg: metrics?.wasteDivertedKg || 84200,
+                          })
+                        }
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted cursor-pointer"
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
                         title="Pratinjau Sertifikat"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
+<<<<<<< HEAD
                         disabled
                         aria-label={`Unduh sertifikat PDF ${row.certificateNumber}`}
                         aria-describedby="audit-log-unavailable"
                         className="text-muted-foreground p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+=======
+                        onClick={() =>
+                          setSelectedCertificate({
+                            certificateNumber: row.certificateNumber,
+                            validPeriod: row.auditPeriod,
+                            auditor: `${row.auditorName} (${row.auditorDetail})`,
+                            ledgerHash: row.hashLedger,
+                            entityName: entityName || "PT BOGA SEJAHTERA INDONESIA",
+                            co2eReducedKg: metrics?.co2eReducedKg || 48836,
+                            methanePreventedKg: metrics?.methanePreventedKg || 3368,
+                            mealsRescued: metrics?.mealsRescued || 142850,
+                            wasteDivertedKg: metrics?.wasteDivertedKg || 84200,
+                          })
+                        }
+                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted cursor-pointer"
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
                         title="Unduh Sertifikat PDF"
                       >
                         <Download className="w-4 h-4" />

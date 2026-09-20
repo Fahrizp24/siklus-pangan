@@ -72,9 +72,29 @@ export function DonateActionsSection({
     }
   };
 
+<<<<<<< HEAD
   const handleHandoverDialogChange = (open: boolean) => {
     if (handoverLockRef.current) return;
     setShowDonorQrScanner(open);
+=======
+  const handlePublishClick = () => {
+    if (onPublish) {
+      onPublish();
+      return;
+    }
+
+    setIsPublishing(true);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("trigger-donate-publish"));
+    }
+    setTimeout(() => {
+      setIsPublishing(false);
+      setIsSuccess(true);
+      setTimeout(() => {
+        window.location.href = "/rescue";
+      }, 1200);
+    }, 800);
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
   };
 
   return (

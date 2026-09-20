@@ -88,12 +88,18 @@ const client = {
 };
 const { calculateFoodExpiry } = load('src/lib/rules/expiry.ts');
 const { createFoodListing } = load('src/actions/food.ts', {
+<<<<<<< HEAD
   '@/lib/supabase/server': { createClient: async () => {
     clients++;
     maybeThrow('client');
     return client;
   } },
   '@/lib/rules/expiry': { calculateFoodExpiry },
+=======
+  '@/lib/supabase/server': { createClient: async () => client },
+  '@/lib/supabase/admin': { createAdminClient: () => client },
+  '@/lib/rules/expiry': load('src/lib/rules/expiry.ts'),
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 });
 const valid = () => ({ title: ' Nasi santan ', portions: 10,
   cooked_at: new Date(now - 3600000).toISOString(),

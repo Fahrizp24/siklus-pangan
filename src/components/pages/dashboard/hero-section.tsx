@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 import React from "react";
+=======
+"use client";
+
+import React, { useState } from "react";
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 import { Download, Award, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EsgPdfTemplate } from "@/components/reports/esg-pdf-template";
 
 /* =========================================================================
    CONFIGURABLE DATA & CONSTANTS (EASY TO EDIT AT TOP OF FILE)
@@ -8,8 +15,8 @@ import { Button } from "@/components/ui/button";
 
 export const ESG_HERO_CONTENT = {
   badges: {
-    certification: "Tersertifikasi ISO 14044 LCA & GHG Protocol Scope 3",
-    nodeId: "Node ID: SP-ID-JKT-8829",
+    certification: "ISO 14044 LCA & GHG Protocol Scope 3 Certified",
+    nodeId: "NODE ID: SP-ID-JKT-8829",
   },
   title: "Dashboard ESG & Pengurangan Emisi Karbon",
   description:
@@ -30,9 +37,15 @@ export const ESG_HERO_CONTENT = {
 
 export function HeroSection() {
   const { badges, title, description, buttons } = ESG_HERO_CONTENT;
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Modal Sertifikat ESG Resmi */}
+      {showCertificateModal && (
+        <EsgPdfTemplate onClose={() => setShowCertificateModal(false)} />
+      )}
+
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Left Side: Badges, Title & Subtitle */}
@@ -67,7 +80,8 @@ export function HeroSection() {
               disabled
               aria-describedby="dashboard-reports-unavailable"
               variant="outline"
-              className="w-full border-border text-foreground hover:bg-muted font-headline font-semibold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-2xs justify-center"
+              onClick={() => typeof window !== "undefined" && window.print()}
+              className="w-full border-border text-foreground hover:bg-muted font-headline font-semibold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-2xs justify-center cursor-pointer"
             >
               <Download className="w-4 h-4 text-muted-foreground" />
               <span>{buttons.exportAudit.label}</span>
@@ -75,9 +89,14 @@ export function HeroSection() {
 
             <Button
               type="button"
+<<<<<<< HEAD
               disabled
               aria-describedby="dashboard-reports-unavailable"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-xs justify-center"
+=======
+              onClick={() => setShowCertificateModal(true)}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-headline font-bold text-xs sm:text-sm rounded-xl py-2.5 px-4 h-11 gap-2 shadow-xs justify-center cursor-pointer"
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
             >
               <Award className="w-4 h-4" />
               <span>{buttons.downloadCertificate.label}</span>

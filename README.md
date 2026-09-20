@@ -19,13 +19,13 @@
 
 Seluruh cetak biru teknis dan tata kelola proyek tersimpan secara terstruktur di folder `docs/`:
 
+* **[PITCH_DECK.md](docs/PITCH_DECK.md)** — Slide Presentasi Pitch Deck, Skenario Live Demo 3 Menit, & Bocoran Tanya Jawab Juri *(Wajib Baca)*.
 * **[PAGES.md](docs/PAGES.md)** — Matriks route, fitur setiap halaman, role, status, serta roadmap implementasi.
-
-* **[AGENTS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/AGENTS.md)** — Berkas Aturan Resmi Antigravity Agent & Protocol Verifikasi Harness *(Root File)*.
-* **[PRD.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/PRD.md)** / **[PRD.pdf](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/PRD.pdf)** — Product Requirement Document & PostgreSQL DDL.
-* **[ARCHITECTURE.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/ARCHITECTURE.md)** — Arsitektur Sistem 5-Layer & Diagram Alur Sequence Mermaid.
-* **[DECISION.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/DECISION.md)** — Log Keputusan Arsitektur (*Architectural Decision Records / ADR-001 s.d. ADR-006*).
-* **[HARNESS.md](file:///d:/KULIAH/Lomba/HACKATON%20UTM/docs/HARNESS.md)** — Spesifikasi 4-Tier Harness System & Transparansi Rekayasa AI.
+* **[AGENTS.md](AGENTS.md)** — Berkas Aturan Resmi Antigravity Agent & Protocol Verifikasi Harness *(Root File)*.
+* **[PRD.md](docs/PRD.md)** / **[PRD.pdf](docs/PRD.pdf)** — Product Requirement Document & PostgreSQL DDL.
+* **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** — Arsitektur Sistem 5-Layer & Diagram Alur Sequence Mermaid.
+* **[DECISION.md](docs/DECISION.md)** — Log Keputusan Arsitektur (*Architectural Decision Records / ADR-001 s.d. ADR-006*).
+* **[HARNESS.md](docs/HARNESS.md)** — Spesifikasi 4-Tier Harness System & Transparansi Rekayasa AI.
 
 ---
 
@@ -60,11 +60,28 @@ npm run dev
 ```
 Aplikasi dapat diakses di `http://localhost:3000`.
 
-### 4. Eksekusi Uji Harness Protocol (Mandatory Before Commit)
+### 4. Akun Demo Cepat (1-Click Login untuk Dewan Juri)
+Pada halaman `/login`, tersedia tombol **"Mode Demo Juri"** yang langsung mengisi kredensial dengan 1 klik:
+
+| Persona / Role | Email Demo | Password Demo | Halaman Arahan Otomatis |
+|---|---|---|---|
+| **Donatur (Hotel/Katering)** | `donor@gmail.com` | `password123` | Beranda (`/`) & Registrasi Donasi (`/donate`) |
+| **Penerima (Panti Asuhan/Organisasi)** | `organisasi@gmail.com` | `password123` | Live Radar (`/rescue`) & Tiket Klaim (`/claims`) |
+| **Penerima (Individu Dhuafa)** | `penerima@gmail.com` | `password123` | Live Radar (`/rescue`) & Tiket Klaim (`/claims`) |
+| **Pengolah Limbah (BSF Driver)** | `pengolah@gmail.com` | `password123` | Manifest Limbah (`/waste`) & Dompet (`/wallet`) |
+| **Admin Pengawas (ESG Auditor)** | `admin@gmail.com` | `password123` | Konsol Admin (`/admin`) & Dashboard (`/dashboard`) |
+
+---
+
+### 5. Eksekusi Uji Harness Protocol & Pre-Demo Check
 ```bash
-# Uji Strict Type Compliance
+# 1. Uji Kesiapan Sistem Pre-Demo (1-Command Health Check)
+node scripts/demo-healthcheck.mjs
+
+# 2. Uji Strict Type Compliance
 npx tsc --noEmit
 
-# Uji Production Bundling
+# 3. Uji Production Bundling
 npm run build
 ```
+

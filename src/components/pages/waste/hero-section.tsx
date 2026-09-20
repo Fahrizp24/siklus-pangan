@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 export const WASTE_HERO_CONTENT = {
   title: "Pengalihan Limbah Organik & Logistik Biokonversi BSF",
   description:
+<<<<<<< HEAD
     "Pencatatan sisa pangan non-konsumsi, pemindaian kontaminan berbasis AI, dan penyaluran ke fasilitas biokonversi larva Black Soldier Fly (BSF) mitra terverifikasi.",
   buttons: {
     scanContaminant: {
@@ -20,6 +21,9 @@ export const WASTE_HERO_CONTENT = {
       label: "Input Penjemputan Limbah Baru",
     },
   },
+=======
+    "Pencatatan sisa pangan non-konsumsi khusus donatur, pemindaian kontaminan berbasis AI VLM, dan penyaluran ke fasilitas biokonversi larva Black Soldier Fly (BSF) mitra terverifikasi.",
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 };
 
 /* =========================================================================
@@ -27,19 +31,18 @@ export const WASTE_HERO_CONTENT = {
    ========================================================================= */
 
 export function HeroSection() {
-  const { title, description, buttons } = WASTE_HERO_CONTENT;
+  const { title, description } = WASTE_HERO_CONTENT;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 lg:p-10 shadow-[0_4px_24px_-4px_rgba(11,27,61,0.05)]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Left Side: Title & Description */}
-          <div className="flex-1 max-w-3xl">
-            {/* Main Headline */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-foreground font-headline tracking-tight leading-tight">
-              {title}
-            </h1>
+        <div className="max-w-4xl">
+          {/* Main Headline */}
+          <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-foreground font-headline tracking-tight leading-tight">
+            {title}
+          </h1>
 
+<<<<<<< HEAD
             {/* Description Subtext */}
             <p className="text-xs sm:text-sm lg:text-base text-muted-foreground font-body leading-relaxed mt-3">
               {description}
@@ -74,6 +77,12 @@ export function HeroSection() {
               Pendaftaran penjemputan limbah baru belum tersedia.
             </p>
           </div>
+=======
+          {/* Description Subtext */}
+          <p className="text-xs sm:text-sm lg:text-base text-muted-foreground font-body leading-relaxed mt-3">
+            {description}
+          </p>
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
         </div>
       </div>
     </section>

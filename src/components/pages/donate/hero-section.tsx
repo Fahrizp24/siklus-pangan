@@ -53,12 +53,60 @@ export const DONATE_HERO_CONTENT = {
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
+export const STEP_DEFINITIONS = [
+  {
+    stepNumber: "01",
+    stepTag: "STEP 01",
+    title: "Unggah & Gemini VLM",
+  },
+  {
+    stepNumber: "02",
+    stepTag: "STEP 02",
+    title: "Validasi Human-in-the-Loop",
+  },
+  {
+    stepNumber: "03",
+    stepTag: "STEP 03",
+    title: "Deterministic Expiry Engine",
+  },
+  {
+    stepNumber: "04",
+    stepTag: "STEP 04",
+    title: "Pratinjau Anonim Radar",
+  },
+];
+
+/* =========================================================================
+   COMPONENT IMPLEMENTATION
+   ========================================================================= */
+
 interface HeroSectionProps {
   currentStep?: number;
+  completedSteps?: number[];
 }
 
-export function HeroSection({ currentStep = 2 }: HeroSectionProps) {
-  const { anonymityNotice, title, description, steps } = DONATE_HERO_CONTENT;
+export function HeroSection({
+  currentStep = 1,
+  completedSteps = [],
+}: HeroSectionProps) {
+  const { anonymityNotice, title, description } = DONATE_HERO_CONTENT;
+
+  const dynamicSteps = STEP_DEFINITIONS.map((def, idx) => {
+    const stepNum = idx + 1;
+    const isCompleted = completedSteps.includes(stepNum);
+    const isActive = currentStep === stepNum;
+    const status: "completed" | "active" | "pending" = isCompleted
+      ? "completed"
+      : isActive
+      ? "active"
+      : "pending";
+
+    return {
+      ...def,
+      stepTag: isActive ? `${def.stepTag} · AKTIF` : def.stepTag,
+      status,
+    };
+  });
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -87,10 +135,9 @@ export function HeroSection({ currentStep = 2 }: HeroSectionProps) {
 
         {/* 4-Step Stepper Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-7">
-          {steps.map((step) => {
+          {dynamicSteps.map((step) => {
             const isCompleted = step.status === "completed";
             const isActive = step.status === "active";
-            const isPending = step.status === "pending";
 
             return (
               <div

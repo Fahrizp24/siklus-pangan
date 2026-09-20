@@ -64,6 +64,8 @@ export interface SurplusFoodCardProps {
   claimDisabled?: boolean;
   onClaim?: (cardId: string) => void;
   className?: string;
+  isDonorView?: boolean;
+  onDonorAction?: (cardId: string) => void;
 }
 
 export function SurplusFoodCard({
@@ -73,6 +75,8 @@ export function SurplusFoodCard({
   claimDisabled = false,
   onClaim,
   className,
+  isDonorView = false,
+  onDonorAction,
 }: SurplusFoodCardProps) {
   const feedbackId = React.useId();
   const pending = claimState.status === "pending";
@@ -178,6 +182,7 @@ export function SurplusFoodCard({
           </span>
         </div>
 
+<<<<<<< HEAD
         <Button
           size="sm"
           type="button"
@@ -200,6 +205,33 @@ export function SurplusFoodCard({
           <QrCode aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
           <span>{actionLabel}</span>
         </Button>
+=======
+        {isDonorView ? (
+          <Button
+            size="sm"
+            onClick={() => onDonorAction?.(card.id)}
+            className="rounded-xl px-3.5 sm:px-4 py-2 font-semibold text-xs shadow-xs gap-1.5 transition-all bg-primary hover:bg-primary/90 text-white"
+          >
+            <QrCode className="w-3.5 h-3.5 shrink-0" />
+            <span>Pindai QR Serah Terima</span>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            disabled={isClaimed}
+            onClick={() => onClaim?.(card.id)}
+            className={cn(
+              "rounded-xl px-3.5 sm:px-4 py-2 font-semibold text-xs shadow-xs gap-1.5 transition-all",
+              isClaimed
+                ? "bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed"
+                : "bg-primary hover:bg-primary/90 text-white"
+            )}
+          >
+            <QrCode className="w-3.5 h-3.5 shrink-0" />
+            <span>{isClaimed ? "Terklaim!" : "Klaim Jatah"}</span>
+          </Button>
+        )}
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
       </div>
       <div
         id={feedbackId}

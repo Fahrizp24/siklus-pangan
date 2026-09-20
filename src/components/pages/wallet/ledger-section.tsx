@@ -164,13 +164,47 @@ export const WALLET_LEDGER_DATA = {
       },
     },
   ],
+<<<<<<< HEAD
   pageSize: 2,
+=======
+  footer: {
+    summaryText: "Menampilkan transaksi rekonsiliasi tahun berjalan.",
+    pagination: {
+      prevText: "Sebelumnya",
+      nextText: "Selanjutnya",
+      pages: [1],
+    },
+  },
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 };
+
+import { WalletTransactionRecord, getWalletData } from "@/actions/wallet";
+
+function getTxBadgeIcon(badge: any) {
+  const iconOrName = badge?.iconType || badge?.icon;
+  if (typeof iconOrName === "function" || (typeof iconOrName === "object" && iconOrName !== null && "$$typeof" in iconOrName)) {
+    return iconOrName;
+  }
+  switch (iconOrName) {
+    case "arrow":
+      return ArrowUpRight;
+    case "droplet":
+      return Droplet;
+    case "truck":
+      return Truck;
+    case "hourglass":
+      return Hourglass;
+    case "plus":
+    default:
+      return PlusCircle;
+  }
+}
 
 /* =========================================================================
    COMPONENT IMPLEMENTATION
    ========================================================================= */
 
+<<<<<<< HEAD
 export function LedgerSection() {
   const { header, tableHeaders, transactions, pageSize } = WALLET_LEDGER_DATA;
   const [activeTab, setActiveTab] = useState("all");
@@ -183,6 +217,53 @@ export function LedgerSection() {
   const page = Math.min(Math.max(1, currentPage), pageCount);
   const start = (page - 1) * pageSize;
   const visibleTransactions = filteredTransactions.slice(start, start + pageSize);
+=======
+interface LedgerSectionProps {
+  initialTransactions?: any[];
+}
+
+export function LedgerSection({ initialTransactions }: LedgerSectionProps) {
+  const { header, tableHeaders, transactions: defaultTransactions, footer } = WALLET_LEDGER_DATA;
+  const [activeTab, setActiveTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [txList, setTxList] = useState<any[]>(
+    initialTransactions && initialTransactions.length > 0
+      ? initialTransactions
+      : defaultTransactions
+  );
+
+  React.useEffect(() => {
+    if (!initialTransactions || initialTransactions.length === 0) {
+      getWalletData().then((res) => {
+        if (res.transactions && res.transactions.length > 0) {
+          setTxList(res.transactions);
+        }
+      });
+    }
+  }, [initialTransactions]);
+
+  const transactions = txList;
+
+  // Filter transactions according to selected tab
+  const filteredTransactions = transactions.filter((tx) => {
+    if (activeTab === "all") return true;
+    return tx.type === activeTab;
+  });
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
+
+  // Dynamic pagination calculation (real, without hardcoded 13)
+  const PAGE_SIZE = 5;
+  const totalItems = filteredTransactions.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const activePage = Math.min(currentPage, totalPages);
+  const startIndex = (activePage - 1) * PAGE_SIZE;
+  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + PAGE_SIZE);
+
+  const summaryText =
+    totalItems === 0
+      ? "Tidak ada transaksi tercatat pada kategori ini."
+      : `Menampilkan ${startIndex + 1} - ${startIndex + paginatedTransactions.length} dari ${totalItems} total transaksi.`;
 
   return (
     <section className="w-full max-w-6xl mx-auto px-4 sm:px-6">
@@ -244,6 +325,7 @@ export function LedgerSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
+<<<<<<< HEAD
               {visibleTransactions.length === 0 && (
                 <tr>
                   <td colSpan={tableHeaders.length} className="py-8 text-center text-muted-foreground">
@@ -253,6 +335,22 @@ export function LedgerSection() {
               )}
               {visibleTransactions.map((tx) => {
                 const TypeIcon = tx.typeBadge.icon;
+=======
+              {paginatedTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={tableHeaders.length} className="py-12 text-center text-muted-foreground">
+                    <p className="text-sm font-semibold font-headline text-foreground">
+                      Belum Ada Transaksi Rekonsiliasi
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                      Transaksi mutasi insentif reverse tipping dan subsidi logistik akun Anda akan tercatat otomatis di sini setelah serah terima tervalidasi.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedTransactions.map((tx) => {
+                  const TypeIcon = getTxBadgeIcon(tx.typeBadge);
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
 
                 return (
                   <tr
@@ -314,7 +412,7 @@ export function LedgerSection() {
                     {/* STATUS */}
                     <td className="py-4 px-3 whitespace-nowrap">
                       <StatusPill
-                        label={tx.status}
+                        label={tx.status || tx.statusBadge?.label || "Berhasil"}
                         variant={tx.status === "Escrow Pending" ? "pending" : "success"}
                         hasDot
                       />
@@ -322,6 +420,7 @@ export function LedgerSection() {
 
                     {/* BUKTI KUITANSI */}
                     <td className="py-4 px-3 last:pr-0 whitespace-nowrap">
+<<<<<<< HEAD
                       {tx.receipt.type === "pdf" ? (
                         <Button
                           type="button"
@@ -335,6 +434,9 @@ export function LedgerSection() {
                           <span>PDF</span>
                         </Button>
                       ) : (
+=======
+                      {tx.receipt?.type === "lock" ? (
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
                         <Button
                           type="button"
                           disabled
@@ -344,24 +446,44 @@ export function LedgerSection() {
                           className="h-8 px-2.5 rounded-lg border-border text-muted-foreground hover:bg-muted font-medium font-headline text-xs gap-1"
                         >
                           <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{tx.receipt.label}</span>
+                          <span>{tx.receipt?.label || "Terkunci"}</span>
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={() => typeof window !== "undefined" && window.print()}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2.5 rounded-lg border-border text-foreground hover:bg-muted font-bold font-headline text-xs gap-1 cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span>{tx.receipt?.label || "PDF"}</span>
                         </Button>
                       )}
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>
 
-        {/* Reusable Table Pagination */}
+        {/* Reusable Dynamic Table Pagination */}
         <TablePagination
+<<<<<<< HEAD
           currentPage={page}
           pages={total ? Array.from({ length: pageCount }, (_, index) => index + 1) : []}
           lastPage={pageCount}
           summaryText={`Menampilkan ${total ? start + 1 : 0}–${start + visibleTransactions.length} dari ${total} transaksi demonstrasi sesuai filter.`}
           onPageChange={(nextPage) => setCurrentPage(Math.min(Math.max(1, nextPage), pageCount))}
+=======
+          currentPage={activePage}
+          pages={pages}
+          summaryText={summaryText}
+          onPageChange={(page) => setCurrentPage(page)}
+          prevLabel={footer.pagination.prevText}
+          nextLabel={footer.pagination.nextText}
+>>>>>>> 9aafb0fa78151899b4a3faa2e8f6e8e7ec923a7e
         />
       </Card>
     </section>
